@@ -4,9 +4,11 @@ import * as FileSystem from "expo-file-system";
 const WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
 
 export async function transcribeAudio(
-  audioUri: string,
-  apiKey: string
+  audioUri: string
 ): Promise<string> {
+  const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
+  if (!apiKey) throw new Error("API ключ OpenAI не найден");
+
   const formData = new FormData();
   const fileInfo = await FileSystem.getInfoAsync(audioUri);
 

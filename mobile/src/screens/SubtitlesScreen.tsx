@@ -8,17 +8,34 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useRecording } from "../hooks/useRecording";
+import { transcribeAudio } from "../services/whisper";
 import { Colors, Spacing, FontSize } from "../constants/theme";
 import type { SubtitleEntry } from "../../../shared/types";
 
 export default function SubtitlesScreen() {
   const { isRecording, startRecording, stopRecording } = useRecording();
   const [transcribedText, setTranscribedText] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const [history, setHistory] = useState<SubtitleEntry[]>([]);
 
   async function handleRecord() {
     if (isRecording) {
-      await stopRecording();
+      const uri = await stopRecording();
+      if (uri) {
+        setIsProcessing(true);
+        try {
+          const text = await transcribeAudio(uri);
+          setTranscribedText(text);
+          setHistory((prev) => [
+            { id: Date.now().toString(), user_id: "", text, created_at: new Date().toISOString() },
+            ...prev,
+          ]);
+        } catch (err) {
+          setTranscribedText("Ошибка распознавания. Попробуйте снова.");
+        } finally {
+          setIsProcessing(false);
+        }
+      }
     } else {
       await startRecording();
     }
@@ -42,7 +59,7 @@ export default function SubtitlesScreen() {
         onPress={handleRecord}
       >
         <Text style={styles.recordButtonText}>
-          {isRecording ? "⏹ Остановить" : "🎤 Запись"}
+          {isProcessing ? "⏳ Обработка..." : isRecording ? "⏹ Остановить" : "🎤 Запись"}
         </Text>
       </TouchableOpacity>
 

@@ -1,10 +1,25 @@
--- Таблица пользователей
+-- Таблица пользователей (связана с auth.users Supabase)
 CREATE TABLE IF NOT EXISTS users (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL DEFAULT '',
   language TEXT DEFAULT 'ru' CHECK (language IN ('kk', 'ru')),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Автосоздание профиля при регистрации
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, name)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'name', ''));
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- История субтитров
 CREATE TABLE IF NOT EXISTS subtitles_history (
