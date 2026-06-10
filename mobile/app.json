@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Hearless",
+    "slug": "hearless",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#f3f8fc"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hearless.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#f3f8fc"
+      },
+      "package": "com.hearless.app"
+    },
+    "plugins": [
+      "expo-av",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Разрешите Hearless доступ к камере для распознавания жестов"
+        }
+      ]
+    ]
+  }
+}
