@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
 
 export default function Register() {
   const [isLogin, setIsLogin] = useState(false);
@@ -22,6 +22,7 @@ export default function Register() {
     }
 
     if (isLogin) {
+      const supabase = getSupabase();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -29,6 +30,7 @@ export default function Register() {
       if (signInError) setError(signInError.message);
       else setMessage("Вход выполнен!");
     } else {
+      const supabase = getSupabase();
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
