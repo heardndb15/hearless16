@@ -40,8 +40,8 @@ export default function Register() {
         if (signUpError) setError(signUpError.message);
         else setMessage("Регистрация успешна! Проверьте почту.");
       }
-    } catch (err) {
-      setError("Ошибка подключения к серверу. Проверьте настройки.");
+    } catch (err: any) {
+      setError(err?.message || "Ошибка подключения. Проверьте настройки.");
     }
   }
 
