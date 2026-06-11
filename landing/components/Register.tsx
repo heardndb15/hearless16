@@ -21,23 +21,27 @@ export default function Register() {
       return;
     }
 
-    if (isLogin) {
+    try {
       const supabase = getSupabase();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (signInError) setError(signInError.message);
-      else setMessage("Вход выполнен!");
-    } else {
-      const supabase = getSupabase();
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name } },
-      });
-      if (signUpError) setError(signUpError.message);
-      else setMessage("Регистрация успешна! Проверьте почту.");
+
+      if (isLogin) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) setError(signInError.message);
+        else setMessage("Вход выполнен!");
+      } else {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name } },
+        });
+        if (signUpError) setError(signUpError.message);
+        else setMessage("Регистрация успешна! Проверьте почту.");
+      }
+    } catch (err) {
+      setError("Ошибка подключения к серверу. Проверьте настройки.");
     }
   }
 
