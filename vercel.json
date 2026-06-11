@@ -1,5 +1,10 @@
 {
+  "version": 2,
   "builds": [
+    {
+      "src": "landing/package.json",
+      "use": "@vercel/next"
+    },
     {
       "src": "api/index.py",
       "use": "@vercel/python"
@@ -7,8 +12,12 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "landing/$1"
     }
   ]
 }
