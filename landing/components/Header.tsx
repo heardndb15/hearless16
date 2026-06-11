@@ -31,17 +31,11 @@ export default function Header() {
             Возможности
           </a>
           <a
-            href="#story"
-            style={{ color: "var(--heading)", textDecoration: "none" }}
-          >
-            История
-          </a>
-          <a
-            href="#download"
+            href="#register"
             className="btn btn-primary"
             style={{ padding: "10px 24px", fontSize: 14 }}
           >
-            Скачать
+            Войти
           </a>
         </nav>
       </div>

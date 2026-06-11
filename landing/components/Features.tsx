@@ -38,7 +38,7 @@ export default function Features() {
             marginBottom: 48,
           }}
         >
-          Возможности приложения
+          Возможности сервиса
         </h2>
         <div
           style={{

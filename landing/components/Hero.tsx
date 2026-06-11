@@ -30,11 +30,11 @@ export default function Hero() {
           }}
         >
           Hearless переводит речь в текст, распознаёт звуки и помогает изучать
-          жестовый язык с помощью искусственного интеллекта.
+          жестовый язык с помощью искусственного интеллекта. Войдите в систему и начните пользоваться.
         </p>
         <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-          <a href="#download" className="btn btn-primary">
-            Скачать приложение
+          <a href="#register" className="btn btn-primary">
+            Начать бесплатно
           </a>
           <a href="#features" className="btn btn-outline">
             Узнать больше
