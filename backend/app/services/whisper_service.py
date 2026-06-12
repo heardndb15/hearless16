@@ -1,20 +1,22 @@
 import io
 import wave
-import tempfile
 import numpy as np
 
+WHISPER_AVAILABLE = False
 WHISPER_MODEL = None
 
 
 def get_local_whisper():
-    global WHISPER_MODEL
-    if WHISPER_MODEL is None:
+    global WHISPER_MODEL, WHISPER_AVAILABLE
+    if WHISPER_MODEL is None and WHISPER_AVAILABLE is not False:
         try:
             from faster_whisper import WhisperModel
             WHISPER_MODEL = WhisperModel("small", device="cpu", compute_type="int8")
+            WHISPER_AVAILABLE = True
         except Exception:
             WHISPER_MODEL = False
-    return WHISPER_MODEL
+            WHISPER_AVAILABLE = False
+    return WHISPER_MODEL if WHISPER_AVAILABLE else None
 
 
 def audio_bytes_to_float(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarray:
@@ -24,7 +26,10 @@ def audio_bytes_to_float(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarr
             frames = wf.readframes(wf.getnframes())
             audio = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
     except wave.Error:
-        audio = _convert_with_ffmpeg(audio_bytes, target_sr)
+        try:
+            audio = _convert_with_ffmpeg(audio_bytes, target_sr)
+        except Exception:
+            return np.array([], dtype=np.float32)
         return audio
 
     if len(audio) == 0:
@@ -42,8 +47,9 @@ def audio_bytes_to_float(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarr
 
 def _convert_with_ffmpeg(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarray:
     from pydub import AudioSegment
+    import tempfile
 
-    with tempfile.NamedTemporaryFile(suffix=".audio") as tmp_in:
+    with tempfile.NamedTemporaryFile(suffix=".audio", delete=False) as tmp_in:
         tmp_in.write(audio_bytes)
         tmp_in.flush()
         seg = AudioSegment.from_file(tmp_in.name)
@@ -54,7 +60,7 @@ def _convert_with_ffmpeg(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarr
 
 def transcribe_local(audio_bytes: bytes) -> str | None:
     model = get_local_whisper()
-    if model is False:
+    if model is None:
         return None
 
     audio = audio_bytes_to_float(audio_bytes)
@@ -67,6 +73,9 @@ def transcribe_local(audio_bytes: bytes) -> str | None:
 def transcribe_openai(audio_bytes: bytes, language: str = "ru") -> str:
     from openai import OpenAI
     from app.config import OPENAI_API_KEY
+
+    if not OPENAI_API_KEY:
+        return ""
 
     client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.audio.transcriptions.create(

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Header() {
   return (
     <header
@@ -15,28 +17,32 @@ export default function Header() {
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <span style={{ fontSize: 28 }}>🦻</span>
-          <span
-            style={{ fontSize: 24, fontWeight: "bold", color: "var(--heading)" }}
-          >
+          <span style={{ fontSize: 24, fontWeight: "bold", color: "var(--heading)" }}>
             Hearless
           </span>
-        </div>
+        </Link>
         <nav style={{ display: "flex", gap: 24, alignItems: "center" }}>
-          <a
+          <Link
             href="#features"
-            style={{ color: "var(--heading)", textDecoration: "none" }}
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 15 }}
           >
             Возможности
-          </a>
-          <a
-            href="#register"
-            className="btn btn-primary"
-            style={{ padding: "10px 24px", fontSize: 14 }}
+          </Link>
+          <Link
+            href="/login"
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 15 }}
           >
             Войти
-          </a>
+          </Link>
+          <Link
+            href="/register"
+            className="btn btn-primary"
+            style={{ padding: "10px 24px", fontSize: 14, textDecoration: "none" }}
+          >
+            Регистрация
+          </Link>
         </nav>
       </div>
     </header>

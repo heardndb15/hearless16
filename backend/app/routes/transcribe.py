@@ -1,9 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
-from openai import OpenAI
 from app.config import OPENAI_API_KEY
 
 router = APIRouter(prefix="/transcribe", tags=["transcribe"])
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 @router.post("/")
@@ -12,6 +10,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(
             status_code=500, detail="API ключ OpenAI не настроен"
         )
+
+    from openai import OpenAI
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
     contents = await file.read()
     response = client.audio.transcriptions.create(
