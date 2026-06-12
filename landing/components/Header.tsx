@@ -23,16 +23,34 @@ export default function Header() {
             Hearless
           </span>
         </Link>
-        <nav style={{ display: "flex", gap: 24, alignItems: "center" }}>
+        <nav style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <Link
-            href="#features"
-            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 15 }}
+            href="/features"
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 14 }}
           >
             Возможности
           </Link>
           <Link
+            href="/about"
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 14 }}
+          >
+            О проекте
+          </Link>
+          <Link
+            href="/blog"
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 14 }}
+          >
+            Блог
+          </Link>
+          <Link
+            href="/contact"
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 14 }}
+          >
+            Контакты
+          </Link>
+          <Link
             href="/login"
-            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 15 }}
+            style={{ color: "var(--heading)", textDecoration: "none", fontSize: 14 }}
           >
             Войти
           </Link>

@@ -33,10 +33,10 @@ export default function Hero() {
           жестовый язык с помощью искусственного интеллекта. Войдите в систему и начните пользоваться.
         </p>
         <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
-          <a href="#register" className="btn btn-primary">
+          <a href="/register" className="btn btn-primary">
             Начать бесплатно
           </a>
-          <a href="#features" className="btn btn-outline">
+          <a href="/features" className="btn btn-outline">
             Узнать больше
           </a>
         </div>

@@ -1,22 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-function getClient() {
-  return createClient(supabaseUrl, supabaseKey);
+function getSupabase(req: NextRequest, res: NextResponse) {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll();
+        },
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) =>
+            res.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { action } = body;
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.json({ error: "Supabase не настроен" }, { status: 500 });
   }
 
-  const supabase = getClient();
+  const res = NextResponse.next();
+  const supabase = getSupabase(req, res);
 
   try {
     if (action === "register") {
@@ -40,15 +53,14 @@ export async function POST(req: NextRequest) {
     if (action === "reset-password") {
       const { email } = body;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${req.headers.get("origin") || "https://hearless16-ej8b.vercel.app"}/login`,
+        redirectTo: `${req.headers.get("origin") || ""}/login`,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
       return NextResponse.json({ message: "Письмо отправлено. Проверьте почту." });
     }
 
     if (action === "signout") {
-      const { error } = await supabase.auth.signOut();
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      await supabase.auth.signOut();
       return NextResponse.json({ message: "Выход выполнен" });
     }
 
