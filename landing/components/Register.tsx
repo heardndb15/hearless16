@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { getSupabase } from "../lib/supabase";
 
 export default function Register() {
   const [isLogin, setIsLogin] = useState(false);
@@ -10,6 +9,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,27 +21,32 @@ export default function Register() {
       return;
     }
 
-    try {
-      const supabase = getSupabase();
+    setLoading(true);
 
-      if (isLogin) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: isLogin ? "login" : "register",
           email,
           password,
-        });
-        if (signInError) setError(signInError.message);
-        else setMessage("Вход выполнен!");
+          name,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Ошибка сервера");
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name } },
-        });
-        if (signUpError) setError(signUpError.message);
-        else setMessage("Регистрация успешна! Проверьте почту.");
+        setMessage(
+          isLogin ? "Вход выполнен!" : "Регистрация успешна! Проверьте почту."
+        );
       }
-    } catch (err: any) {
-      setError(err?.message || "Ошибка подключения. Проверьте настройки.");
+    } catch {
+      setError("Ошибка подключения к серверу");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -108,15 +113,17 @@ export default function Register() {
 
           <button
             type="submit"
+            disabled={loading}
             className="btn btn-primary"
             style={{
               width: "100%",
               border: "none",
-              cursor: "pointer",
+              cursor: loading ? "wait" : "pointer",
               fontSize: 16,
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            {isLogin ? "Войти" : "Зарегистрироваться"}
+            {loading ? "Загрузка..." : isLogin ? "Войти" : "Зарегистрироваться"}
           </button>
 
           <p style={{ textAlign: "center", fontSize: 14, color: "var(--textSecondary)" }}>
