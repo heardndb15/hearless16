@@ -52,3 +52,8 @@ export type RootTabParamList = {
   Alerts: undefined;
   Profile: undefined;
 };
+
+export type RootStackParamList = {
+  Tabs: undefined;
+  GesturePractice: { gestureId: string; gestureName: string };
+};

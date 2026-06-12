@@ -4,11 +4,12 @@ import {
   Text,
   FlatList,
   Switch,
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
 } from "react-native";
 import { Colors, Spacing, FontSize } from "../constants/theme";
+import SOSButton from "../components/SOSButton";
+import SilentSOS from "../components/SilentSOS";
 import type { SoundAlert } from "../../../shared/types";
 
 interface AlertConfig {
@@ -80,10 +81,10 @@ export default function AlertsScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.sosButton}>
-        <Text style={styles.sosButtonText}>SOS</Text>
-        <Text style={styles.sosSubtext}>Отправить сигнал бедствия</Text>
-      </TouchableOpacity>
+      <View style={styles.sosRow}>
+        <SOSButton />
+        <SilentSOS />
+      </View>
 
       <View style={styles.historySection}>
         <Text style={styles.sectionTitle}>История оповещений</Text>
@@ -154,27 +155,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginRight: Spacing.md,
   },
+  sosRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Spacing.md,
+  },
   alertLabel: {
     flex: 1,
     fontSize: FontSize.body,
     color: Colors.textPrimary,
-  },
-  sosButton: {
-    backgroundColor: Colors.sos,
-    borderRadius: 16,
-    padding: Spacing.lg,
-    alignItems: "center",
-    marginBottom: Spacing.md,
-  },
-  sosButtonText: {
-    fontSize: FontSize.heading,
-    fontWeight: "bold",
-    color: Colors.white,
-  },
-  sosSubtext: {
-    fontSize: FontSize.body,
-    color: Colors.white,
-    marginTop: Spacing.xs,
   },
   historySection: {
     flex: 1,

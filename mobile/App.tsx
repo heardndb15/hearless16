@@ -1,15 +1,33 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import TabNavigator from "./src/navigation/TabNavigator";
+import GesturePracticeScreen from "./src/screens/GesturePracticeScreen";
+import type { RootStackParamList } from "./shared/types";
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
         <StatusBar style="auto" />
-        <TabNavigator />
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Tabs" component={TabNavigator} />
+          <Stack.Screen
+            name="GesturePractice"
+            component={GesturePracticeScreen}
+            options={{
+              animation: "slide_from_bottom",
+              headerShown: true,
+              headerTitle: "Практика жеста",
+              headerTintColor: "#214559",
+              headerStyle: { backgroundColor: "#f3f8fc" },
+            }}
+          />
+        </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
   );

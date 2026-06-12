@@ -23,8 +23,22 @@ class UserProgressCreate(BaseModel):
     gesture_id: str
     learned: bool = False
     accuracy: float = 0.0
+    attempts: int = 0
+    best_accuracy: float = 0.0
+
+
+class GestureRecognizeRequest(BaseModel):
+    image: str
+    target_gesture: Optional[str] = None
 
 
 class TranscriptionRequest(BaseModel):
     language: str = "ru"
     audio_data: Optional[str] = None
+
+
+class SilentSOSCreate(BaseModel):
+    user_id: str
+    lat: float
+    lng: float
+    timestamp: str

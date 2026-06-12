@@ -1,43 +1,69 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
+  Animated,
   StyleSheet,
   SafeAreaView,
+  Dimensions,
 } from "react-native";
-import { useRecording } from "../hooks/useRecording";
-import { transcribeAudio } from "../services/whisper";
-import { Colors, Spacing, FontSize } from "../constants/theme";
-import type { SubtitleEntry } from "../../../shared/types";
+import { useStreamingRecording } from "../hooks/useStreamingRecording";
+import { Colors, Spacing } from "../constants/theme";
+
+const { width } = Dimensions.get("window");
+
+function AnimatedLine({ text, index }: { text: string; index: number }) {
+  const opacity = useRef(new Animated.Value(1)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (index > 0) {
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: -20 * index,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [index]);
+
+  return (
+    <Animated.Text
+      style={[
+        styles.line,
+        { opacity, transform: [{ translateY }] },
+      ]}
+      numberOfLines={2}
+    >
+      {text}
+    </Animated.Text>
+  );
+}
 
 export default function SubtitlesScreen() {
-  const { isRecording, startRecording, stopRecording } = useRecording();
-  const [transcribedText, setTranscribedText] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [history, setHistory] = useState<SubtitleEntry[]>([]);
+  const {
+    isRecording,
+    streamText,
+    chunks,
+    startStreaming,
+    stopStreaming,
+  } = useStreamingRecording();
+
+  const recentChunks = chunks.slice(-3);
+  const hasContent = recentChunks.length > 0 || streamText.length > 0;
 
   async function handleRecord() {
     if (isRecording) {
-      const uri = await stopRecording();
-      if (uri) {
-        setIsProcessing(true);
-        try {
-          const text = await transcribeAudio(uri);
-          setTranscribedText(text);
-          setHistory((prev) => [
-            { id: Date.now().toString(), user_id: "", text, created_at: new Date().toISOString() },
-            ...prev,
-          ]);
-        } catch (err) {
-          setTranscribedText("Ошибка распознавания. Попробуйте снова.");
-        } finally {
-          setIsProcessing(false);
-        }
-      }
+      stopStreaming();
     } else {
-      await startRecording();
+      startStreaming();
     }
   }
 
@@ -45,38 +71,42 @@ export default function SubtitlesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Субтитры</Text>
-        <Text style={styles.subtitle}>Речь преобразуется в текст</Text>
+        <Text style={styles.subtitle}>Речь преобразуется в текст в реальном времени</Text>
       </View>
 
-      <View style={styles.subtitleCard}>
-        <Text style={styles.subtitleText}>
-          {transcribedText || "Нажмите кнопку микрофона и говорите..."}
-        </Text>
+      <View style={styles.subtitleArea}>
+        {hasContent ? (
+          <View style={styles.subtitleCard}>
+            {recentChunks.map((chunk, i) => (
+              <AnimatedLine
+                key={`${chunk.text}-${i}`}
+                text={chunk.text}
+                index={recentChunks.length - 1 - i}
+              />
+            ))}
+          </View>
+        ) : (
+          <View style={styles.placeholderCard}>
+            <Text style={styles.placeholderText}>
+              {isRecording
+                ? "Слушаю..."
+                : "Нажмите кнопку микрофона и говорите..."}
+            </Text>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity
-        style={[styles.recordButton, isRecording && styles.recordingActive]}
+        style={[
+          styles.recordButton,
+          isRecording && styles.recordingActive,
+        ]}
         onPress={handleRecord}
       >
         <Text style={styles.recordButtonText}>
-          {isProcessing ? "⏳ Обработка..." : isRecording ? "⏹ Остановить" : "🎤 Запись"}
+          {isRecording ? "⏹ Остановить" : "🎤 Запись"}
         </Text>
       </TouchableOpacity>
-
-      {history.length > 0 && (
-        <View style={styles.historySection}>
-          <Text style={styles.historyTitle}>История разговоров</Text>
-          <FlatList
-            data={history}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.historyItem}>
-                <Text style={styles.historyText}>{item.text}</Text>
-              </View>
-            )}
-          />
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -92,29 +122,49 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: FontSize.heading,
+    fontSize: 28,
     fontWeight: "bold",
     color: Colors.heading,
   },
   subtitle: {
-    fontSize: FontSize.body,
+    fontSize: 14,
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
   },
+  subtitleArea: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+  },
   subtitleCard: {
+    backgroundColor: "rgba(33, 69, 89, 0.85)",
+    borderRadius: 16,
+    padding: Spacing.lg,
+    minHeight: 200,
+    justifyContent: "center",
+    width: width - Spacing.md * 2,
+  },
+  line: {
+    color: "#f3f8fc",
+    fontSize: 22,
+    textAlign: "center",
+    lineHeight: 32,
+    marginVertical: 4,
+  },
+  placeholderCard: {
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: Spacing.lg,
-    minHeight: 160,
+    minHeight: 200,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: Spacing.md,
+    width: width - Spacing.md * 2,
   },
-  subtitleText: {
-    fontSize: FontSize.subtitleLarge,
-    color: Colors.textPrimary,
+  placeholderText: {
+    fontSize: 22,
+    color: Colors.textSecondary,
     textAlign: "center",
-    lineHeight: 48,
   },
   recordButton: {
     backgroundColor: Colors.button,
@@ -129,27 +179,7 @@ const styles = StyleSheet.create({
   },
   recordButtonText: {
     color: Colors.white,
-    fontSize: FontSize.subtitle,
+    fontSize: 16,
     fontWeight: "600",
-  },
-  historySection: {
-    flex: 1,
-    marginTop: Spacing.lg,
-  },
-  historyTitle: {
-    fontSize: FontSize.title,
-    fontWeight: "600",
-    color: Colors.heading,
-    marginBottom: Spacing.sm,
-  },
-  historyItem: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-  },
-  historyText: {
-    fontSize: FontSize.body,
-    color: Colors.textPrimary,
   },
 });

@@ -1,6 +1,8 @@
+import base64
 from fastapi import APIRouter, HTTPException
 from app.database import get_supabase
-from app.models import UserProgressCreate
+from app.models import UserProgressCreate, GestureRecognizeRequest
+from app.signflow_model import recognize_gesture
 
 router = APIRouter(prefix="/gestures", tags=["gestures"])
 
@@ -22,6 +24,13 @@ async def get_gesture(gesture_id: str):
     if not response.data:
         raise HTTPException(status_code=404, detail="Жест не найден")
     return response.data[0]
+
+
+@router.post("/recognize")
+async def recognize(data: GestureRecognizeRequest):
+    frame = base64.b64decode(data.image)
+    result = recognize_gesture(frame, data.target_gesture)
+    return result
 
 
 @router.post("/progress")

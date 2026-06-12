@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS user_progress (
   gesture_id UUID REFERENCES gestures(id) ON DELETE CASCADE,
   learned BOOLEAN DEFAULT FALSE,
   accuracy REAL DEFAULT 0.0,
+  attempts INT DEFAULT 0,
+  best_accuracy REAL DEFAULT 0.0,
   PRIMARY KEY (user_id, gesture_id)
 );
 
@@ -55,12 +57,25 @@ CREATE TABLE IF NOT EXISTS sound_alerts (
   detected_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- SOS события
+CREATE TABLE IF NOT EXISTS sos_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN ('silent', 'normal')),
+  lat DOUBLE PRECISION,
+  lng DOUBLE PRECISION,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  resolved_at TIMESTAMPTZ
+);
+
 -- Индексы для быстрого поиска
 CREATE INDEX IF NOT EXISTS idx_subtitles_user ON subtitles_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_subtitles_created ON subtitles_history(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_gestures_category ON gestures(category);
 CREATE INDEX IF NOT EXISTS idx_alerts_user ON sound_alerts(user_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_detected ON sound_alerts(detected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sos_user ON sos_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_sos_created ON sos_events(created_at DESC);
 
 -- Вставка начальных жестов
 INSERT INTO gestures (name, category, difficulty) VALUES
