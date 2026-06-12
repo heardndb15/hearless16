@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 const protectedRoutes = ["/dashboard", "/profile"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
   const isProtected = protectedRoutes.some((route) => pathname.startsWith(route));
   if (!isProtected) return NextResponse.next();
 
@@ -15,13 +15,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  const { createServerClient } = await import("@supabase/ssr");
+  const res = NextResponse.next();
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return req.cookies.getAll();
       },
-      setAll() {},
+      setAll(cookies) {
+        cookies.forEach(({ name, value, options }) =>
+          res.cookies.set(name, value, options)
+        );
+      },
     },
   });
 
@@ -31,7 +35,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {

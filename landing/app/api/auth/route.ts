@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-function getSupabase(req: NextRequest, res: NextResponse) {
+function createSupabase(req: NextRequest, res: NextResponse) {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
@@ -28,11 +28,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Supabase не настроен" }, { status: 500 });
   }
 
-  const res = NextResponse.next();
-  const supabase = getSupabase(req, res);
-
   try {
     if (action === "register") {
+      const res = NextResponse.json({});
+      const supabase = createSupabase(req, res);
       const { email, password, name, language } = body;
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -44,6 +43,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "login") {
+      const res = NextResponse.json({});
+      const supabase = createSupabase(req, res);
       const { email, password } = body;
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -51,6 +52,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "reset-password") {
+      const res = NextResponse.json({});
+      const supabase = createSupabase(req, res);
       const { email } = body;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${req.headers.get("origin") || ""}/login`,
@@ -60,11 +63,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "signout") {
+      const res = NextResponse.json({ message: "Выход выполнен" });
+      const supabase = createSupabase(req, res);
       await supabase.auth.signOut();
-      return NextResponse.json({ message: "Выход выполнен" });
+      return res;
     }
 
     if (action === "google") {
+      const res = NextResponse.json({});
+      const supabase = createSupabase(req, res);
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${req.headers.get("origin") || ""}/dashboard` },
