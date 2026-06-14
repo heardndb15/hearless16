@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const schema = z.object({
   email: z.string().email("Некорректный email"),
@@ -15,7 +14,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
-  const router = useRouter();
   const [serverError, setServerError] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -37,7 +35,7 @@ export default function LoginPage() {
       if (!res.ok) {
         setServerError(json.error || "Ошибка входа");
       } else {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch {
       setServerError("Ошибка подключения к серверу");

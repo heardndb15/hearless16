@@ -1,14 +1,4 @@
 import random
-import time
-
-TORCH_AVAILABLE = False
-try:
-    import torch
-    TORCH_AVAILABLE = True
-except ImportError:
-    pass
-
-SIGNFLOW_MODEL = None
 
 GESTURE_COMPONENTS = {
     "Здравствуйте": {"hand_shape": 92, "position": 88, "movement": 85},
@@ -19,24 +9,6 @@ GESTURE_COMPONENTS = {
     "Вода": {"hand_shape": 88, "position": 82, "movement": 80},
     "Еда": {"hand_shape": 80, "position": 78, "movement": 75},
 }
-
-
-def load_signflow():
-    global SIGNFLOW_MODEL
-    if SIGNFLOW_MODEL is None and TORCH_AVAILABLE:
-        try:
-            SIGNFLOW_MODEL = torch.jit.load(None)
-        except Exception:
-            SIGNFLOW_MODEL = False
-    elif SIGNFLOW_MODEL is None:
-        SIGNFLOW_MODEL = False
-    return SIGNFLOW_MODEL
-
-
-def recognize_signflow(frame_data: bytes) -> dict | None:
-    model = load_signflow()
-    if not model:
-        return None
 
 
 def recognize_emulate(target_gesture: str | None = None) -> dict:
@@ -82,7 +54,4 @@ def recognize_emulate(target_gesture: str | None = None) -> dict:
 
 
 def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> dict:
-    result = recognize_signflow(frame_data)
-    if result:
-        return result
     return recognize_emulate(target_gesture)
