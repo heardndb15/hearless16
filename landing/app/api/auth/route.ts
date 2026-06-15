@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Supabase не настроен" }, { status: 500 });
   }
 
-  const cookieStore: { name: string; value: string; options: Record<string, string> }[] = [];
+  const cookieStore: { name: string; value: string; options: any }[] = [];
 
   function createSupabase() {
     return createServerClient(
