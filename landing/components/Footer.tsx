@@ -1,75 +1,176 @@
+"use client";
+
 import Link from "next/link";
 
 export default function Footer() {
   return (
     <footer
       style={{
-        background: "var(--dark)",
-        color: "var(--card)",
-        padding: "40px 0",
+        borderTop: "1px solid var(--border)",
+        padding: "60px 0 32px",
       }}
     >
       <div className="container">
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-            gap: 32,
-            marginBottom: 32,
+            gridTemplateColumns: "2fr 1fr 1fr 1fr",
+            gap: 40,
+            marginBottom: 48,
           }}
         >
+          {/* Brand */}
           <div>
-            <div
+            <Link
+              href="/"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 10,
+                textDecoration: "none",
                 marginBottom: 16,
               }}
             >
-              <span style={{ fontSize: 24 }}>🦻</span>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  background: "var(--gradient)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 16,
+                  fontWeight: 800,
+                  color: "white",
+                }}
+              >
+                H
+              </div>
               <span
-                style={{ fontSize: 20, fontWeight: "bold", color: "var(--white)" }}
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                }}
               >
                 Hearless
               </span>
-            </div>
-            <p style={{ fontSize: 13, lineHeight: 1.6 }}>
-              Помогаем глухим и слабослышащим людям с 2026 года.
+            </Link>
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--textMuted)",
+                lineHeight: 1.7,
+                maxWidth: 280,
+              }}
+            >
+              Первая AI-платформа в Казахстане и Центральной Азии для глухих и
+              слабослышащих людей.
             </p>
           </div>
-          <div>
-            <h4 style={{ color: "var(--white)", marginBottom: 12, fontSize: 15 }}>
-              Страницы
-            </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <Link href="/features" style={linkStyle}>Возможности</Link>
-              <Link href="/about" style={linkStyle}>О проекте</Link>
-              <Link href="/blog" style={linkStyle}>Блог</Link>
-              <Link href="/contact" style={linkStyle}>Контакты</Link>
+
+          {/* Links */}
+          {[
+            {
+              title: "Продукт",
+              links: [
+                ["Возможности", "/features"],
+                ["О проекте", "/about"],
+                ["Блог", "/blog"],
+              ],
+            },
+            {
+              title: "Аккаунт",
+              links: [
+                ["Войти", "/login"],
+                ["Регистрация", "/register"],
+                ["Контакты", "/contact"],
+              ],
+            },
+            {
+              title: "Правовое",
+              links: [
+                ["Конфиденциальность", "#"],
+                ["Условия", "#"],
+                ["Документы", "#"],
+              ],
+            },
+          ].map((col) => (
+            <div key={col.title}>
+              <h4
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--text)",
+                  marginBottom: 16,
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                {col.title}
+              </h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {col.links.map(([label, href]) => (
+                  <Link
+                    key={label}
+                    href={href}
+                    style={{
+                      color: "var(--textMuted)",
+                      textDecoration: "none",
+                      fontSize: 13,
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "var(--accent)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "var(--textMuted)")
+                    }
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            paddingTop: 24,
+            borderTop: "1px solid var(--border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 12, color: "var(--textMuted)" }}>
+            © {new Date().getFullYear()} Hearless. Все права защищены.
           </div>
-          <div>
-            <h4 style={{ color: "var(--white)", marginBottom: 12, fontSize: 15 }}>
-              Аккаунт
-            </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <Link href="/login" style={linkStyle}>Войти</Link>
-              <Link href="/register" style={linkStyle}>Регистрация</Link>
-            </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            {["GitHub", "Telegram", "Instagram"].map((s) => (
+              <span
+                key={s}
+                style={{
+                  fontSize: 12,
+                  color: "var(--textMuted)",
+                  cursor: "pointer",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--textMuted)")}
+              >
+                {s}
+              </span>
+            ))}
           </div>
         </div>
-        <p style={{ fontSize: 12, opacity: 0.7, textAlign: "center" }}>
-          © {new Date().getFullYear()} Hearless. Все права защищены.
-        </p>
       </div>
     </footer>
   );
 }
-
-const linkStyle: React.CSSProperties = {
-  color: "var(--card)",
-  textDecoration: "none",
-  fontSize: 13,
-  opacity: 0.8,
-};

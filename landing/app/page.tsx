@@ -1,7 +1,11 @@
 import Header from "../components/Header";
 import Hero from "../components/Hero";
-import Features from "../components/Features";
-import Stats from "../components/Stats";
+import FeaturesSection from "../components/Features";
+import SubtitleDemo from "../components/SubtitleDemo";
+import SoundIndicators from "../components/SoundIndicators";
+import LanguageSection from "../components/LanguageSection";
+import GamificationSection from "../components/GamificationSection";
+import CTASection from "../components/CTASection";
 import Footer from "../components/Footer";
 
 export default function Home() {
@@ -10,8 +14,12 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Features />
-        <Stats />
+        <FeaturesSection />
+        <SubtitleDemo />
+        <SoundIndicators />
+        <LanguageSection />
+        <GamificationSection />
+        <CTASection />
       </main>
       <Footer />
     </>
