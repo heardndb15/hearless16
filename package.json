@@ -1,0 +1,10 @@
+{
+  "name": "hearless",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd landing && npm run dev",
+    "build": "cd landing && npm install && npm run build",
+    "start": "cd landing && npm run start"
+  }
+}
