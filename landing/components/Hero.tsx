@@ -175,7 +175,7 @@ export default function Hero() {
               padding: "16px 14px",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 40px var(--accentGlow)",
+              boxShadow: "var(--shadowPhone)",
             }}
           >
             {/* Status bar */}
