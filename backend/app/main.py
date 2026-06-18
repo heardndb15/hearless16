@@ -34,8 +34,11 @@ app.include_router(sos.router)
 @app.websocket("/ws/transcribe")
 async def websocket_transcribe(websocket: WebSocket):
     await websocket.accept()
-    buffer = bytearray()
-    full_text = ""
+    import numpy as np
+    from app.services.whisper_service import audio_bytes_to_float, floats_to_wav_bytes
+
+    session_floats = np.array([], dtype=np.float32)
+    transcribed_len = 0
 
     try:
         while True:
@@ -47,38 +50,43 @@ async def websocket_transcribe(websocket: WebSocket):
                 audio_b64 = data.get("audio", "")
                 import base64
                 audio_bytes = base64.b64decode(audio_b64)
-                buffer.extend(audio_bytes)
+                chunk_floats = audio_bytes_to_float(audio_bytes)
+                if len(chunk_floats) > 0:
+                    session_floats = np.concatenate([session_floats, chunk_floats])
 
-                if len(buffer) >= 16000:
-                    chunk = bytes(buffer)
-                    buffer.clear()
-                    text = await asyncio.to_thread(transcribe_audio, chunk)
+                if len(session_floats) - transcribed_len >= 16000:
+                    wav_bytes = floats_to_wav_bytes(session_floats)
+                    text = await asyncio.to_thread(transcribe_audio, wav_bytes)
                     if text:
-                        full_text += " " + text
                         await websocket.send_json({
                             "type": "text",
                             "text": text.strip(),
-                            "full_text": full_text.strip(),
+                            "full_text": text.strip(),
                         })
+                    transcribed_len = len(session_floats)
 
             elif action == "stop":
-                if buffer:
-                    chunk = bytes(buffer)
-                    buffer.clear()
-                    text = await asyncio.to_thread(transcribe_audio, chunk)
+                if len(session_floats) > 0:
+                    wav_bytes = floats_to_wav_bytes(session_floats)
+                    text = await asyncio.to_thread(transcribe_audio, wav_bytes)
                     if text:
-                        full_text += " " + text
                         await websocket.send_json({
                             "type": "final",
                             "text": text.strip(),
-                            "full_text": full_text.strip(),
+                            "full_text": text.strip(),
                         })
                     else:
                         await websocket.send_json({
                             "type": "final",
                             "text": "",
-                            "full_text": full_text.strip(),
+                            "full_text": "",
                         })
+                else:
+                    await websocket.send_json({
+                        "type": "final",
+                        "text": "",
+                        "full_text": "",
+                    })
                 break
 
     except WebSocketDisconnect:

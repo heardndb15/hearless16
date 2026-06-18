@@ -48,14 +48,37 @@ def audio_bytes_to_float(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarr
 def _convert_with_ffmpeg(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarray:
     from pydub import AudioSegment
     import tempfile
+    import os
 
-    with tempfile.NamedTemporaryFile(suffix=".audio", delete=False) as tmp_in:
-        tmp_in.write(audio_bytes)
-        tmp_in.flush()
-        seg = AudioSegment.from_file(tmp_in.name)
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".audio", delete=False) as tmp_in:
+            tmp_path = tmp_in.name
+            tmp_in.write(audio_bytes)
+            tmp_in.flush()
+        seg = AudioSegment.from_file(tmp_path)
         seg = seg.set_frame_rate(target_sr).set_channels(1).set_sample_width(2)
         raw = seg.raw_data
-    return np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
+        return np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+
+
+def floats_to_wav_bytes(floats: np.ndarray, sr: int = 16000) -> bytes:
+    # convert float32 to int16
+    int_data = (floats * 32767.0).astype(np.int16)
+    out_buf = io.BytesIO()
+    with wave.open(out_buf, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(sr)
+        wf.writeframes(int_data.tobytes())
+    return out_buf.getvalue()
+
 
 
 def transcribe_local(audio_bytes: bytes) -> str | None:

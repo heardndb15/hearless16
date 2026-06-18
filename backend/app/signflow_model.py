@@ -12,8 +12,8 @@ GESTURE_COMPONENTS = {
 
 
 def recognize_emulate(target_gesture: str | None = None) -> dict:
-    if target_gesture and target_gesture in GESTURE_COMPONENTS:
-        base = GESTURE_COMPONENTS[target_gesture]
+    if target_gesture:
+        base = GESTURE_COMPONENTS.get(target_gesture, {"hand_shape": 85, "position": 80, "movement": 80})
         confidence = (
             base["hand_shape"] * 0.4
             + base["position"] * 0.3

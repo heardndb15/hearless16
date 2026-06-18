@@ -9,6 +9,9 @@ import {
 import * as Haptics from "expo-haptics";
 import Svg, { Circle } from "react-native-svg";
 import { Colors } from "../constants/theme";
+import * as Location from "expo-location";
+import axios from "axios";
+import { supabase } from "../services/supabase";
 
 const SOS_COLOR = "#ef4444";
 const HOLD_DURATION = 2000;
@@ -106,10 +109,42 @@ export default function SOSButton() {
     }, 1000);
   }
 
-  function handleSendSOS() {
+  async function handleSendSOS() {
     if (autoTimerRef.current) clearInterval(autoTimerRef.current);
     setShowConfirm(false);
     setProgress(0);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        alert("Пожалуйста, войдите в профиль для отправки SOS сигнала!");
+        return;
+      }
+
+      // Request location permissions
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      let lat = 0;
+      let lng = 0;
+      if (status === "granted") {
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+        lat = loc.coords.latitude;
+        lng = loc.coords.longitude;
+      }
+
+      const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
+      await axios.post(`${API_URL}/sos/alert`, {
+        user_id: session.user.id,
+        lat,
+        lng,
+        timestamp: new Date().toISOString(),
+      });
+      alert("SOS сигнал бедствия успешно отправлен!");
+    } catch (err) {
+      console.log("Error sending SOS:", err);
+      alert("Не удалось отправить SOS сигнал.");
+    }
   }
 
   function handleCancel() {

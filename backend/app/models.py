@@ -42,3 +42,10 @@ class SilentSOSCreate(BaseModel):
     lat: float
     lng: float
     timestamp: str
+
+
+class SOSAlertCreate(BaseModel):
+    user_id: str
+    lat: float
+    lng: float
+    timestamp: str

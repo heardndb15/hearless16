@@ -26,7 +26,7 @@ export default function Header() {
         right: 0,
         zIndex: 100,
         padding: "16px 0",
-        background: "rgba(10, 14, 26, 0.85)",
+        background: "var(--headerBg)",
         backdropFilter: "blur(16px)",
         borderBottom: "1px solid var(--border)",
       }}
@@ -114,7 +114,7 @@ export default function Header() {
                   border: "1px solid var(--border)",
                   borderRadius: "var(--radius)",
                   padding: "8px",
-                  boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+                  boxShadow: "var(--shadow)",
                 }}
               >
                 {FEATURE_LINKS.map(f => (

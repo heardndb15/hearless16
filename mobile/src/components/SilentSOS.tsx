@@ -9,6 +9,7 @@ import {
 import * as Location from "expo-location";
 import axios from "axios";
 import { Colors } from "../constants/theme";
+import { supabase } from "../services/supabase";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 const REPEAT_INTERVAL = 5 * 60 * 1000;
@@ -36,7 +37,7 @@ export default function SilentSOS() {
     }
   }
 
-  async function sendSilentSOS() {
+  async function sendSilentSOS(userId: string) {
     if (sendingRef.current) return;
     sendingRef.current = true;
 
@@ -45,7 +46,7 @@ export default function SilentSOS() {
       if (!loc) return;
 
       await axios.post(`${API_URL}/sos/silent`, {
-        user_id: "unknown",
+        user_id: userId,
         lat: loc.lat,
         lng: loc.lng,
         timestamp: new Date().toISOString(),
@@ -61,10 +62,19 @@ export default function SilentSOS() {
   }
 
   async function handleConfirm() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      alert("Пожалуйста, войдите в профиль для активации Тихого SOS!");
+      setShowConfirm(false);
+      return;
+    }
+
     setShowConfirm(false);
     setActive(true);
-    await sendSilentSOS();
-    intervalRef.current = setInterval(sendSilentSOS, REPEAT_INTERVAL);
+    await sendSilentSOS(session.user.id);
+    intervalRef.current = setInterval(() => {
+      sendSilentSOS(session.user.id);
+    }, REPEAT_INTERVAL);
   }
 
   function handleDeactivate() {

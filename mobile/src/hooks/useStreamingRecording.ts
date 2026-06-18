@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
+import { supabase } from "../services/supabase";
+import axios from "axios";
 
 const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || "wss://hearless16-1.onrender.com/ws/transcribe";
 
@@ -32,6 +34,18 @@ export function useStreamingRecording() {
           };
           setChunks((prev) => [...prev, chunk]);
           setStreamText(data.full_text || "");
+
+          if (data.type === "final" && data.full_text?.trim()) {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+              if (session?.user) {
+                const API_URL = BACKEND_WS.replace("wss://", "https://").replace("ws://", "http://").replace("/ws/transcribe", "");
+                axios.post(`${API_URL}/subtitles`, {
+                  user_id: session.user.id,
+                  text: data.full_text.trim(),
+                }).catch(err => console.log("Failed to auto-save subtitle:", err));
+              }
+            });
+          }
         }
       } catch {}
     };

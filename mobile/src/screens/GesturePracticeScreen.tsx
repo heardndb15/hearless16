@@ -11,6 +11,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import axios from "axios";
+import { supabase } from "../services/supabase";
 import Confetti from "../components/Confetti";
 import { Colors, Spacing, FontSize } from "../constants/theme";
 import type { RootStackParamList } from "../../../shared/types";
@@ -32,7 +33,7 @@ const COUNTDOWN_STEPS = ["3", "2", "1", "Начинаем!"];
 export default function GesturePracticeScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootStackParamList, "GesturePractice">>();
-  const { gestureName } = route.params;
+  const { gestureId, gestureName } = route.params;
   const [permission] = useCameraPermissions();
 
   const [phase, setPhase] = useState<"countdown" | "practice" | "result">("countdown");
@@ -90,10 +91,11 @@ export default function GesturePracticeScreen() {
         });
 
         setResult(response.data);
-        setTotalFrames((f) => f + 1);
+        const currentFrames = totalFrames + 1;
+        setTotalFrames(currentFrames);
 
         if (response.data.confidence >= 80) {
-          handleSuccess();
+          handleSuccess(response.data.confidence, currentFrames);
         }
       } catch {}
     }, 300);
@@ -101,9 +103,9 @@ export default function GesturePracticeScreen() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [phase, gestureName]);
+  }, [phase, gestureName, totalFrames]);
 
-  function handleSuccess() {
+  async function handleSuccess(confidence: number, frames: number) {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setPhase("result");
     setShowConfetti(true);
@@ -122,6 +124,22 @@ export default function GesturePracticeScreen() {
     ]).start();
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await axios.post(`${API_URL}/gestures/progress`, {
+          user_id: session.user.id,
+          gesture_id: gestureId,
+          learned: true,
+          accuracy: confidence,
+          attempts: frames,
+          best_accuracy: confidence,
+        });
+      }
+    } catch (err) {
+      console.log("Error saving gesture progress:", err);
+    }
 
     setTimeout(() => setShowConfetti(false), 2500);
   }

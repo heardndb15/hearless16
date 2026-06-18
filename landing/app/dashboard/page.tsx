@@ -40,9 +40,9 @@ export default function DashboardPage() {
   async function fetchStats(userId: string) {
     const supabase = createClient();
     const [gesturesRes, alertsRes, sosRes] = await Promise.all([
-      supabase.from("user_progress").select("id", { count: "estimated" }).eq("user_id", userId).eq("learned", true),
-      supabase.from("sound_alerts").select("id", { count: "estimated" }).eq("user_id", userId),
-      supabase.from("sos_events").select("id", { count: "estimated" }).eq("user_id", userId),
+      supabase.from("user_progress").select("gesture_id", { count: "exact", head: true }).eq("user_id", userId).eq("learned", true),
+      supabase.from("sound_alerts").select("id", { count: "exact", head: true }).eq("user_id", userId),
+      supabase.from("sos_events").select("id", { count: "exact", head: true }).eq("user_id", userId),
     ]);
     setStats({
       gestures: gesturesRes.count || 0,

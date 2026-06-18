@@ -1,18 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 :root {
-  /* Новые переменные */
-  --bg: #0A0E1A;
-  --bgCard: #111627;
-  --bgCardHover: #161D35;
-  --accent: #2BBFCF;
-  --accentGlow: rgba(43, 191, 207, 0.25);
-  --purple: #7B5EEA;
-  --purpleGlow: rgba(123, 94, 234, 0.25);
-  --text: #E8EDF5;
-  --textSecondary: #7A8499;
-  --textMuted: #4A5268;
-  --border: #1E2640;
+  /* Новые переменные (Светлая тема с голубыми акцентами) */
+  --bg: #F8FAFC;
+  --bgCard: #FFFFFF;
+  --bgCardHover: #EBF5FF;
+  --accent: #0066FF;
+  --accentGlow: rgba(0, 102, 255, 0.15);
+  --purple: #00A3FF;
+  --purpleGlow: rgba(0, 163, 255, 0.15);
+  --text: #0F172A;
+  --textSecondary: #475569;
+  --textMuted: #64748B;
+  --border: #E2E8F0;
   --sos: #EF4444;
   /* Совместимость со старыми страницами */
   --background: var(--bg);
@@ -21,11 +21,15 @@
   --heading: var(--text);
   --button: var(--accent);
   --dark: var(--bg);
-  --textMuted: #4A5268;
   --success: #22C55E;
-  --gradient: linear-gradient(135deg, #2BBFCF 0%, #7B5EEA 100%);
+  --gradient: linear-gradient(135deg, #00A3FF 0%, #0066FF 100%);
   --radius: 16px;
   --radiusSm: 10px;
+
+  /* Дополнительные переменные для светлой темы */
+  --headerBg: rgba(248, 250, 252, 0.85);
+  --shadow: 0 16px 48px rgba(15, 23, 42, 0.08);
+  --shadowPhone: 0 24px 80px rgba(15, 23, 42, 0.12), 0 0 40px var(--accentGlow);
 }
 
 * {
