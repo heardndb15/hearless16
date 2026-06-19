@@ -56,7 +56,7 @@ export default function RegisterPage() {
         setServerError(json.error || "Ошибка регистрации");
       } else {
         setSuccess(true);
-        setTimeout(() => router.push("/login"), 3000);
+        setTimeout(() => router.push("/dashboard"), 1500);
       }
     } catch {
       setServerError("Ошибка подключения к серверу");
@@ -69,14 +69,11 @@ export default function RegisterPage() {
         <div style={styles.card}>
           <h1 style={styles.title}>Регистрация успешна!</h1>
           <p style={styles.text}>
-            Проверьте вашу почту — мы отправили письмо для подтверждения email.
+            Вход в личный кабинет...
           </p>
           <p style={styles.text}>
-            Перенаправление на страницу входа через несколько секунд...
+            Пожалуйста, подождите.
           </p>
-          <Link href="/login" style={styles.link}>
-            Перейти к входу
-          </Link>
         </div>
       </div>
     );
