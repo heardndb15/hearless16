@@ -92,7 +92,10 @@ export default function SubtitlesDashboard() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
 
-      const wsUrl = "ws://localhost:8000/ws/transcribe";
+      const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+      const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
+      const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
+      const wsUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
       console.log(`Connecting to Whisper WebSocket: ${wsUrl}`);
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -121,7 +124,10 @@ export default function SubtitlesDashboard() {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.text) {
+          if (data.type === "error") {
+            console.warn("Server transcription error:", data.message);
+            switchToFallbackRecognition();
+          } else if (data.text) {
             setTranscriptionText(data.text);
           }
         } catch (e) {}
@@ -134,6 +140,10 @@ export default function SubtitlesDashboard() {
 
       ws.onclose = () => {
         console.log("Whisper WS closed.");
+        if (wsRef.current === ws) {
+          console.log("WS closed unexpectedly by server, switching to Web Speech API fallback...");
+          switchToFallbackRecognition();
+        }
       };
 
     } catch (err) {

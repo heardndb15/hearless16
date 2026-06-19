@@ -34,6 +34,19 @@ app.include_router(sos.router)
 @app.websocket("/ws/transcribe")
 async def websocket_transcribe(websocket: WebSocket):
     await websocket.accept()
+    
+    # Check if a transcription model or API key is available
+    from app.services.whisper_service import get_local_whisper
+    from app.config import OPENAI_API_KEY
+    
+    if get_local_whisper() is None and not OPENAI_API_KEY:
+        await websocket.send_json({
+            "type": "error",
+            "message": "No transcription engine configured on backend. Local Whisper is missing and OPENAI_API_KEY is not set."
+        })
+        await websocket.close()
+        return
+
     import numpy as np
     from app.services.whisper_service import audio_bytes_to_float, floats_to_wav_bytes
 
