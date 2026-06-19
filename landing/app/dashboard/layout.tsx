@@ -120,11 +120,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/60 font-dm flex text-slate-800 relative overflow-hidden">
-      {/* Ambient background glow blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[550px] h-[550px] bg-cyan-200/40 rounded-full blur-[100px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-[5%] right-[-5%] w-[450px] h-[450px] bg-purple-200/35 rounded-full blur-[100px] pointer-events-none z-0"></div>
-      <div className="absolute top-[35%] right-[20%] w-[350px] h-[350px] bg-sky-200/30 rounded-full blur-[90px] pointer-events-none z-0"></div>
+    <div className="min-h-screen bg-[url('/bg-main.png')] bg-cover bg-no-repeat bg-center bg-fixed font-dm flex text-slate-800 relative overflow-hidden">
 
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-72 bg-white/40 backdrop-blur-xl border-r border-white/60 shadow-xl shrink-0 z-10 relative">
