@@ -7,9 +7,9 @@
 
 :root {
   /* Новые переменные (Светлая тема с голубыми акцентами) */
-  --bg: #F8FAFC;
-  --bgCard: #FFFFFF;
-  --bgCardHover: #EBF5FF;
+  --bg: transparent;
+  --bgCard: rgba(255, 255, 255, 0.45);
+  --bgCardHover: rgba(235, 245, 255, 0.7);
   --accent: #0066FF;
   --accentGlow: rgba(0, 102, 255, 0.15);
   --purple: #00A3FF;
@@ -17,23 +17,23 @@
   --text: #0F172A;
   --textSecondary: #475569;
   --textMuted: #64748B;
-  --border: #E2E8F0;
+  --border: rgba(226, 232, 240, 0.6);
   --sos: #EF4444;
   /* Совместимость со старыми страницами */
   --background: var(--bg);
-  --white: var(--bgCard);
-  --card: var(--border);
+  --white: rgba(255, 255, 255, 0.6);
+  --card: rgba(226, 232, 240, 0.5);
   --heading: var(--text);
   --button: var(--accent);
-  --dark: var(--bg);
+  --dark: rgba(15, 23, 42, 0.85);
   --success: #22C55E;
   --gradient: linear-gradient(135deg, #00A3FF 0%, #0066FF 100%);
   --radius: 16px;
   --radiusSm: 10px;
 
   /* Дополнительные переменные для светлой темы */
-  --headerBg: rgba(248, 250, 252, 0.85);
-  --shadow: 0 16px 48px rgba(15, 23, 42, 0.08);
+  --headerBg: rgba(255, 255, 255, 0.35);
+  --shadow: 0 16px 48px rgba(15, 23, 42, 0.04);
   --shadowPhone: 0 24px 80px rgba(15, 23, 42, 0.12), 0 0 40px var(--accentGlow);
 }
 
@@ -49,7 +49,11 @@ html {
 
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--bg);
+  background-image: url('/bg-main.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -59,11 +63,26 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
+  position: relative;
+  z-index: 5;
 }
 
 section {
   padding: 100px 0;
   position: relative;
+  background: transparent !important;
+}
+
+[style*="background: var(--bgCard)"],
+[style*="background: var(--white)"],
+[style*="background: \"var(--bgCard)\""],
+[style*="background: var(--bgCardHover)"],
+div[style*="background: rgb(255, 255, 255)"],
+div[style*="background: white"] {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.04) !important;
 }
 
 /* Hero pulsing rings */
