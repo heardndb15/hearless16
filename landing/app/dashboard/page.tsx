@@ -14,6 +14,7 @@ export default function SubtitlesDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [history, setHistory] = useState<SubtitleHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(true);
 
   // Recognition States
   const [isRecording, setIsRecording] = useState(false);
@@ -56,19 +57,17 @@ export default function SubtitlesDashboard() {
     setLoading(false);
   }
 
-  // Stop everything
+  // Stop recording and close connections
   function stopRecordingSession() {
     setIsRecording(false);
     setAiStatus("ready");
 
-    // Stop Web Speech
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
       } catch (e) {}
     }
 
-    // Stop WebSocket & MediaRecorder
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try {
         mediaRecorderRef.current.stop();
@@ -89,7 +88,6 @@ export default function SubtitlesDashboard() {
     setTranscriptionText("");
     setAiStatus("processing");
 
-    // 1. Try Whisper WebSocket
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioStreamRef.current = stream;
@@ -103,13 +101,11 @@ export default function SubtitlesDashboard() {
         console.log("Whisper WS Connected. Starting stream...");
         setAiStatus("listening");
 
-        // Setup MediaRecorder to record in chunks
         const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
         mediaRecorderRef.current = mediaRecorder;
 
         mediaRecorder.ondataavailable = async (event) => {
           if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-            // Convert blob to base64
             const reader = new FileReader();
             reader.onloadend = () => {
               const base64data = (reader.result as string).split(",")[1];
@@ -119,7 +115,6 @@ export default function SubtitlesDashboard() {
           }
         };
 
-        // Collect chunks every 1.5 seconds
         mediaRecorder.start(1500);
       };
 
@@ -147,11 +142,10 @@ export default function SubtitlesDashboard() {
     }
   }
 
-  // Fallback: Web Speech API (Local browser Speech Recognition)
+  // Fallback: Web Speech API
   function switchToFallbackRecognition() {
     setAiStatus("fallback");
     
-    // Stop any existing WS audio streaming
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try { mediaRecorderRef.current.stop(); } catch (e) {}
     }
@@ -195,9 +189,9 @@ export default function SubtitlesDashboard() {
     recognition.start();
   }
 
-  // Save current speech log to DB
+  // Save current speech transcript to database
   async function handleSaveDialogue() {
-    if (!user || !transcriptionText) return;
+    if (!user || !transcriptionText.trim()) return;
     const supabase = createClient();
     await supabase.from("subtitles_history").insert({
       user_id: user.id,
@@ -222,147 +216,327 @@ export default function SubtitlesDashboard() {
     fetchHistory(user.id);
   }
 
+  // Split transcriptionText into a rolling stack of sentences
+  const getRollingLines = () => {
+    if (!transcriptionText.trim()) return [];
+    const sentences = transcriptionText.match(/[^.!?\n]+[.!?\n]*/g) || [transcriptionText];
+    const cleaned = sentences.map(s => s.trim()).filter(Boolean);
+    return cleaned.slice(-3);
+  };
+
+  const rollingLines = getRollingLines();
+
   if (loading) {
-    return <div className="py-20 text-center text-slate-400">Загрузка ИИ-Субтитров...</div>;
+    return (
+      <div className="py-20 text-center text-slate-400">
+        <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        Загрузка ИИ-Субтитров...
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header Info */}
-      <div className="flex flex-col gap-2">
-        <h2 className="font-syne font-extrabold text-3xl text-slate-800">Распознавание речи Live</h2>
+    <div className="space-y-6 relative">
+      {/* Dynamic Keyframes Injection */}
+      <style jsx global>{`
+        @keyframes slide-up {
+          0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.97);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+          }
+          70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 12px rgba(34, 211, 238, 0);
+          }
+          100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
+          }
+        }
+        @keyframes pulse-soft {
+          0%, 100% {
+            opacity: 0.3;
+          }
+          50% {
+            opacity: 0.65;
+          }
+        }
+        .text-shadow-glow {
+          text-shadow: 0 0 20px rgba(34, 211, 238, 0.35), 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+      `}</style>
+
+      {/* Screen Header */}
+      <div className="flex flex-col gap-1 text-left">
+        <h2 className="font-syne font-extrabold text-3xl text-slate-800 tracking-tight">AI Субтитры</h2>
         <p className="text-slate-500 text-sm max-w-2xl font-medium">
-          Whisper AI расшифровывает голос собеседника в режиме реального времени. Если ИИ-сервер недоступен, автоматически подключается локальный голосовой ввод.
+          Высокоточная расшифровка речи с автоподключением локального распознавания при отсутствии интернета.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Side: Caption Output Area (7 cols) */}
-        <div className="lg:col-span-7 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6 relative">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        {/* Cinematic Subtitles screen container */}
+        <div className={`${historyOpen ? "lg:col-span-8" : "lg:col-span-12"} transition-all duration-300 flex flex-col gap-6`}>
           
-          {/* Status Indicator */}
-          <div className="flex justify-between items-center">
-            <span className="font-syne text-xs font-extrabold text-slate-700 flex items-center gap-2 uppercase tracking-wider">
-              <span className={`w-2.5 h-2.5 rounded-full ${
-                aiStatus === "listening" ? "bg-green-500 animate-pulse" :
-                aiStatus === "fallback" ? "bg-cyan-500 animate-pulse" :
-                aiStatus === "processing" ? "bg-purple-500 animate-spin border border-t-transparent" : "bg-slate-400"
-              }`}></span>
-              {aiStatus === "listening" ? "AI слушает (Whisper)" :
-               aiStatus === "fallback" ? "Голосовой ввод (Локальный)" :
-               aiStatus === "processing" ? "Подключение к Whisper..." : "Готов к работе"}
-            </span>
-
-            {/* Simulated sound waveform indicator */}
-            {isRecording && (
-              <div className="flex gap-0.5 items-center h-4">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1 bg-accent rounded-full animate-[sound-pulse_1s_ease-in-out_infinite] min-h-[4px]"
-                    style={{ animationDelay: `${i * 0.15}s` }}
-                  ></div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Subtitles Visualizer (Netflix-Style) */}
-          <div className="relative aspect-[16/10] rounded-2xl bg-slate-950/90 border border-slate-900 shadow-2xl flex items-center justify-center p-8 overflow-hidden">
-            {isRecording ? (
-              <div className="text-center max-w-lg">
-                <p className="font-dm font-bold text-2xl md:text-3xl text-white leading-relaxed tracking-wide bg-black/60 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/5 inline-block shadow-lg animate-[fade-up_0.2s_ease-out]">
-                  {transcriptionText || "Начните говорить..."}
-                </p>
-              </div>
-            ) : (
-              <div className="text-center p-6 space-y-3">
-                <span className="text-4xl opacity-40">🎙️</span>
-                <h4 className="font-syne font-bold text-sm text-slate-400">Включите микрофон</h4>
-                <p className="text-xs text-slate-500 max-w-xs leading-normal mx-auto font-semibold">
-                  Нажмите кнопку записи. Приложение расшифрует русскую и казахскую речь с высокой точностью.
-                </p>
-              </div>
-            )}
+          {/* Main Cinematic Box */}
+          <div className="relative aspect-[16/9] min-h-[380px] w-full rounded-3xl bg-slate-950/95 border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.6)] flex flex-col justify-between p-8 overflow-hidden">
             
-            {/* Ambient glow when listening */}
-            {isRecording && (
-              <div className={`absolute inset-0 pointer-events-none border rounded-2xl animate-pulse ${
-                aiStatus === "fallback" ? "border-cyan-400/20" : "border-accent/20"
-              }`}></div>
-            )}
-          </div>
+            {/* Ambient Background Blur Blobs */}
+            <div className="absolute top-1/4 left-1/3 w-[250px] h-[250px] bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none animate-pulse"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-purple-500/10 rounded-full blur-[80px] pointer-events-none animate-pulse" style={{ animationDelay: "1s" }}></div>
 
-          {/* Controls button row */}
-          <div className="flex gap-4">
-            <button
-              onClick={isRecording ? stopRecordingSession : startRecordingSession}
-              className={`flex-1 py-4 rounded-2xl font-syne font-bold text-sm tracking-wide shadow-md transition-all duration-200 ${
-                isRecording
-                  ? "bg-slate-900 hover:bg-slate-800 text-white border border-slate-800"
-                  : "bg-accent hover:bg-accent/90 text-white"
-              }`}
-            >
-              {isRecording ? "■ Остановить запись" : "▶ Начать слушать"}
-            </button>
-            
-            {transcriptionText && !isRecording && (
-              <button
-                onClick={handleSaveDialogue}
-                className="px-6 py-4 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-syne font-bold text-sm shadow-md transition-all duration-200"
-              >
-                Сохранить в историю
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Right Side: Dialogue History Logs (5 cols) */}
-        <div className="lg:col-span-5 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
-          <div className="flex justify-between items-center">
-            <h3 className="font-syne font-extrabold text-lg text-slate-800">История диалогов</h3>
-            {history.length > 0 && (
-              <button
-                onClick={handleClearHistory}
-                className="text-[10px] uppercase font-bold text-slate-400 hover:text-red-500 transition-colors"
-              >
-                Очистить
-              </button>
-            )}
-          </div>
-
-          <div className="flex-1 overflow-y-auto max-h-[420px] space-y-3 pr-1">
-            {history.length === 0 ? (
-              <div className="py-20 text-center text-slate-400 text-xs font-semibold">
-                История пуста. Проведите первый диалог для сохранения записей.
-              </div>
-            ) : (
-              history.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-4 rounded-xl bg-white/50 border border-white/80 shadow-sm space-y-2 text-left group"
-                >
-                  <div className="flex justify-between items-start">
-                    <span className="text-[10px] text-slate-400 font-bold">
-                      {new Date(item.created_at).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+            {/* Floating Top AI Status Bar */}
+            <div className="flex justify-center z-10 w-full">
+              <div className="bg-slate-900/80 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-3 shadow-md">
+                {aiStatus === "listening" && (
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </span>
-                    <button
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-green-400 uppercase">
+                      🎤 ИИ Слушает (Whisper)
+                    </span>
                   </div>
-                  <p className="font-dm text-xs text-slate-700 leading-relaxed font-semibold">
-                    {item.text}
+                )}
+                {aiStatus === "fallback" && (
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400"></span>
+                    </span>
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-cyan-400 uppercase">
+                      🎙️ Локальный ввод
+                    </span>
+                  </div>
+                )}
+                {aiStatus === "processing" && (
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-spin h-3.5 w-3.5 text-purple-400" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-purple-400 uppercase">
+                      ⚙️ Настройка микрофона...
+                    </span>
+                  </div>
+                )}
+                {aiStatus === "ready" && (
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-slate-500"></span>
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-400 uppercase">
+                      ● Готов к работе
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Subtitles Area (Netflix Screen) */}
+            <div className="flex-1 flex flex-col justify-end text-center z-10 py-6 max-w-4xl mx-auto w-full">
+              {isRecording ? (
+                rollingLines.length > 0 ? (
+                  <div className="space-y-4 flex flex-col items-center justify-end min-h-[180px]">
+                    {rollingLines.map((line, idx) => {
+                      const total = rollingLines.length;
+                      const isLast = idx === total - 1;
+                      const isSecondLast = idx === total - 2;
+                      const isThirdLast = idx === total - 3;
+
+                      let itemStyle = "";
+                      if (isLast) {
+                        itemStyle = "text-white text-3xl md:text-5xl font-black tracking-wide leading-snug text-shadow-glow animate-[slide-up_0.25s_ease-out]";
+                      } else if (isSecondLast) {
+                        itemStyle = "text-slate-350 opacity-60 text-xl md:text-3xl font-bold leading-normal scale-97 transition-all duration-500";
+                      } else if (isThirdLast) {
+                        itemStyle = "text-slate-500 opacity-20 text-lg md:text-xl font-semibold leading-normal scale-94 transition-all duration-500 blur-[0.5px]";
+                      }
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`${itemStyle} font-dm max-w-3xl px-6 py-2 rounded-2xl bg-black/35 backdrop-blur-[2px] transition-all duration-500 transform origin-bottom`}
+                        >
+                          {line}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="my-auto space-y-4 animate-pulse">
+                    <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
+                      🎙️
+                    </div>
+                    <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
+                      Говорите, ИИ расшифровывает...
+                    </p>
+                  </div>
+                )
+              ) : (
+                <div className="my-auto space-y-4 py-8">
+                  <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center mx-auto text-2xl shadow-xl">
+                    🎬
+                  </div>
+                  <h3 className="font-syne font-extrabold text-white text-lg">Запуск ИИ-Субтитров</h3>
+                  <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed font-semibold">
+                    Нажмите круглую кнопку записи внизу для запуска распознавания речи в кино-режиме.
                   </p>
                 </div>
-              ))
+              )}
+            </div>
+
+            {/* Live Audio Level Waveform (Flickering light) */}
+            {isRecording && (
+              <div className="absolute bottom-6 right-8 flex gap-1 items-end h-8 pointer-events-none z-10 opacity-75">
+                {[...Array(6)].map((_, i) => {
+                  const animDelay = (i * 0.15).toFixed(2);
+                  return (
+                    <div
+                      key={i}
+                      className="w-1 bg-gradient-to-t from-cyan-400 to-purpleBrand rounded-full min-h-[4px] animate-[sound-pulse_1s_ease-in-out_infinite]"
+                      style={{
+                        animationDelay: `${animDelay}s`,
+                        height: `${Math.floor(Math.random() * 24) + 6}px`
+                      }}
+                    ></div>
+                  );
+                })}
+              </div>
             )}
           </div>
+
+          {/* Unified Floating Controller Dock */}
+          <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 z-10">
+            {/* Left Section: Record control */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={isRecording ? stopRecordingSession : startRecordingSession}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 relative ${
+                  isRecording
+                    ? "bg-slate-900 border border-slate-700 text-red-500 hover:bg-slate-800 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                    : "bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20"
+                }`}
+                style={{
+                  animation: isRecording ? "pulse-ring 2s infinite" : "none"
+                }}
+                aria-label={isRecording ? "Остановить запись" : "Начать запись"}
+              >
+                {isRecording ? (
+                  <span className="w-3.5 h-3.5 bg-red-500 rounded-sm"></span>
+                ) : (
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"></path>
+                  </svg>
+                )}
+              </button>
+              <div className="text-left">
+                <p className="font-syne font-bold text-xs text-slate-800">
+                  {isRecording ? "Запись активна" : "Микрофон отключен"}
+                </p>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                  {isRecording ? "Слушаем собеседника" : "Нажмите для запуска"}
+                </p>
+              </div>
+            </div>
+
+            {/* Right Section: Settings and utility keys */}
+            <div className="flex items-center gap-3">
+              {transcriptionText.trim() && !isRecording && (
+                <button
+                  onClick={handleSaveDialogue}
+                  className="px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-syne font-bold text-xs shadow-sm transition-all flex items-center gap-1.5"
+                >
+                  📥 Сохранить лог
+                </button>
+              )}
+              {transcriptionText.trim() && (
+                <button
+                  onClick={() => setTranscriptionText("")}
+                  className="px-4 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-slate-600 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-syne font-bold text-xs shadow-sm transition-all"
+                >
+                  Очистить экран
+                </button>
+              )}
+              <button
+                onClick={() => setHistoryOpen(!historyOpen)}
+                className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border ${
+                  historyOpen
+                    ? "bg-accent/15 border-accent/20 text-accent"
+                    : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                📜 История ({history.length})
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* Collapsible History Sidebar Panel (4 cols) */}
+        {historyOpen && (
+          <div className="lg:col-span-4 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
+            <div className="flex justify-between items-center">
+              <h3 className="font-syne font-extrabold text-base text-slate-800">История диалогов</h3>
+              {history.length > 0 && (
+                <button
+                  onClick={handleClearHistory}
+                  className="text-[9px] uppercase font-bold tracking-wider text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  Очистить всё
+                </button>
+              )}
+            </div>
+
+            {/* List with scroll */}
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {history.length === 0 ? (
+                <div className="py-24 text-center text-slate-400 text-xs font-semibold">
+                  Нет сохраненных диалогов.
+                </div>
+              ) : (
+                history.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 rounded-2xl bg-white/50 border border-white/80 shadow-sm space-y-2 text-left group transition-all hover:bg-white/70 hover:shadow-md"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                        {new Date(item.created_at).toLocaleString("ru-RU", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-0.5"
+                        aria-label="Удалить запись"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="font-dm text-xs text-slate-700 leading-relaxed font-semibold line-clamp-3">
+                      {item.text}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
