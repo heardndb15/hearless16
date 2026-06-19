@@ -171,11 +171,12 @@ export default function Hero() {
               height: 520,
               borderRadius: 36,
               border: "2px solid var(--border)",
-              background: "var(--bgCard)",
+              background: "url('/bg-main.png') center/cover no-repeat",
               padding: "16px 14px",
               display: "flex",
               flexDirection: "column",
               boxShadow: "var(--shadowPhone)",
+              overflow: "hidden"
             }}
           >
             {/* Status bar */}
@@ -184,58 +185,88 @@ export default function Hero() {
                 display: "flex",
                 justifyContent: "space-between",
                 fontSize: 11,
-                color: "var(--textMuted)",
-                marginBottom: 16,
+                color: "#64748b",
+                marginBottom: 8,
                 padding: "0 4px",
+                fontWeight: 600,
+                zIndex: 5,
               }}
             >
               <span>9:41</span>
               <span>🔊</span>
             </div>
 
+            {/* Miniature AI Status Pill */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10, zIndex: 5 }}>
+              <div style={{
+                background: "rgba(15, 23, 42, 0.85)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: 20,
+                padding: "3px 8px",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 8,
+                fontWeight: 800,
+                color: "#4ade80",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em"
+              }}>
+                <span style={{ display: "inline-block", width: 4, height: 4, borderRadius: "50%", background: "#4ade80" }} className="animate-pulse" />
+                🎤 ИИ Слушает
+              </div>
+            </div>
+
             {/* Live subtitle area */}
             <div
               style={{
                 flex: 1,
-                background: "rgba(43, 191, 207, 0.04)",
-                borderRadius: 14,
-                border: "1px solid rgba(43, 191, 207, 0.1)",
-                padding: "16px 14px",
+                background: "rgba(15, 23, 42, 0.85)",
+                borderRadius: 18,
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                padding: "16px 12px",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-end",
                 overflow: "hidden",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+                zIndex: 5,
               }}
             >
-              <div
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "var(--text)",
-                  lineHeight: 1.5,
-                }}
-              >
-                {displayText}
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: 2,
-                    height: 16,
-                    background: "var(--accent)",
-                    marginLeft: 2,
-                    verticalAlign: "middle",
-                    animation: "cursor-blink 0.8s step-end infinite",
-                  }}
-                />
+              {/* Rolling lines preview */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, justifyContent: "flex-end", marginBottom: 12 }}>
+                <div style={{ fontSize: 9, fontWeight: 600, color: "rgba(255, 255, 255, 0.2)", transform: "scale(0.95)", transformOrigin: "left" }}>
+                  Здравствуйте! Меня зовут...
+                </div>
+                <div style={{
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  lineHeight: 1.4,
+                  textShadow: "0 0 10px rgba(34, 211, 238, 0.4)"
+                }}>
+                  {displayText}
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 2,
+                      height: 14,
+                      background: "#22d3ee",
+                      marginLeft: 2,
+                      verticalAlign: "middle",
+                      animation: "cursor-blink 0.8s step-end infinite",
+                    }}
+                  />
+                </div>
               </div>
+
               {/* Waveform */}
               <div
                 style={{
                   display: "flex",
-                  gap: 3,
+                  gap: 2.5,
                   alignItems: "flex-end",
-                  height: 24,
-                  marginTop: 16,
+                  height: 18,
                 }}
               >
                 {[10, 16, 8, 20, 12, 6, 18, 14, 8, 16, 10, 6, 14, 20, 8, 12].map((h, i) => (
@@ -243,10 +274,10 @@ export default function Hero() {
                     key={i}
                     style={{
                       flex: 1,
-                      height: h,
-                      background: "var(--accent)",
-                      opacity: 0.5,
-                      borderRadius: "2px 2px 0 0",
+                      height: h * 0.7,
+                      background: "linear-gradient(to top, #22d3ee, #c084fc)",
+                      opacity: 0.8,
+                      borderRadius: "1px 1px 0 0",
                       animation: `sound-pulse ${0.8 + Math.random() * 0.6}s ease-in-out infinite`,
                       animationDelay: `${i * 0.06}s`,
                     }}
