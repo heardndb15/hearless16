@@ -57,10 +57,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-t-accent border-r-transparent border-slate-700 rounded-full animate-spin"></div>
-          <p className="text-slate-400 font-syne text-sm font-semibold tracking-wider">HEARLESS AI ...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-800">
+        {/* Decorative background blobs */}
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-cyan-200/50 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-purple-200/40 rounded-full blur-[80px] pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-t-accent border-r-transparent border-slate-200 rounded-full animate-spin"></div>
+          <p className="text-slate-500 font-syne text-xs font-bold tracking-widest uppercase">Hearless AI ...</p>
         </div>
       </div>
     );
@@ -73,6 +77,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+        </svg>
+      ),
+    },
+    {
+      name: "Субтитры Live",
+      path: "/dashboard/subtitles",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
     },
@@ -117,17 +130,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 font-dm flex text-slate-100">
+    <div className="min-h-screen bg-slate-50/60 font-dm flex text-slate-800 relative overflow-hidden">
+      {/* Ambient background glow blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[550px] h-[550px] bg-cyan-200/40 rounded-full blur-[100px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-[5%] right-[-5%] w-[450px] h-[450px] bg-purple-200/35 rounded-full blur-[100px] pointer-events-none z-0"></div>
+      <div className="absolute top-[35%] right-[20%] w-[350px] h-[350px] bg-sky-200/30 rounded-full blur-[90px] pointer-events-none z-0"></div>
+
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-72 bg-slate-900 border-r border-slate-800 shrink-0">
+      <aside className="hidden md:flex flex-col w-72 bg-white/40 backdrop-blur-xl border-r border-white/60 shadow-xl shrink-0 z-10 relative">
         {/* Brand Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-lg shadow-lg shadow-accent/20">
+        <div className="p-6 border-b border-slate-200/60 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-lg shadow-md shadow-accent/20">
             H
           </div>
           <div>
-            <h1 className="font-syne font-bold text-lg text-white leading-none">Hearless</h1>
-            <span className="text-[10px] text-accent font-semibold tracking-widest uppercase">AI Dashboard</span>
+            <h1 className="font-syne font-bold text-lg text-slate-800 leading-none">Hearless</h1>
+            <span className="text-[10px] text-accent font-semibold tracking-widest uppercase">AI Assist</span>
           </div>
         </div>
 
@@ -139,15 +157,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.name}
                 href={item.path}
-                className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-semibold text-sm transition-all duration-200 group ${
+                className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all duration-200 group ${
                   isActive
                     ? item.isSos
-                      ? "bg-red-500/10 border border-red-500/30 text-red-500 shadow-sm"
-                      : "bg-accent/10 border border-accent/30 text-accent shadow-sm"
-                    : "border border-transparent text-slate-400 hover:bg-slate-800 hover:text-white"
+                      ? "bg-red-500/10 border border-red-500/20 text-red-600 shadow-sm"
+                      : "bg-accent/10 border border-accent/20 text-accent shadow-sm"
+                    : "border border-transparent text-slate-500 hover:bg-slate-200/50 hover:text-slate-800"
                 }`}
               >
-                <span className={`transition-transform duration-200 group-hover:scale-110 ${isActive ? "" : "opacity-72"}`}>
+                <span className={`transition-transform duration-200 group-hover:scale-110 ${isActive ? "" : "opacity-80"}`}>
                   {item.icon}
                 </span>
                 <span>{item.name}</span>
@@ -157,19 +175,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User Card */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-          <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-950/40 border border-slate-800/40 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/20 border border-accent/30 text-accent flex items-center justify-center font-bold font-syne">
+        <div className="p-4 border-t border-slate-200/60 bg-white/30">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/60 border border-white/80 shadow-sm mb-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/20 text-accent flex items-center justify-center font-extrabold font-syne">
               {profile?.name ? profile.name[0].toUpperCase() : user?.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-syne text-sm font-bold text-white truncate">{profile?.name || "Пользователь"}</p>
-              <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
+              <p className="font-syne text-sm font-bold text-slate-800 truncate">{profile?.name || "Пользователь"}</p>
+              <p className="text-[10px] text-slate-400 font-semibold truncate mt-0.5">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-800 text-slate-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 font-semibold text-xs transition-colors duration-200"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 bg-white/50 text-slate-600 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-bold text-xs shadow-sm transition-colors duration-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -180,18 +198,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 z-10 relative">
         {/* Mobile Header */}
-        <header className="flex md:hidden items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800">
+        <header className="flex md:hidden items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg border-b border-white/60">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-md">
               H
             </div>
-            <h1 className="font-syne font-bold text-md text-white">Hearless</h1>
+            <h1 className="font-syne font-bold text-md text-slate-800">Hearless</h1>
           </div>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 bg-white/50"
             aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,20 +222,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {mobileMenuOpen && (
           <div className="fixed inset-0 z-50 flex md:hidden">
             {/* Backdrop */}
-            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
 
             {/* Sidebar Content */}
-            <aside className="relative flex flex-col w-72 bg-slate-900 h-full border-r border-slate-800 shadow-2xl p-6">
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
+            <aside className="relative flex flex-col w-72 bg-white/90 backdrop-blur-2xl h-full border-r border-white/60 shadow-2xl p-6">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-accent/20 border border-accent/30 text-accent flex items-center justify-center font-bold">
                     H
                   </div>
-                  <h2 className="font-syne font-bold text-white text-md">Навигация</h2>
+                  <h2 className="font-syne font-bold text-slate-800 text-md">Навигация</h2>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 rounded-lg border border-slate-800 text-slate-400"
+                  className="p-1 rounded-lg border border-slate-200 text-slate-500"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -233,12 +251,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       key={item.name}
                       href={item.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-semibold text-sm transition-all group ${
+                      className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all group ${
                         isActive
                           ? item.isSos
-                            ? "bg-red-500/10 border border-red-500/30 text-red-500"
-                            : "bg-accent/10 border border-accent/30 text-accent"
-                          : "border border-transparent text-slate-400 hover:bg-slate-800 hover:text-white"
+                            ? "bg-red-500/10 border border-red-500/20 text-red-600"
+                            : "bg-accent/10 border border-accent/20 text-accent"
+                          : "border border-transparent text-slate-500 hover:bg-slate-200/50 hover:text-slate-800"
                       }`}
                     >
                       <span>{item.icon}</span>
@@ -248,19 +266,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 })}
               </nav>
 
-              <div className="mt-auto pt-4 border-t border-slate-800">
-                <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-950/40 border border-slate-800/40 mb-3">
+              <div className="mt-auto pt-4 border-t border-slate-200">
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-white/60 border border-white/80 shadow-sm mb-3">
                   <div className="w-9 h-9 rounded-lg bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
                     {profile?.name ? profile.name[0].toUpperCase() : user?.email?.[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-syne text-sm font-bold text-white truncate">{profile?.name || "Пользователь"}</p>
-                    <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
+                    <p className="font-syne text-sm font-bold text-slate-800 truncate">{profile?.name || "Пользователь"}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-800 text-slate-400 font-semibold text-xs"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 text-slate-500 font-bold text-xs"
                 >
                   Выйти из аккаунта
                 </button>

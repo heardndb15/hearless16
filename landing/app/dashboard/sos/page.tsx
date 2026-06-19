@@ -37,8 +37,8 @@ export default function SOSPage() {
     setIsPressing(true);
     setPressProgress(0);
 
-    const duration = 2000; // 2 seconds
-    const intervalTime = 50; // update progress every 50ms
+    const duration = 2000;
+    const intervalTime = 50;
     const steps = duration / intervalTime;
     let currentStep = 0;
 
@@ -69,7 +69,6 @@ export default function SOSPage() {
     setIsPressing(false);
     setPressProgress(100);
 
-    // Get geolocation (use default if browser blocks it)
     let lat = 43.238947;
     let lng = 76.889709;
 
@@ -116,7 +115,6 @@ export default function SOSPage() {
       return;
     }
     const supabase = createClient();
-    // Resolve the SOS alert in DB by updating resolved_at
     await supabase
       .from("sos_events")
       .update({ resolved_at: new Date().toISOString() })
@@ -131,7 +129,7 @@ export default function SOSPage() {
     <div className="space-y-8 relative">
       {/* Flashing SOS Overlay when sent */}
       {sosSent && (
-        <div className="fixed inset-0 z-50 bg-red-600/90 backdrop-blur-md flex items-center justify-center text-center p-6 animate-pulse">
+        <div className="fixed inset-0 z-50 bg-red-600/95 backdrop-blur-md flex items-center justify-center text-center p-6 animate-[fade-up_0.3s_ease-out]">
           <div className="max-w-md space-y-6 text-white">
             <div className="w-24 h-24 rounded-full bg-white text-red-600 flex items-center justify-center text-4xl mx-auto shadow-2xl animate-bounce">
               🚨
@@ -159,24 +157,24 @@ export default function SOSPage() {
 
       {/* Header info */}
       <div className="flex flex-col gap-2">
-        <h2 className="font-syne font-extrabold text-3xl text-white">Экстренная помощь</h2>
-        <p className="text-slate-400 text-sm max-w-2xl">
+        <h2 className="font-syne font-extrabold text-3xl text-slate-800">Экстренная помощь</h2>
+        <p className="text-slate-500 text-sm max-w-2xl font-medium">
           Критический модуль безопасности. Отправляет сигнал бедствия и ваши координаты доверенным лицам.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Side: SOS Button Panel (7 cols) */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center gap-8 min-h-[460px]">
+        <div className="lg:col-span-7 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col items-center justify-center gap-8 min-h-[460px]">
           
           {/* Mode Selector */}
-          <div className="flex bg-slate-950 p-1.5 rounded-xl border border-slate-800/80 w-full max-w-xs gap-1.5">
+          <div className="flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 w-full max-w-xs gap-1.5">
             <button
               onClick={() => setSosType("normal")}
               className={`flex-1 py-2 rounded-lg text-xs font-bold font-syne transition-all ${
                 sosType === "normal"
                   ? "bg-red-500 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-500 hover:text-slate-800"
               }`}
             >
               🚨 Обычный
@@ -186,7 +184,7 @@ export default function SOSPage() {
               className={`flex-1 py-2 rounded-lg text-xs font-bold font-syne transition-all ${
                 sosType === "silent"
                   ? "bg-slate-800 text-white shadow-sm border border-slate-700"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-500 hover:text-slate-800"
               }`}
             >
               🤫 Тихий SOS
@@ -206,7 +204,7 @@ export default function SOSPage() {
 
             {/* Circular Progress Border */}
             <svg className="w-52 h-52 transform -rotate-90">
-              <circle cx="104" cy="104" r="92" stroke="#1e293b" strokeWidth="6" fill="transparent" />
+              <circle cx="104" cy="104" r="92" stroke="#e2e8f0" strokeWidth="6" fill="transparent" />
               <circle
                 cx="104"
                 cy="104"
@@ -242,34 +240,34 @@ export default function SOSPage() {
           </div>
 
           <div className="text-center space-y-1">
-            <h4 className="font-syne font-bold text-sm text-white">Кнопка защиты от случайных нажатий</h4>
-            <p className="text-xs text-slate-500 max-w-xs leading-normal">
+            <h4 className="font-syne font-bold text-sm text-slate-850">Кнопка защиты от случайных нажатий</h4>
+            <p className="text-xs text-slate-500 max-w-xs leading-normal font-medium">
               Зажмите и удерживайте центральный круг. Сигнал с вашей точной локацией мгновенно запишется в базу данных.
             </p>
           </div>
         </div>
 
         {/* Right Side: Information / Guidelines (5 cols) */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-6 justify-between">
+        <div className="lg:col-span-5 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6 justify-between">
           <div className="space-y-6">
-            <h3 className="font-syne font-extrabold text-lg text-white">Режимы оповещения</h3>
+            <h3 className="font-syne font-extrabold text-lg text-slate-800">Режимы оповещения</h3>
             
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex gap-4">
+              <div className="p-4 rounded-xl bg-white/50 border border-white/80 shadow-sm flex gap-4 text-left">
                 <span className="text-2xl mt-0.5">🚨</span>
                 <div className="space-y-1">
-                  <h4 className="font-syne font-bold text-sm text-white">Обычная тревога</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <h4 className="font-syne font-bold text-sm text-slate-800">Обычная тревога</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed font-semibold">
                     Отправляет геолокацию, включает вспышку экрана красным светом. Родственники получают громкий сигнал.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex gap-4">
+              <div className="p-4 rounded-xl bg-white/50 border border-white/80 shadow-sm flex gap-4 text-left">
                 <span className="text-2xl mt-0.5">🤫</span>
                 <div className="space-y-1">
-                  <h4 className="font-syne font-bold text-sm text-white">Тихий SOS</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <h4 className="font-syne font-bold text-sm text-slate-800">Тихий SOS</h4>
+                  <p className="text-xs text-slate-500 leading-relaxed font-semibold">
                     Скрытый сигнал без визуальной индикации тревоги на вашем телефоне. Безопасно при нежелательном внимании.
                   </p>
                 </div>
@@ -277,9 +275,9 @@ export default function SOSPage() {
             </div>
           </div>
 
-          <div className="p-4 bg-slate-950 border border-slate-800/80 rounded-xl">
-            <h4 className="font-syne font-bold text-xs text-white mb-1.5">Внимание:</h4>
-            <p className="text-[11px] text-slate-500 leading-normal">
+          <div className="p-4 bg-white/60 border border-white/80 rounded-xl shadow-sm">
+            <h4 className="font-syne font-bold text-xs text-slate-800 mb-1.5 text-left">Внимание:</h4>
+            <p className="text-[11px] text-slate-400 leading-normal font-semibold text-left">
               Функционал геолокации требует доступа к датчикам GPS вашего устройства. Убедитесь, что разрешение предоставлено в браузере.
             </p>
           </div>

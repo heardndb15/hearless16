@@ -47,7 +47,6 @@ export default function SoundsPage() {
     setSimulating(true);
     setCurrentSound(null);
 
-    // Simulate short sound capture delay (800ms)
     setTimeout(async () => {
       const soundTypes = ["siren", "baby_cry", "doorbell", "fire_alarm", "knock"];
       const randomType = soundTypes[Math.floor(Math.random() * soundTypes.length)];
@@ -55,7 +54,6 @@ export default function SoundsPage() {
       setCurrentSound(randomType);
       setSimulating(false);
 
-      // Insert into Supabase sound_alerts
       const supabase = createClient();
       await supabase.from("sound_alerts").insert({
         user_id: user.id,
@@ -63,7 +61,6 @@ export default function SoundsPage() {
         detected_at: new Date().toISOString()
       });
 
-      // Reload list
       fetchAlerts(user.id);
     }, 800);
   }
@@ -87,18 +84,18 @@ export default function SoundsPage() {
     <div className="space-y-8">
       {/* Header info */}
       <div className="flex flex-col gap-2">
-        <h2 className="font-syne font-extrabold text-3xl text-white">Детектор звуков</h2>
-        <p className="text-slate-400 text-sm max-w-2xl">
+        <h2 className="font-syne font-extrabold text-3xl text-slate-800">Детектор звуков</h2>
+        <p className="text-slate-500 text-sm max-w-2xl font-medium">
           Система анализирует окружающие акустические частоты и переводит их в визуальные предупреждения на экране.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Side: Audio Waveform Monitor (7 cols) */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-6">
+        <div className="lg:col-span-7 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
           <div className="flex justify-between items-center">
-            <span className="font-syne text-sm font-bold text-white flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${monitoring ? 'bg-green-500 animate-pulse' : 'bg-slate-500'}`}></span>
+            <span className="font-syne text-sm font-bold text-slate-700 flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${monitoring ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
               {monitoring ? "Микрофон слушает окружение..." : "Мониторинг выключен"}
             </span>
             <button
@@ -108,10 +105,10 @@ export default function SoundsPage() {
                   setCurrentSound(null);
                 }
               }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold font-syne transition-colors duration-200 ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold font-syne shadow-sm transition-all duration-200 ${
                 monitoring
-                  ? "bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700"
-                  : "bg-accent text-white hover:bg-accent/80"
+                  ? "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  : "bg-accent text-white hover:bg-accent/90"
               }`}
             >
               {monitoring ? "Остановить" : "Запустить микрофон"}
@@ -119,17 +116,16 @@ export default function SoundsPage() {
           </div>
 
           {/* Waveform Visualization Box */}
-          <div className="relative h-64 rounded-2xl bg-slate-950 border border-slate-800/80 overflow-hidden flex flex-col items-center justify-center">
+          <div className="relative h-64 rounded-2xl bg-slate-950/90 border border-slate-900 shadow-2xl overflow-hidden flex flex-col items-center justify-center">
             {monitoring ? (
               <div className="w-full px-12 flex items-center justify-center gap-1.5 h-32">
-                {/* 15 animated audio wave bars */}
                 {[...Array(15)].map((_, i) => {
                   const delay = (i * 0.1).toFixed(1);
                   return (
                     <div
                       key={i}
                       style={{ animationDelay: `${delay}s` }}
-                      className="w-1.5 bg-gradient-to-t from-accent to-purpleBrand rounded-full animate-[sound-pulse_1.2s_ease-in-out_infinite] min-h-[8px]"
+                      className="w-1.5 bg-gradient-to-t from-accent via-cyan-400 to-purpleBrand rounded-full animate-[sound-pulse_1.2s_ease-in-out_infinite] min-h-[8px]"
                     ></div>
                   );
                 })}
@@ -137,20 +133,20 @@ export default function SoundsPage() {
             ) : (
               <div className="text-center p-6 space-y-3">
                 <span className="text-4xl opacity-20">🎙️</span>
-                <p className="text-sm font-semibold text-slate-400">Микрофон неактивен</p>
-                <p className="text-xs text-slate-500 max-w-xs leading-normal mx-auto">
+                <p className="text-sm font-bold text-slate-400">Микрофон неактивен</p>
+                <p className="text-xs text-slate-500 max-w-xs leading-normal mx-auto font-medium">
                   Активируйте детектор, чтобы ИИ в фоновом режиме анализировал опасные и важные звуки вашего дома.
                 </p>
               </div>
             )}
 
-            {/* Simulated Alarm Alert pop-up */}
+            {/* Simulated Alarm Alert pop-up - Netflix glass style */}
             {monitoring && currentSound && (
-              <div className="absolute inset-x-6 bottom-6 p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl flex items-center gap-4 animate-[fade-up_0.3s_ease-out]">
+              <div className="absolute inset-x-6 bottom-6 p-4 rounded-xl bg-black/60 border border-white/5 shadow-2xl backdrop-blur-sm flex items-center gap-4 animate-[fade-up_0.3s_ease-out]">
                 <span className="text-3xl">{getSoundMetadata(currentSound).emoji}</span>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">Обнаружен звук!</span>
-                  <h4 className="font-syne font-bold text-sm text-white truncate">{getSoundMetadata(currentSound).label}</h4>
+                  <h4 className="font-syne font-black text-sm text-white truncate">{getSoundMetadata(currentSound).label}</h4>
                 </div>
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></div>
               </div>
@@ -171,7 +167,7 @@ export default function SoundsPage() {
             <button
               onClick={handleSimulateSound}
               disabled={simulating}
-              className="w-full py-4 rounded-xl bg-purpleBrand hover:bg-purpleBrand/90 disabled:bg-slate-800 disabled:text-slate-500 text-white font-syne font-bold text-sm tracking-wide transition-colors duration-200"
+              className="w-full py-4.5 rounded-2xl bg-purpleBrand hover:bg-purpleBrand/90 disabled:bg-slate-800 disabled:text-slate-500 text-white font-syne font-bold text-sm tracking-wide shadow-md transition-all duration-200"
             >
               {simulating ? "Обработка..." : "Симулировать громкий звук"}
             </button>
@@ -179,12 +175,12 @@ export default function SoundsPage() {
         </div>
 
         {/* Right Side: Log History (5 cols) */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col gap-6">
-          <h3 className="font-syne font-extrabold text-lg text-white">Журнал событий</h3>
+        <div className="lg:col-span-5 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
+          <h3 className="font-syne font-extrabold text-lg text-slate-800">Журнал событий</h3>
 
           <div className="flex-1 overflow-y-auto max-h-[420px] space-y-3 pr-1">
             {alerts.length === 0 ? (
-              <div className="py-16 text-center text-slate-500 text-xs">
+              <div className="py-16 text-center text-slate-400 text-xs font-semibold">
                 Журнал пуст. Включите мониторинг и сгенерируйте первый звук!
               </div>
             ) : (
@@ -193,24 +189,24 @@ export default function SoundsPage() {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-slate-950 border border-slate-800/80"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-white/50 border border-white/80 shadow-sm"
                   >
-                    <div className="text-2xl p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                    <div className="text-2xl p-2 bg-white/80 border border-slate-100 shadow-sm rounded-lg">
                       {meta.emoji}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-syne font-bold text-sm text-white truncate">{meta.label}</h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                    <div className="flex-1 min-w-0 text-left">
+                      <h4 className="font-syne font-bold text-sm text-slate-800 truncate">{meta.label}</h4>
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5">
                         Обнаружено в {new Date(item.detected_at).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                     <div>
                       <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         meta.severity === "critical"
-                          ? "bg-red-500/10 text-red-500 border border-red-500/20"
+                          ? "bg-red-500/10 text-red-600 border border-red-500/20"
                           : meta.severity === "warning"
-                            ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
-                            : "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                            ? "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20"
+                            : "bg-blue-500/10 text-blue-600 border border-blue-500/20"
                       }`}>
                         {meta.severity === "critical" ? "Критично" : meta.severity === "warning" ? "Важно" : "Шум"}
                       </span>

@@ -46,7 +46,7 @@ export default function DashboardOverview() {
       .select("name, language")
       .eq("id", userId)
       .single();
-    if (data) setProfile(profile => ({ name: data.name || "", language: data.language || "ru" }));
+    if (data) setProfile({ name: data.name || "", language: data.language || "ru" });
   }
 
   async function fetchStats(userId: string) {
@@ -100,7 +100,6 @@ export default function DashboardOverview() {
       });
     }
 
-    // Sort combined activities by time
     setActivities(log.slice(0, 5));
   }
 
@@ -117,7 +116,7 @@ export default function DashboardOverview() {
 
   if (loading) {
     return (
-      <div className="py-20 flex justify-center text-slate-400">
+      <div className="py-20 flex justify-center text-slate-500 font-bold">
         Загрузка панели...
       </div>
     );
@@ -126,56 +125,53 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-10">
       {/* Welcome Banner */}
-      <div className="relative p-8 md:p-10 rounded-3xl bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-800/80 overflow-hidden shadow-2xl">
+      <div className="relative p-8 md:p-10 rounded-3xl bg-white/40 backdrop-blur-xl border border-white/60 overflow-hidden shadow-xl">
         <div className="relative z-10 max-w-lg space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 border border-accent/30 text-xs font-bold text-accent tracking-wide">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 border border-accent/25 text-xs font-bold text-accent tracking-wide shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping"></span>
             ИИ-Ассистент активен
           </span>
-          <h2 className="font-syne font-extrabold text-3xl md:text-4xl text-white leading-tight">
+          <h2 className="font-syne font-extrabold text-3xl md:text-4xl text-slate-800 leading-tight">
             Привет, {profile?.name || "Пользователь"}!
           </h2>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <p className="text-slate-600 text-sm font-medium leading-relaxed">
             Система мониторинга Hearless работает в штатном режиме. Все микрофоны и камера готовы к использованию.
           </p>
         </div>
-        {/* Glow Effects */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl translate-x-12 -translate-y-12"></div>
-        <div className="absolute bottom-0 left-1/3 w-40 h-40 bg-purpleBrand/10 rounded-full blur-3xl"></div>
       </div>
 
       {/* Grid Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card Gestures */}
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 group">
+        <div className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-accent/30 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-3xl font-extrabold font-syne text-white mb-1 group-hover:text-accent transition-colors">{stats.gestures}</p>
+              <p className="text-3xl font-extrabold font-syne text-slate-800 mb-1 group-hover:text-accent transition-colors">{stats.gestures}</p>
               <h3 className="font-syne font-bold text-sm text-slate-400">Жестов изучено</h3>
             </div>
-            <span className="text-3xl p-3 bg-slate-950 rounded-xl">🖐️</span>
+            <span className="text-3xl p-3 bg-white/60 border border-slate-100 shadow-sm rounded-xl">🖐️</span>
           </div>
         </div>
 
         {/* Card Sound Alerts */}
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-purpleBrand/40 hover:shadow-lg hover:shadow-purpleBrand/5 transition-all duration-300 group">
+        <div className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-purpleBrand/30 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-3xl font-extrabold font-syne text-white mb-1 group-hover:text-purpleBrand transition-colors">{stats.alerts}</p>
+              <p className="text-3xl font-extrabold font-syne text-slate-800 mb-1 group-hover:text-purpleBrand transition-colors">{stats.alerts}</p>
               <h3 className="font-syne font-bold text-sm text-slate-400">Звуков распознано</h3>
             </div>
-            <span className="text-3xl p-3 bg-slate-950 rounded-xl">🔊</span>
+            <span className="text-3xl p-3 bg-white/60 border border-slate-100 shadow-sm rounded-xl">🔊</span>
           </div>
         </div>
 
         {/* Card SOS Alerts */}
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-red-500/40 hover:shadow-lg hover:shadow-red-500/5 transition-all duration-300 group">
+        <div className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-red-500/30 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-3xl font-extrabold font-syne text-white mb-1 group-hover:text-red-500 transition-colors">{stats.sos}</p>
+              <p className="text-3xl font-extrabold font-syne text-slate-800 mb-1 group-hover:text-red-500 transition-colors">{stats.sos}</p>
               <h3 className="font-syne font-bold text-sm text-slate-400">SOS сигналов</h3>
             </div>
-            <span className="text-3xl p-3 bg-slate-950 rounded-xl">🆘</span>
+            <span className="text-3xl p-3 bg-white/60 border border-slate-100 shadow-sm rounded-xl">🆘</span>
           </div>
         </div>
       </div>
@@ -184,22 +180,40 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Launcher Grid - Left (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
-          <h3 className="font-syne font-extrabold text-xl text-white">Быстрый запуск функций</h3>
+          <h3 className="font-syne font-extrabold text-xl text-slate-800">Быстрый запуск функций</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Subtitles Card */}
+            <Link
+              href="/dashboard/subtitles"
+              className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group"
+            >
+              <span className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/25 flex items-center justify-center text-xl shadow-sm">
+                💬
+              </span>
+              <div>
+                <h4 className="font-syne font-bold text-slate-800 text-base mb-1.5 group-hover:text-accent transition-colors">
+                  Живые субтитры
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                  Netflix-style титры для распознавания речи в реальном времени. Крупный шрифт и высокая контрастность.
+                </p>
+              </div>
+            </Link>
+
             {/* Gesture Card */}
             <Link
               href="/dashboard/gestures"
-              className="p-6 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-accent/40 hover:bg-slate-900/60 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group"
+              className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-accent/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group"
             >
-              <span className="w-12 h-12 rounded-xl bg-accent/15 border border-accent/25 flex items-center justify-center text-xl">
+              <span className="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center text-xl shadow-sm">
                 📷
               </span>
               <div>
-                <h4 className="font-syne font-bold text-white text-base mb-1.5 group-hover:text-accent transition-colors">
+                <h4 className="font-syne font-bold text-slate-800 text-base mb-1.5 group-hover:text-accent transition-colors">
                   Распознавание жестов
                 </h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Используйте камеру для распознавания жестов в реальном времени. Просматривайте точность и историю.
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                  Используйте камеру для распознавания жестов в реальном времени с помощью компьютерного зрения.
                 </p>
               </div>
             </Link>
@@ -207,17 +221,17 @@ export default function DashboardOverview() {
             {/* Sound Card */}
             <Link
               href="/dashboard/sounds"
-              className="p-6 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-purpleBrand/40 hover:bg-slate-900/60 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group"
+              className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-purpleBrand/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group"
             >
-              <span className="w-12 h-12 rounded-xl bg-purpleBrand/15 border border-purpleBrand/25 flex items-center justify-center text-xl">
+              <span className="w-12 h-12 rounded-xl bg-purpleBrand/15 border border-purpleBrand/25 flex items-center justify-center text-xl shadow-sm">
                 🎙️
               </span>
               <div>
-                <h4 className="font-syne font-bold text-white text-base mb-1.5 group-hover:text-purpleBrand transition-colors">
+                <h4 className="font-syne font-bold text-slate-800 text-base mb-1.5 group-hover:text-purpleBrand transition-colors">
                   Детектор звуков
                 </h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Анализируйте шумы вокруг вас. Узнайте, если плачет ребенок, звонят в дверь или сработала сирена.
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                  Следите за окружающими шумами. Уведомление на экране о плаче ребенка, пожарной тревоге или звонке в дверь.
                 </p>
               </div>
             </Link>
@@ -225,20 +239,18 @@ export default function DashboardOverview() {
             {/* SOS Card */}
             <Link
               href="/dashboard/sos"
-              className="p-6 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-red-500/40 hover:bg-slate-900/60 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group md:col-span-2"
+              className="p-6 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-md hover:shadow-lg hover:bg-white/50 hover:border-red-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-4 text-left group"
             >
-              <div className="flex items-center gap-4">
-                <span className="w-12 h-12 rounded-xl bg-red-500/15 border border-red-500/25 flex items-center justify-center text-xl">
-                  🚨
-                </span>
-                <div>
-                  <h4 className="font-syne font-bold text-white text-base mb-1 group-hover:text-red-500 transition-colors">
-                    Критический SOS модуль
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Быстрая кнопка отправки координат. Уведомление родственников и близких в один клик.
-                  </p>
-                </div>
+              <span className="w-12 h-12 rounded-xl bg-red-500/15 border border-red-500/25 flex items-center justify-center text-xl shadow-sm">
+                🚨
+              </span>
+              <div>
+                <h4 className="font-syne font-bold text-slate-800 text-base mb-1.5 group-hover:text-red-500 transition-colors">
+                  Экстренный SOS модуль
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                  Быстрая отправка тревожного сигнала с вашей геолокацией близким родственникам в один клик.
+                </p>
               </div>
             </Link>
           </div>
@@ -246,10 +258,10 @@ export default function DashboardOverview() {
 
         {/* Activities Feed - Right (4 cols) */}
         <div className="lg:col-span-4 space-y-6">
-          <h3 className="font-syne font-extrabold text-xl text-white">Последние события</h3>
-          <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          <h3 className="font-syne font-extrabold text-xl text-slate-800">Последние события</h3>
+          <div className="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl p-5 space-y-4 shadow-md">
             {activities.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 text-xs">
+              <div className="py-8 text-center text-slate-400 text-xs font-semibold">
                 Событий пока не зарегистрировано.
               </div>
             ) : (
@@ -260,23 +272,23 @@ export default function DashboardOverview() {
                       {item.type === "sos" ? (
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500 block animate-ping"></span>
                       ) : (
-                        <span className="w-2 h-2 rounded-full bg-yellow-500 block"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 block"></span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline mb-0.5">
-                        <p className="font-syne text-xs font-bold text-white truncate">{item.label}</p>
-                        <span className="text-[10px] text-slate-500 shrink-0 font-medium">{item.time}</span>
+                        <p className="font-syne text-xs font-bold text-slate-800 truncate">{item.label}</p>
+                        <span className="text-[10px] text-slate-400 font-bold shrink-0">{item.time}</span>
                       </div>
-                      <p className="text-[11px] text-slate-400 leading-normal truncate">{item.detail}</p>
+                      <p className="text-[11px] text-slate-600 leading-normal font-semibold truncate">{item.detail}</p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <div className="pt-2 border-t border-slate-800">
-              <p className="text-[10px] text-slate-400 text-center font-medium">
-                Подключено к базе данных Supabase
+            <div className="pt-2.5 border-t border-slate-200/60">
+              <p className="text-[10px] text-slate-400 text-center font-bold">
+                База данных Supabase · Hearless AI
               </p>
             </div>
           </div>
