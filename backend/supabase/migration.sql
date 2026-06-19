@@ -10,8 +10,12 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, name)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'name', ''));
+  INSERT INTO public.users (id, name, language)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'name', ''),
+    COALESCE(NEW.raw_user_meta_data->>'language', 'ru')
+  );
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -100,3 +104,80 @@ INSERT INTO gestures (name, category, difficulty) VALUES
   ('Три', 'Числа', 'easy'),
   ('Сто', 'Числа', 'hard')
 ON CONFLICT DO NOTHING;
+
+-- Включение Row Level Security (RLS) для всех таблиц
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subtitles_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gestures ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sound_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sos_events ENABLE ROW LEVEL SECURITY;
+
+-- 1. Политики для таблицы пользователей (users)
+DROP POLICY IF EXISTS "Allow users to read their own profile" ON public.users;
+CREATE POLICY "Allow users to read their own profile"
+  ON public.users FOR SELECT TO authenticated
+  USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Allow users to update their own profile" ON public.users;
+CREATE POLICY "Allow users to update their own profile"
+  ON public.users FOR UPDATE TO authenticated
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- 2. Политики для каталога жестов (gestures) - доступен всем на чтение
+DROP POLICY IF EXISTS "Allow read access to gestures for everyone" ON public.gestures;
+CREATE POLICY "Allow read access to gestures for everyone"
+  ON public.gestures FOR SELECT TO anon, authenticated
+  USING (true);
+
+-- 3. Политики для истории субтитров (subtitles_history)
+DROP POLICY IF EXISTS "Allow users to read their own subtitles" ON public.subtitles_history;
+CREATE POLICY "Allow users to read their own subtitles"
+  ON public.subtitles_history FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to insert their own subtitles" ON public.subtitles_history;
+CREATE POLICY "Allow users to insert their own subtitles"
+  ON public.subtitles_history FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to delete their own subtitles" ON public.subtitles_history;
+CREATE POLICY "Allow users to delete their own subtitles"
+  ON public.subtitles_history FOR DELETE TO authenticated
+  USING (auth.uid() = user_id);
+
+-- 4. Политики для прогресса пользователя (user_progress)
+DROP POLICY IF EXISTS "Allow users to read their own progress" ON public.user_progress;
+CREATE POLICY "Allow users to read their own progress"
+  ON public.user_progress FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to insert/update their own progress" ON public.user_progress;
+CREATE POLICY "Allow users to insert/update their own progress"
+  ON public.user_progress FOR ALL TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- 5. Политики для звуковых оповещений (sound_alerts)
+DROP POLICY IF EXISTS "Allow users to read their own sound alerts" ON public.sound_alerts;
+CREATE POLICY "Allow users to read their own sound alerts"
+  ON public.sound_alerts FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to insert their own sound alerts" ON public.sound_alerts;
+CREATE POLICY "Allow users to insert their own sound alerts"
+  ON public.sound_alerts FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+-- 6. Политики для SOS событий (sos_events)
+DROP POLICY IF EXISTS "Allow users to read their own sos events" ON public.sos_events;
+CREATE POLICY "Allow users to read their own sos events"
+  ON public.sos_events FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to insert their own sos events" ON public.sos_events;
+CREATE POLICY "Allow users to insert their own sos events"
+  ON public.sos_events FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+

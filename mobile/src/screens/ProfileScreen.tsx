@@ -98,7 +98,7 @@ export default function ProfileScreen() {
         if (error) {
           setMessage(error.message);
         } else {
-          setMessage("Регистрация успешна! Проверьте email или войдите.");
+          setMessage("Регистрация успешна!");
           setIsRegistering(false);
         }
       } else {
