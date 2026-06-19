@@ -252,27 +252,26 @@ export default function SubtitlesDashboard() {
         @keyframes pulse-ring {
           0% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+            box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.4);
           }
           70% {
             transform: scale(1);
-            box-shadow: 0 0 0 12px rgba(34, 211, 238, 0);
+            box-shadow: 0 0 0 12px rgba(0, 102, 255, 0);
           }
           100% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
-          }
-        }
-        @keyframes pulse-soft {
-          0%, 100% {
-            opacity: 0.3;
-          }
-          50% {
-            opacity: 0.65;
+            box-shadow: 0 0 0 0 rgba(0, 102, 255, 0);
           }
         }
         .text-shadow-glow {
-          text-shadow: 0 0 20px rgba(34, 211, 238, 0.35), 0 0 4px rgba(255, 255, 255, 0.8);
+          text-shadow: 0 2px 10px rgba(0, 102, 255, 0.15), 0 0 1px rgba(15, 23, 42, 0.2);
+        }
+        .floating-blob {
+          animation: float-slow 8s ease-in-out infinite alternate;
+        }
+        @keyframes float-slow {
+          0% { transform: translateY(0) scale(1); }
+          100% { transform: translateY(-20px) scale(1.1); }
         }
       `}</style>
 
@@ -288,65 +287,66 @@ export default function SubtitlesDashboard() {
         {/* Cinematic Subtitles screen container */}
         <div className={`${historyOpen ? "lg:col-span-8" : "lg:col-span-12"} transition-all duration-300 flex flex-col gap-6`}>
           
-          {/* Main Cinematic Box */}
-          <div className="relative aspect-[16/9] min-h-[380px] w-full rounded-3xl bg-slate-950/95 border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.6)] flex flex-col justify-between p-8 overflow-hidden">
+          {/* Main Glassmorphic Box */}
+          <div className="relative aspect-[16/9] min-h-[380px] w-full rounded-3xl bg-white/30 border border-white/40 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur-xl flex flex-col justify-between p-8 overflow-hidden">
             
-            {/* Ambient Background Blur Blobs */}
-            <div className="absolute top-1/4 left-1/3 w-[250px] h-[250px] bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none animate-pulse"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-purple-500/10 rounded-full blur-[80px] pointer-events-none animate-pulse" style={{ animationDelay: "1s" }}></div>
+            {/* Soft Ambient Floating Blobs */}
+            <div className="absolute top-1/4 left-1/3 w-[200px] h-[200px] bg-cyan-400/10 rounded-full blur-[70px] pointer-events-none floating-blob"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-[220px] h-[220px] bg-purple-400/10 rounded-full blur-[80px] pointer-events-none floating-blob" style={{ animationDelay: "2s" }}></div>
+            <div className="absolute top-1/2 right-1/3 w-[150px] h-[150px] bg-white/40 rounded-full blur-[50px] pointer-events-none floating-blob" style={{ animationDelay: "4s" }}></div>
 
             {/* Floating Top AI Status Bar */}
             <div className="flex justify-center z-10 w-full">
-              <div className="bg-slate-900/80 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-3 shadow-md">
+              <div className="bg-white/60 border border-white/80 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-3 shadow-sm">
                 {aiStatus === "listening" && (
                   <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
+                    <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
-                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-green-400 uppercase">
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-700 uppercase">
                       🎤 ИИ Слушает (Whisper)
                     </span>
                   </div>
                 )}
                 {aiStatus === "fallback" && (
                   <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
+                    <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
                     </span>
-                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-cyan-400 uppercase">
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-700 uppercase">
                       🎙️ Локальный ввод
                     </span>
                   </div>
                 )}
                 {aiStatus === "processing" && (
                   <div className="flex items-center gap-2">
-                    <svg className="animate-spin h-3.5 w-3.5 text-purple-400" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-3 w-3 text-accent" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-purple-400 uppercase">
-                      ⚙️ Настройка микрофона...
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-600 uppercase">
+                      ⚙️ Подключение...
                     </span>
                   </div>
                 )}
                 {aiStatus === "ready" && (
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-slate-500"></span>
-                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-400 uppercase">
-                      ● Готов к работе
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-500 uppercase">
+                      ● Готов
                     </span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Subtitles Area (Netflix Screen) */}
+            {/* Subtitles Area (Light Netflix style) */}
             <div className="flex-1 flex flex-col justify-end text-center z-10 py-6 max-w-4xl mx-auto w-full">
               {isRecording ? (
                 rollingLines.length > 0 ? (
-                  <div className="space-y-4 flex flex-col items-center justify-end min-h-[180px]">
+                  <div className="space-y-3 flex flex-col items-center justify-end min-h-[180px]">
                     {rollingLines.map((line, idx) => {
                       const total = rollingLines.length;
                       const isLast = idx === total - 1;
@@ -355,17 +355,17 @@ export default function SubtitlesDashboard() {
 
                       let itemStyle = "";
                       if (isLast) {
-                        itemStyle = "text-white text-3xl md:text-5xl font-black tracking-wide leading-snug text-shadow-glow animate-[slide-up_0.25s_ease-out]";
+                        itemStyle = "text-slate-800 text-3xl md:text-5xl font-black tracking-tight leading-snug text-shadow-glow animate-[slide-up_0.25s_ease-out]";
                       } else if (isSecondLast) {
-                        itemStyle = "text-slate-350 opacity-60 text-xl md:text-3xl font-bold leading-normal scale-97 transition-all duration-500";
+                        itemStyle = "text-slate-600 opacity-60 text-xl md:text-3xl font-bold leading-normal scale-97 transition-all duration-500";
                       } else if (isThirdLast) {
-                        itemStyle = "text-slate-500 opacity-20 text-lg md:text-xl font-semibold leading-normal scale-94 transition-all duration-500 blur-[0.5px]";
+                        itemStyle = "text-slate-400 opacity-25 text-lg md:text-xl font-semibold leading-normal scale-94 transition-all duration-500 blur-[0.5px]";
                       }
 
                       return (
                         <div
                           key={idx}
-                          className={`${itemStyle} font-dm max-w-3xl px-6 py-2 rounded-2xl bg-black/35 backdrop-blur-[2px] transition-all duration-500 transform origin-bottom`}
+                          className={`${itemStyle} font-dm max-w-3xl px-6 py-2 rounded-2xl bg-white/10 backdrop-blur-[2px] transition-all duration-500 transform origin-bottom`}
                         >
                           {line}
                         </div>
@@ -374,36 +374,36 @@ export default function SubtitlesDashboard() {
                   </div>
                 ) : (
                   <div className="my-auto space-y-4 animate-pulse">
-                    <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center mx-auto text-accent text-xl">
                       🎙️
                     </div>
-                    <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
-                      Говорите, ИИ расшифровывает...
+                    <p className="text-slate-500 font-syne text-sm font-bold tracking-wider">
+                      Слушаю речь собеседника...
                     </p>
                   </div>
                 )
               ) : (
                 <div className="my-auto space-y-4 py-8">
-                  <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center mx-auto text-2xl shadow-xl">
-                    🎬
+                  <div className="w-14 h-14 rounded-full bg-white/60 border border-white/80 flex items-center justify-center mx-auto text-2xl shadow-sm">
+                    💬
                   </div>
-                  <h3 className="font-syne font-extrabold text-white text-lg">Запуск ИИ-Субтитров</h3>
+                  <h3 className="font-syne font-extrabold text-slate-800 text-lg">Запустить трансляцию</h3>
                   <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed font-semibold">
-                    Нажмите круглую кнопку записи внизу для запуска распознавания речи в кино-режиме.
+                    Активируйте микрофон с помощью круглой кнопки ниже. Слова будут плавно отображаться в реальном времени.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Live Audio Level Waveform (Flickering light) */}
+            {/* Live Audio Level Waveform */}
             {isRecording && (
-              <div className="absolute bottom-6 right-8 flex gap-1 items-end h-8 pointer-events-none z-10 opacity-75">
+              <div className="absolute bottom-6 right-8 flex gap-1 items-end h-8 pointer-events-none z-10 opacity-70">
                 {[...Array(6)].map((_, i) => {
                   const animDelay = (i * 0.15).toFixed(2);
                   return (
                     <div
                       key={i}
-                      className="w-1 bg-gradient-to-t from-cyan-400 to-purpleBrand rounded-full min-h-[4px] animate-[sound-pulse_1s_ease-in-out_infinite]"
+                      className="w-1 bg-gradient-to-t from-accent to-purple rounded-full min-h-[4px] animate-[sound-pulse_1s_ease-in-out_infinite]"
                       style={{
                         animationDelay: `${animDelay}s`,
                         height: `${Math.floor(Math.random() * 24) + 6}px`
@@ -416,14 +416,14 @@ export default function SubtitlesDashboard() {
           </div>
 
           {/* Unified Floating Controller Dock */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 z-10">
+          <div className="bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_12px_40px_rgba(15,23,42,0.04)] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 z-10">
             {/* Left Section: Record control */}
             <div className="flex items-center gap-3">
               <button
                 onClick={isRecording ? stopRecordingSession : startRecordingSession}
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 relative ${
                   isRecording
-                    ? "bg-slate-900 border border-slate-700 text-red-500 hover:bg-slate-800 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                    ? "bg-slate-900 text-red-500 hover:bg-slate-800 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                     : "bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20"
                 }`}
                 style={{
@@ -432,7 +432,7 @@ export default function SubtitlesDashboard() {
                 aria-label={isRecording ? "Остановить запись" : "Начать запись"}
               >
                 {isRecording ? (
-                  <span className="w-3.5 h-3.5 bg-red-500 rounded-sm"></span>
+                  <span className="w-3 h-3 bg-red-500 rounded-sm"></span>
                 ) : (
                   <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"></path>
@@ -442,10 +442,10 @@ export default function SubtitlesDashboard() {
               </button>
               <div className="text-left">
                 <p className="font-syne font-bold text-xs text-slate-800">
-                  {isRecording ? "Запись активна" : "Микрофон отключен"}
+                  {isRecording ? "Запись включена" : "Микрофон выключен"}
                 </p>
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                  {isRecording ? "Слушаем собеседника" : "Нажмите для запуска"}
+                  {isRecording ? "Идет расшифровка" : "Нажмите для старта"}
                 </p>
               </div>
             </div>
@@ -455,25 +455,25 @@ export default function SubtitlesDashboard() {
               {transcriptionText.trim() && !isRecording && (
                 <button
                   onClick={handleSaveDialogue}
-                  className="px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-syne font-bold text-xs shadow-sm transition-all flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-syne font-bold text-xs shadow-sm transition-all"
                 >
-                  📥 Сохранить лог
+                  📥 Сохранить
                 </button>
               )}
               {transcriptionText.trim() && (
                 <button
                   onClick={() => setTranscriptionText("")}
-                  className="px-4 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-slate-600 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-syne font-bold text-xs shadow-sm transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-white/60 border border-slate-200/60 text-slate-650 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-syne font-bold text-xs shadow-sm transition-all"
                 >
-                  Очистить экран
+                  Очистить
                 </button>
               )}
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border ${
                   historyOpen
-                    ? "bg-accent/15 border-accent/20 text-accent"
-                    : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                    ? "bg-accent/10 border-accent/20 text-accent"
+                    : "bg-white/60 border-slate-200/60 text-slate-500 hover:text-slate-800"
                 }`}
               >
                 📜 История ({history.length})
@@ -484,7 +484,7 @@ export default function SubtitlesDashboard() {
 
         {/* Collapsible History Sidebar Panel (4 cols) */}
         {historyOpen && (
-          <div className="lg:col-span-4 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
+          <div className="lg:col-span-4 bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_16px_48px_rgba(15,23,42,0.06)] rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
             <div className="flex justify-between items-center">
               <h3 className="font-syne font-extrabold text-base text-slate-800">История диалогов</h3>
               {history.length > 0 && (
@@ -501,7 +501,7 @@ export default function SubtitlesDashboard() {
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {history.length === 0 ? (
                 <div className="py-24 text-center text-slate-400 text-xs font-semibold">
-                  Нет сохраненных диалогов.
+                  Диалогов пока нет.
                 </div>
               ) : (
                 history.map((item) => (
