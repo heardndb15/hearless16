@@ -12,7 +12,7 @@ export interface StreamChunk {
   is_final: boolean;
 }
 
-export function useStreamingRecording() {
+export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const [isRecording, setIsRecording] = useState(false);
   const [streamText, setStreamText] = useState("");
   const [chunks, setChunks] = useState<StreamChunk[]>([]);
@@ -35,7 +35,7 @@ export function useStreamingRecording() {
           setChunks((prev) => [...prev, chunk]);
           setStreamText(data.full_text || "");
 
-          if (data.type === "final" && data.full_text?.trim()) {
+          if (!options?.skipAutoSave && data.type === "final" && data.full_text?.trim()) {
             supabase.auth.getSession().then(({ data: { session } }) => {
               if (session?.user) {
                 const API_URL = BACKEND_WS.replace("wss://", "https://").replace("ws://", "http://").replace("/ws/transcribe", "");

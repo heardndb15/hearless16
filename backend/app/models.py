@@ -49,3 +49,16 @@ class SOSAlertCreate(BaseModel):
     lat: float
     lng: float
     timestamp: str
+
+
+class LectureSaveRequest(BaseModel):
+    user_id: str
+    title: str
+    transcript: str
+    summary: Optional[str] = None
+    highlights: Optional[dict] = None
+
+
+class LectureAnalyzeRequest(BaseModel):
+    transcript: str
+

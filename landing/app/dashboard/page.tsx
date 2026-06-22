@@ -21,6 +21,13 @@ export default function SubtitlesDashboard() {
   const [transcriptionText, setTranscriptionText] = useState("");
   const [aiStatus, setAiStatus] = useState<"ready" | "listening" | "processing" | "fallback">("ready");
 
+  // Subtitle Custom Styling States
+  const [fontSize, setFontSize] = useState("md"); // sm, md, lg, xl
+  const [textColor, setTextColor] = useState("white"); // white, yellow, cyan, green
+  const [bgColor, setBgColor] = useState("dark"); // dark, semi, none
+  const [textGlow, setTextGlow] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   // Web Speech API Ref
   const recognitionRef = useRef<any>(null);
 
@@ -28,6 +35,41 @@ export default function SubtitlesDashboard() {
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
+
+  const getShadow = (color: string) => {
+    switch (color) {
+      case "yellow": return "0 0 20px rgba(253, 224, 71, 0.45), 0 0 4px rgba(253, 224, 71, 0.8)";
+      case "cyan": return "0 0 20px rgba(34, 211, 238, 0.55), 0 0 4px rgba(34, 211, 238, 0.8)";
+      case "green": return "0 0 20px rgba(74, 222, 128, 0.55), 0 0 4px rgba(74, 222, 128, 0.8)";
+      default: return "0 0 20px rgba(255, 255, 255, 0.35), 0 0 4px rgba(255, 255, 255, 0.8)";
+    }
+  };
+
+  const getColorCode = (color: string) => {
+    switch (color) {
+      case "yellow": return "#fdeb47";
+      case "cyan": return "#22d3ee";
+      case "green": return "#4ade80";
+      default: return "#ffffff";
+    }
+  };
+
+  const changeFontSize = (val: string) => {
+    setFontSize(val);
+    if (typeof window !== "undefined") localStorage.setItem("sub_fontSize", val);
+  };
+  const changeTextColor = (val: string) => {
+    setTextColor(val);
+    if (typeof window !== "undefined") localStorage.setItem("sub_textColor", val);
+  };
+  const changeBgColor = (val: string) => {
+    setBgColor(val);
+    if (typeof window !== "undefined") localStorage.setItem("sub_bgColor", val);
+  };
+  const changeTextGlow = (val: boolean) => {
+    setTextGlow(val);
+    if (typeof window !== "undefined") localStorage.setItem("sub_textGlow", val ? "true" : "false");
+  };
 
   useEffect(() => {
     const supabase = createClient();
@@ -37,6 +79,13 @@ export default function SubtitlesDashboard() {
         fetchHistory(data.user.id);
       }
     });
+
+    if (typeof window !== "undefined") {
+      setFontSize(localStorage.getItem("sub_fontSize") || "md");
+      setTextColor(localStorage.getItem("sub_textColor") || "white");
+      setBgColor(localStorage.getItem("sub_bgColor") || "dark");
+      setTextGlow(localStorage.getItem("sub_textGlow") !== "false");
+    }
 
     return () => {
       stopRecordingSession();
@@ -364,18 +413,36 @@ export default function SubtitlesDashboard() {
                       const isThirdLast = idx === total - 3;
 
                       let itemStyle = "";
+                      let customStyle: React.CSSProperties = {};
+
                       if (isLast) {
-                        itemStyle = "text-white text-3xl md:text-5xl font-black tracking-wide leading-snug text-shadow-glow animate-[slide-up_0.25s_ease-out]";
+                        const szClass = fontSize === "sm" ? "text-xl md:text-3xl" : fontSize === "lg" ? "text-4xl md:text-6xl" : fontSize === "xl" ? "text-5xl md:text-7xl" : "text-3xl md:text-5xl";
+                        itemStyle = `${szClass} font-black tracking-wide leading-snug animate-[slide-up_0.25s_ease-out]`;
+                        customStyle = {
+                          color: getColorCode(textColor),
+                          textShadow: textGlow ? getShadow(textColor) : "none"
+                        };
                       } else if (isSecondLast) {
-                        itemStyle = "text-slate-350 opacity-60 text-xl md:text-3xl font-bold leading-normal scale-97 transition-all duration-500";
+                        const szClass = fontSize === "sm" ? "text-lg md:text-2xl" : fontSize === "lg" ? "text-2xl md:text-4xl" : fontSize === "xl" ? "text-3xl md:text-5xl" : "text-xl md:text-3xl";
+                        itemStyle = `${szClass} opacity-60 font-bold leading-normal scale-97 transition-all duration-500`;
+                        customStyle = {
+                          color: getColorCode(textColor),
+                        };
                       } else if (isThirdLast) {
-                        itemStyle = "text-slate-500 opacity-20 text-lg md:text-xl font-semibold leading-normal scale-94 transition-all duration-500 blur-[0.5px]";
+                        const szClass = fontSize === "sm" ? "text-base md:text-xl" : fontSize === "lg" ? "text-xl md:text-3xl" : fontSize === "xl" ? "text-2xl md:text-4xl" : "text-lg md:text-2xl";
+                        itemStyle = `${szClass} opacity-20 font-semibold leading-normal scale-94 transition-all duration-500 blur-[0.5px]`;
+                        customStyle = {
+                          color: getColorCode(textColor),
+                        };
                       }
+
+                      const bgClass = bgColor === "dark" ? "bg-slate-950/85 border border-white/10" : bgColor === "semi" ? "bg-black/35 backdrop-blur-[2px] border border-white/5" : "bg-transparent border-transparent shadow-none";
 
                       return (
                         <div
                           key={idx}
-                          className={`${itemStyle} font-dm max-w-3xl px-6 py-2 rounded-2xl bg-black/35 backdrop-blur-[2px] transition-all duration-500 transform origin-bottom`}
+                          className={`${itemStyle} ${bgClass} font-dm max-w-3xl px-6 py-2 rounded-2xl transition-all duration-500 transform origin-bottom`}
+                          style={customStyle}
                         >
                           {line}
                         </div>
@@ -424,6 +491,93 @@ export default function SubtitlesDashboard() {
               </div>
             )}
           </div>
+
+          {/* Subtitles Design Settings Panel */}
+          {settingsOpen && (
+            <div className="bg-white/70 backdrop-blur-xl border border-white/80 shadow-lg rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-[slide-up_0.2s_ease-out]">
+              <div className="flex flex-col gap-4 w-full">
+                <h4 className="font-syne font-bold text-xs text-slate-700 uppercase tracking-wider">Настройка стиля субтитров</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                  {/* Font Size Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Размер шрифта</span>
+                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                      {["sm", "md", "lg", "xl"].map((sz) => (
+                        <button
+                          key={sz}
+                          onClick={() => changeFontSize(sz)}
+                          className={`flex-1 text-[10px] font-bold py-1 rounded ${
+                            fontSize === sz ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          {sz.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Text Color Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Цвет текста</span>
+                    <div className="flex gap-1.5 bg-slate-200/50 p-1 rounded-lg">
+                      {["white", "yellow", "cyan", "green"].map((col) => (
+                        <button
+                          key={col}
+                          onClick={() => changeTextColor(col)}
+                          className="flex-1 h-5 rounded-md border border-black/10 flex items-center justify-center relative shadow-sm"
+                          style={{
+                            backgroundColor: getColorCode(col),
+                          }}
+                          title={col}
+                        >
+                          {textColor === col && (
+                            <span className="w-1.5 h-1.5 bg-slate-900 rounded-full" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Background Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Фон</span>
+                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                      {[
+                        { key: "dark", label: "Темный" },
+                        { key: "semi", label: "Полупроз." },
+                        { key: "none", label: "Без фона" }
+                      ].map((bg) => (
+                        <button
+                          key={bg.key}
+                          onClick={() => changeBgColor(bg.key)}
+                          className={`flex-1 text-[9px] font-bold py-1 rounded ${
+                            bgColor === bg.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          {bg.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Glow Toggle */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Свечение текста</span>
+                    <button
+                      onClick={() => changeTextGlow(!textGlow)}
+                      className={`text-[10px] font-bold py-1.5 px-3 rounded-lg border transition-all ${
+                        textGlow
+                          ? "bg-cyan-500/15 border-cyan-500/20 text-cyan-600 font-extrabold"
+                          : "bg-white/50 border-slate-200 text-slate-500"
+                      }`}
+                    >
+                      {textGlow ? "✨ ВКЛЮЧЕНО" : "🔇 ВЫКЛЮЧЕНО"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Unified Floating Controller Dock */}
           <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 z-10">
@@ -478,6 +632,16 @@ export default function SubtitlesDashboard() {
                   Очистить экран
                 </button>
               )}
+              <button
+                onClick={() => setSettingsOpen(!settingsOpen)}
+                className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border flex items-center gap-1.5 ${
+                  settingsOpen
+                    ? "bg-accent/15 border-accent/20 text-accent font-extrabold"
+                    : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                ⚙️ Дизайн
+              </button>
               <button
                 onClick={() => setHistoryOpen(!historyOpen)}
                 className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border ${

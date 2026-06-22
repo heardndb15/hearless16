@@ -46,9 +46,25 @@ export interface UserSettings {
   notificationsEnabled: boolean;
 }
 
+// Лекция для режима учебы
+export interface StudyLecture {
+  id: string;
+  user_id: string;
+  title: string;
+  transcript: string;
+  summary: string;
+  highlights: {
+    summary: string;
+    highlights: string[];
+    key_terms: { term: string; definition: string }[];
+  };
+  created_at: string;
+}
+
 export type RootTabParamList = {
   Subtitles: undefined;
   Gestures: undefined;
+  Study: undefined;
   Alerts: undefined;
   Profile: undefined;
 };
@@ -57,3 +73,4 @@ export type RootStackParamList = {
   Tabs: undefined;
   GesturePractice: { gestureId: string; gestureName: string };
 };
+

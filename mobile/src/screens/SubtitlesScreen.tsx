@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,19 @@ import { Colors, Spacing } from "../constants/theme";
 
 const { width } = Dimensions.get("window");
 
-function AnimatedLine({ text, index }: { text: string; index: number }) {
+function AnimatedLine({
+  text,
+  index,
+  fontSize,
+  textColor,
+  alignment,
+}: {
+  text: string;
+  index: number;
+  fontSize: number;
+  textColor: string;
+  alignment: "center" | "left";
+}) {
   const opacity = useRef(new Animated.Value(1)).current;
   const translateY = useRef(new Animated.Value(0)).current;
 
@@ -38,7 +50,14 @@ function AnimatedLine({ text, index }: { text: string; index: number }) {
     <Animated.Text
       style={[
         styles.line,
-        { opacity, transform: [{ translateY }] },
+        {
+          opacity,
+          transform: [{ translateY }],
+          fontSize,
+          color: textColor,
+          textAlign: alignment,
+          lineHeight: fontSize * 1.4,
+        },
       ]}
       numberOfLines={2}
     >
@@ -56,6 +75,12 @@ export default function SubtitlesScreen() {
     stopStreaming,
   } = useStreamingRecording();
 
+  const [fontSize, setFontSize] = useState(22); // 18, 22, 28, 36
+  const [textColor, setTextColor] = useState("#f3f8fc"); // White, Yellow, Cyan, Green
+  const [bgOpacity, setBgOpacity] = useState(0.85); // 0.85, 0.5, 0
+  const [alignment, setAlignment] = useState<"center" | "left">("center");
+  const [settingsVisible, setSettingsVisible] = useState(false);
+
   const recentChunks = chunks.slice(-3);
   const hasContent = recentChunks.length > 0 || streamText.length > 0;
 
@@ -67,21 +92,117 @@ export default function SubtitlesScreen() {
     }
   }
 
+  const getBgColor = (opacity: number) => {
+    if (opacity === 0) return "transparent";
+    return `rgba(33, 69, 89, ${opacity})`;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Субтитры</Text>
         <Text style={styles.subtitle}>Речь преобразуется в текст в реальном времени</Text>
+        <TouchableOpacity
+          style={styles.settingsToggle}
+          onPress={() => setSettingsVisible(!settingsVisible)}
+        >
+          <Text style={{ fontSize: 18 }}>⚙️</Text>
+        </TouchableOpacity>
       </View>
+
+      {settingsVisible && (
+        <View style={styles.settingsPanel}>
+          <Text style={styles.settingsPanelTitle}>Настройки отображения</Text>
+          
+          {/* Font Size */}
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Размер:</Text>
+            <View style={styles.settingOptions}>
+              {[18, 22, 28, 36].map((sz) => (
+                <TouchableOpacity
+                  key={sz}
+                  style={[styles.optionBtn, fontSize === sz && styles.optionBtnActive]}
+                  onPress={() => setFontSize(sz)}
+                >
+                  <Text style={[styles.optionText, fontSize === sz && styles.optionTextActive]}>{sz}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Text Color */}
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Цвет текста:</Text>
+            <View style={styles.settingOptions}>
+              {[
+                { code: "#ffffff", name: "Бел" },
+                { code: "#fdeb47", name: "Желт" },
+                { code: "#22d3ee", name: "Циан" },
+                { code: "#4ade80", name: "Зел" }
+              ].map((c) => (
+                <TouchableOpacity
+                  key={c.code}
+                  style={[styles.optionBtn, textColor === c.code && styles.optionBtnActive]}
+                  onPress={() => setTextColor(c.code)}
+                >
+                  <Text style={[styles.optionText, textColor === c.code && styles.optionTextActive]}>{c.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Background Opacity */}
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Задний фон:</Text>
+            <View style={styles.settingOptions}>
+              {[
+                { opacity: 0.85, label: "Темн" },
+                { opacity: 0.5, label: "Полупр" },
+                { opacity: 0, label: "Без фона" }
+              ].map((bg) => (
+                <TouchableOpacity
+                  key={bg.opacity}
+                  style={[styles.optionBtn, bgOpacity === bg.opacity && styles.optionBtnActive]}
+                  onPress={() => setBgOpacity(bg.opacity)}
+                >
+                  <Text style={[styles.optionText, bgOpacity === bg.opacity && styles.optionTextActive]}>{bg.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Alignment */}
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Выравнивание:</Text>
+            <View style={styles.settingOptions}>
+              {[
+                { key: "center", label: "Центр" },
+                { key: "left", label: "Лево" }
+              ].map((align) => (
+                <TouchableOpacity
+                  key={align.key}
+                  style={[styles.optionBtn, alignment === align.key && styles.optionBtnActive]}
+                  onPress={() => setAlignment(align.key as any)}
+                >
+                  <Text style={[styles.optionText, alignment === align.key && styles.optionTextActive]}>{align.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
 
       <View style={styles.subtitleArea}>
         {hasContent ? (
-          <View style={styles.subtitleCard}>
+          <View style={[styles.subtitleCard, { backgroundColor: getBgColor(bgOpacity) }]}>
             {recentChunks.map((chunk, i) => (
               <AnimatedLine
                 key={`${chunk.text}-${i}`}
                 text={chunk.text}
                 index={recentChunks.length - 1 - i}
+                fontSize={fontSize}
+                textColor={textColor}
+                alignment={alignment}
               />
             ))}
           </View>
@@ -120,6 +241,8 @@ const styles = StyleSheet.create({
   header: {
     paddingVertical: Spacing.lg,
     alignItems: "center",
+    position: "relative",
+    width: "100%",
   },
   title: {
     fontSize: 28,
@@ -131,6 +254,61 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
   },
+  settingsToggle: {
+    position: "absolute",
+    right: 8,
+    top: 22,
+    backgroundColor: "rgba(33, 69, 89, 0.08)",
+    padding: 8,
+    borderRadius: 20,
+  },
+  settingsPanel: {
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 16,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  settingsPanelTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: Colors.heading,
+    marginBottom: Spacing.sm,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 4,
+  },
+  settingLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontWeight: "600",
+    flex: 1,
+  },
+  settingOptions: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  optionBtn: {
+    backgroundColor: "#f1f5f9",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  optionBtnActive: {
+    backgroundColor: Colors.accent,
+  },
+  optionText: {
+    fontSize: 10,
+    color: Colors.textSecondary,
+    fontWeight: "600",
+  },
+  optionTextActive: {
+    color: Colors.white,
+  },
   subtitleArea: {
     flex: 1,
     justifyContent: "center",
@@ -138,7 +316,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   subtitleCard: {
-    backgroundColor: "rgba(33, 69, 89, 0.85)",
     borderRadius: 16,
     padding: Spacing.lg,
     minHeight: 200,
@@ -146,10 +323,6 @@ const styles = StyleSheet.create({
     width: width - Spacing.md * 2,
   },
   line: {
-    color: "#f3f8fc",
-    fontSize: 22,
-    textAlign: "center",
-    lineHeight: 32,
     marginVertical: 4,
   },
   placeholderCard: {

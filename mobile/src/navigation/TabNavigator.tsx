@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Colors } from "../constants/theme";
 import SubtitlesScreen from "../screens/SubtitlesScreen";
 import GesturesScreen from "../screens/GesturesScreen";
+import StudyScreen from "../screens/StudyScreen";
 import AlertsScreen from "../screens/AlertsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import type { RootTabParamList } from "../../../shared/types";
@@ -14,6 +15,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Субтитры: "💬",
     Жесты: "🤟",
+    Учеба: "🎓",
     Алерты: "🔔",
     Профиль: "👤",
   };
@@ -57,6 +59,14 @@ export default function TabNavigator() {
         options={{
           tabBarLabel: "Жесты",
           tabBarIcon: ({ focused }) => <TabIcon label="Жесты" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Study"
+        component={StudyScreen}
+        options={{
+          tabBarLabel: "Учеба",
+          tabBarIcon: ({ focused }) => <TabIcon label="Учеба" focused={focused} />,
         }}
       />
       <Tab.Screen

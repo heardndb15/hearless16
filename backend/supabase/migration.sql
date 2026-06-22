@@ -181,3 +181,39 @@ CREATE POLICY "Allow users to insert their own sos events"
   ON public.sos_events FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
+
+-- 7. Таблица лекций для режима учебы (study_lectures)
+CREATE TABLE IF NOT EXISTS study_lectures (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  transcript TEXT NOT NULL,
+  summary TEXT,
+  highlights JSONB, -- Хранит суммаризацию, ключевые моменты и термины
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Индексы для study_lectures
+CREATE INDEX IF NOT EXISTS idx_study_lectures_user ON study_lectures(user_id);
+CREATE INDEX IF NOT EXISTS idx_study_lectures_created ON study_lectures(created_at DESC);
+
+-- Включение RLS
+ALTER TABLE public.study_lectures ENABLE ROW LEVEL SECURITY;
+
+-- Политики безопасности для study_lectures
+DROP POLICY IF EXISTS "Allow users to read their own lectures" ON public.study_lectures;
+CREATE POLICY "Allow users to read their own lectures"
+  ON public.study_lectures FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to insert their own lectures" ON public.study_lectures;
+CREATE POLICY "Allow users to insert their own lectures"
+  ON public.study_lectures FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow users to delete their own lectures" ON public.study_lectures;
+CREATE POLICY "Allow users to delete their own lectures"
+  ON public.study_lectures FOR DELETE TO authenticated
+  USING (auth.uid() = user_id);
+
+
