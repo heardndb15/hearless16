@@ -32,6 +32,7 @@ export default function SubtitlesDashboard() {
   // Web Speech API Ref
   const recognitionRef = useRef<any>(null);
   const isRecordingRef = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   // WebSocket Ref (for Whisper)
   const wsRef = useRef<WebSocket | null>(null);
@@ -104,6 +105,12 @@ export default function SubtitlesDashboard() {
       stopRecordingSession();
     };
   }, []);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [transcriptionText]);
 
   async function fetchHistory(userId: string) {
     const supabase = createClient();
@@ -246,7 +253,7 @@ export default function SubtitlesDashboard() {
     if (!transcriptionText.trim()) return [];
     const sentences = transcriptionText.match(/[^.!?\n]+[.!?\n]*/g) || [transcriptionText];
     const cleaned = sentences.map(s => s.trim()).filter(Boolean);
-    return cleaned.slice(-6);
+    return cleaned.slice(-30);
   };
 
   const rollingLines = getRollingLines();
@@ -298,6 +305,20 @@ export default function SubtitlesDashboard() {
         }
         .text-shadow-glow {
           text-shadow: 0 0 20px rgba(34, 211, 238, 0.35), 0 0 4px rgba(255, 255, 255, 0.8);
+        }
+        /* Custom scrollbar for subtitles */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
         }
       `}</style>
 
@@ -368,72 +389,74 @@ export default function SubtitlesDashboard() {
             </div>
 
             {/* Subtitles Area (Netflix Screen) */}
-            <div className="flex-1 flex flex-col justify-end text-left z-10 py-6 max-w-4xl mx-auto w-full px-4">
-              {isRecording ? (
-                rollingLines.length > 0 ? (
-                  <div className={`transition-all duration-300 w-full ${
-                    bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-[2px]" : ""
-                  }`}>
-                    <p style={{
-                      fontSize: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
-                      lineHeight: "1.6"
-                    }} className="font-dm font-semibold transition-all duration-300">
-                      {rollingLines.map((line, idx) => {
-                        const isLast = idx === rollingLines.length - 1;
-                        
-                        let customStyle: React.CSSProperties = {};
-                        if (isLast) {
-                          customStyle = {
-                            color: getColorCode(textColor),
-                            textShadow: textGlow ? getShadow(textColor) : "none",
-                            fontWeight: 800
-                          };
-                        } else {
-                          customStyle = {
-                            color: "rgba(255, 255, 255, 0.25)",
-                            fontWeight: 500
-                          };
-                        }
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto z-10 my-4 max-w-4xl mx-auto w-full px-4 custom-scrollbar">
+              <div className="min-h-full flex flex-col justify-end">
+                {isRecording ? (
+                  rollingLines.length > 0 ? (
+                    <div className={`transition-all duration-300 w-full ${
+                      bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-[2px]" : ""
+                    }`}>
+                      <p style={{
+                        fontSize: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
+                        lineHeight: "1.6"
+                      }} className="font-dm font-semibold transition-all duration-300">
+                        {rollingLines.map((line, idx) => {
+                          const isLast = idx === rollingLines.length - 1;
+                          
+                          let customStyle: React.CSSProperties = {};
+                          if (isLast) {
+                            customStyle = {
+                              color: getColorCode(textColor),
+                              textShadow: textGlow ? getShadow(textColor) : "none",
+                              fontWeight: 800
+                            };
+                          } else {
+                            customStyle = {
+                              color: "rgba(255, 255, 255, 0.25)",
+                              fontWeight: 500
+                            };
+                          }
 
-                        return (
-                          <span
-                            key={idx}
-                            className="mr-2.5 transition-all duration-500 inline"
-                            style={customStyle}
-                          >
-                            {line}
-                          </span>
-                        );
-                      })}
-                      {/* Blinking cursor */}
-                      <span className="inline-block w-0.5 ml-1 vertical-align-middle animate-[cursor-blink_0.8s_step-end_infinite]"
-                            style={{ 
-                              height: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
-                              backgroundColor: getColorCode(textColor)
-                            }} />
-                    </p>
-                  </div>
-                ) : (
-                  <div className="my-auto space-y-4 animate-pulse text-center w-full">
-                    <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
-                      🎙️
+                          return (
+                            <span
+                              key={idx}
+                              className="mr-2.5 transition-all duration-500 inline"
+                              style={customStyle}
+                            >
+                              {line}
+                            </span>
+                          );
+                        })}
+                        {/* Blinking cursor */}
+                        <span className="inline-block w-0.5 ml-1 vertical-align-middle animate-[cursor-blink_0.8s_step-end_infinite]"
+                              style={{ 
+                                height: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
+                                backgroundColor: getColorCode(textColor)
+                              }} />
+                      </p>
                     </div>
-                    <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
-                      Говорите, ИИ расшифровывает...
+                  ) : (
+                    <div className="my-auto space-y-4 animate-pulse text-center w-full">
+                      <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
+                        🎙️
+                      </div>
+                      <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
+                        Говорите, ИИ расшифровывает...
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  <div className="my-auto space-y-4 py-8 text-center w-full">
+                    <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center mx-auto text-2xl shadow-xl">
+                      🎬
+                    </div>
+                    <h3 className="font-syne font-extrabold text-white text-lg">Запуск ИИ-Субтитров</h3>
+                    <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed font-semibold">
+                      Нажмите круглую кнопку записи внизу для запуска распознавания речи в кино-режиме.
                     </p>
                   </div>
-                )
-              ) : (
-                <div className="my-auto space-y-4 py-8 text-center w-full">
-                  <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center mx-auto text-2xl shadow-xl">
-                    🎬
-                  </div>
-                  <h3 className="font-syne font-extrabold text-white text-lg">Запуск ИИ-Субтитров</h3>
-                  <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed font-semibold">
-                    Нажмите круглую кнопку записи внизу для запуска распознавания речи в кино-режиме.
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Live Audio Level Waveform (Flickering light) */}

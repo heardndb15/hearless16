@@ -42,6 +42,7 @@ export default function StudyDashboard() {
   // Web Speech API / WebSocket refs
   const recognitionRef = useRef<any>(null);
   const isRecordingRef = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
@@ -70,6 +71,12 @@ export default function StudyDashboard() {
       stopRecordingSession();
     };
   }, []);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [transcriptionText]);
 
   async function fetchLectures(userId: string) {
     try {
@@ -265,7 +272,7 @@ export default function StudyDashboard() {
   const getRollingLines = () => {
     if (!transcriptionText.trim()) return [];
     const sentences = transcriptionText.match(/[^.!?\n]+[.!?\n]*/g) || [transcriptionText];
-    return sentences.map(s => s.trim()).filter(Boolean).slice(-6);
+    return sentences.map(s => s.trim()).filter(Boolean).slice(-30);
   };
   const rollingLines = getRollingLines();
 
@@ -276,6 +283,20 @@ export default function StudyDashboard() {
         @keyframes sound-wave {
           0%, 100% { transform: scaleY(0.3); }
           50% { transform: scaleY(1); }
+        }
+        /* Custom scrollbar for subtitles */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
         }
       `}</style>
 
@@ -407,34 +428,36 @@ export default function StudyDashboard() {
               </div>
 
               {/* Transcription Content Area */}
-              <div className="flex-1 flex flex-col justify-end text-left max-w-2xl mx-auto w-full z-10 py-6 overflow-y-auto max-h-[220px] px-4">
-                {transcriptionText ? (
-                  <div className="bg-slate-900/80 border border-white/10 p-5 rounded-2xl backdrop-blur-md w-full">
-                    <p className="font-dm font-semibold text-lg md:text-xl leading-relaxed transition-all duration-300">
-                      {rollingLines.map((line, idx) => {
-                        const isLast = idx === rollingLines.length - 1;
-                        return (
-                          <span
-                            key={idx}
-                            className={`mr-2.5 transition-all duration-500 inline ${
-                              isLast ? "text-cyan-400 font-extrabold" : "text-white/25 font-medium"
-                            }`}
-                          >
-                            {line}
-                          </span>
-                        );
-                      })}
-                      {/* Blinking cursor */}
-                      <span className="inline-block w-0.5 h-5 bg-cyan-400 ml-1 vertical-align-middle animate-[cursor-blink_0.8s_step-end_infinite]" />
-                    </p>
-                  </div>
-                ) : (
-                  <div className="my-auto space-y-3 animate-pulse text-center w-full">
-                    <p className="text-sky-300 text-sm font-semibold">
-                      {isRecording ? "Слушаю лекцию преподавателя..." : "Нажмите кнопку ниже для записи"}
-                    </p>
-                  </div>
-                )}
+              <div ref={scrollContainerRef} className="flex-1 overflow-y-auto z-10 my-4 max-w-2xl mx-auto w-full px-4 custom-scrollbar">
+                <div className="min-h-full flex flex-col justify-end">
+                  {transcriptionText ? (
+                    <div className="bg-slate-900/80 border border-white/10 p-5 rounded-2xl backdrop-blur-md w-full">
+                      <p className="font-dm font-semibold text-lg md:text-xl leading-relaxed transition-all duration-300">
+                        {rollingLines.map((line, idx) => {
+                          const isLast = idx === rollingLines.length - 1;
+                          return (
+                            <span
+                              key={idx}
+                              className={`mr-2.5 transition-all duration-500 inline ${
+                                isLast ? "text-cyan-400 font-extrabold" : "text-white/25 font-medium"
+                              }`}
+                            >
+                              {line}
+                            </span>
+                          );
+                        })}
+                        {/* Blinking cursor */}
+                        <span className="inline-block w-0.5 h-5 bg-cyan-400 ml-1 vertical-align-middle animate-[cursor-blink_0.8s_step-end_infinite]" />
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="my-auto space-y-3 animate-pulse text-center w-full">
+                      <p className="text-sky-300 text-sm font-semibold">
+                        {isRecording ? "Слушаю лекцию преподавателя..." : "Нажмите кнопку ниже для записи"}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Action Button */}
