@@ -61,8 +61,6 @@ export default function StudyDashboard() {
   async function fetchLectures(userId: string) {
     try {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
-      const defaultProdUrl = "https://hearless16-1.onrender.com/study/lectures";
-      const defaultDevUrl = "http://localhost:8000/study/lectures";
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
       
       const res = await fetch(`${baseUrl}/study/lectures/${userId}`);
@@ -274,8 +272,8 @@ export default function StudyDashboard() {
       {/* Page Header */}
       <div className="flex justify-between items-center flex-wrap gap-4 text-left">
         <div>
-          <h2 className="font-syne font-extrabold text-3xl text-slate-800 tracking-tight">Режим учебы 🎓</h2>
-          <p className="text-slate-500 text-sm max-w-2xl font-medium">
+          <h2 className="font-syne font-extrabold text-3xl text-sky-900 tracking-tight">Режим учебы 🎓</h2>
+          <p className="text-sky-600 text-sm max-w-2xl font-medium">
             Записывайте университетские лекции. Наш ИИ автоматически структурирует материал, выделит ключевые тезисы и словарь терминов.
           </p>
         </div>
@@ -298,17 +296,17 @@ export default function StudyDashboard() {
       {activeTab === "list" && (
         <div className="space-y-6">
           {loading ? (
-            <div className="py-20 text-center text-slate-400">
+            <div className="py-20 text-center text-sky-500">
               <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               Загрузка конспектов...
             </div>
           ) : lectures.length === 0 ? (
-            <div className="bg-white/40 border border-white/60 shadow-xl rounded-3xl p-12 text-center max-w-lg mx-auto space-y-4 my-8">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-3xl shadow-sm">
+            <div className="bg-sky-50/40 border border-sky-100/60 shadow-xl rounded-3xl p-12 text-center max-w-lg mx-auto space-y-4 my-8">
+              <div className="w-16 h-16 rounded-full bg-sky-100/50 flex items-center justify-center mx-auto text-3xl shadow-sm">
                 🎓
               </div>
-              <h3 className="font-syne font-extrabold text-slate-800 text-lg">Записей пока нет</h3>
-              <p className="text-slate-500 text-xs leading-relaxed font-semibold">
+              <h3 className="font-syne font-extrabold text-sky-900 text-lg">Записей пока нет</h3>
+              <p className="text-sky-600 text-xs leading-relaxed font-semibold">
                 Запишите свою первую лекцию или семинар! ИИ создаст подробную выжимку, словарь терминов и выделит самое важное.
               </p>
               <button
@@ -327,11 +325,11 @@ export default function StudyDashboard() {
                     setSelectedLecture(lecture);
                     setActiveTab("view");
                   }}
-                  className="bg-white/50 border border-white/80 rounded-3xl p-6 shadow-sm hover:shadow-lg hover:bg-white/70 transition-all cursor-pointer text-left flex flex-col justify-between min-h-[180px] group"
+                  className="bg-sky-50/50 border border-sky-100/80 rounded-3xl p-6 shadow-sm hover:shadow-lg hover:bg-sky-100/30 transition-all cursor-pointer text-left flex flex-col justify-between min-h-[180px] group"
                 >
                   <div className="space-y-2">
                     <div className="flex justify-between items-start gap-2">
-                      <span className="text-[10px] text-accent font-bold uppercase tracking-wider bg-accent/10 px-2.5 py-1 rounded-md">
+                      <span className="text-[10px] text-accent font-bold uppercase tracking-wider bg-sky-100/60 px-2.5 py-1 rounded-md">
                         {new Date(lecture.created_at).toLocaleDateString("ru-RU", { day: "2-digit", month: "short" })}
                       </span>
                       <button
@@ -339,20 +337,20 @@ export default function StudyDashboard() {
                           e.stopPropagation();
                           handleDeleteLecture(lecture.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 transition-all"
+                        className="opacity-0 group-hover:opacity-100 text-sky-400 hover:text-red-500 p-1 transition-all"
                       >
                         🗑️
                       </button>
                     </div>
-                    <h3 className="font-syne font-extrabold text-slate-800 text-base leading-snug truncate">
+                    <h3 className="font-syne font-extrabold text-sky-900 text-base leading-snug truncate">
                       {lecture.title}
                     </h3>
-                    <p className="text-slate-500 text-xs font-semibold leading-relaxed line-clamp-3">
+                    <p className="text-sky-600 text-xs font-semibold leading-relaxed line-clamp-3">
                       {lecture.summary || lecture.transcript}
                     </p>
                   </div>
-                  <div className="pt-4 border-t border-slate-100/50 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">
+                  <div className="pt-4 border-t border-sky-100/50 flex items-center justify-between">
+                    <span className="text-[10px] text-sky-500 font-bold uppercase">
                       📚 {lecture.highlights?.key_terms?.length || 0} терминов
                     </span>
                     <span className="text-xs text-accent font-bold group-hover:translate-x-1 transition-transform">
@@ -370,13 +368,13 @@ export default function StudyDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Record Display & Waveform */}
           <div className="lg:col-span-7 flex flex-col gap-6">
-            <div className="relative aspect-[16/9] min-h-[360px] w-full rounded-3xl bg-slate-950/95 border border-white/10 shadow-2xl flex flex-col justify-between p-8 overflow-hidden">
+            <div className="relative aspect-[16/9] min-h-[360px] w-full rounded-3xl bg-sky-950/95 border border-sky-900/50 shadow-2xl flex flex-col justify-between p-8 overflow-hidden">
               {/* Blur blobs */}
               <div className="absolute top-1/4 left-1/3 w-[220px] h-[220px] bg-accent/10 rounded-full blur-[80px] pointer-events-none"></div>
 
               {/* Status Header */}
               <div className="flex justify-between items-center z-10">
-                <span className="text-[10px] font-syne font-extrabold text-slate-400 uppercase tracking-widest bg-slate-900 border border-white/5 px-3 py-1.5 rounded-full">
+                <span className="text-[10px] font-syne font-extrabold text-sky-300 uppercase tracking-widest bg-sky-900/80 border border-white/5 px-3 py-1.5 rounded-full">
                   {isRecording ? "🔴 Запись аудио" : "⚪ Готов к записи"}
                 </span>
 
@@ -406,7 +404,7 @@ export default function StudyDashboard() {
                   </p>
                 ) : (
                   <div className="space-y-3 animate-pulse">
-                    <p className="text-slate-400 text-sm font-semibold">
+                    <p className="text-sky-300 text-sm font-semibold">
                       {isRecording ? "Слушаю лекцию преподавателя..." : "Нажмите кнопку ниже для записи"}
                     </p>
                   </div>
@@ -439,7 +437,7 @@ export default function StudyDashboard() {
                 stopRecordingSession();
                 setActiveTab("list");
               }}
-              className="self-start text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1"
+              className="self-start text-xs font-bold text-sky-500 hover:text-sky-800 flex items-center gap-1"
             >
               ← Отмена
             </button>
@@ -448,51 +446,51 @@ export default function StudyDashboard() {
           {/* AI Analysis and Save Form */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             {aiStatus === "analyzing" ? (
-              <div className="bg-white/50 border border-white/80 shadow-xl rounded-3xl p-8 text-center flex-1 flex flex-col justify-center items-center gap-4 min-h-[300px]">
+              <div className="bg-sky-50/50 border border-sky-100/80 shadow-xl rounded-3xl p-8 text-center flex-1 flex flex-col justify-center items-center gap-4 min-h-[300px]">
                 <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-                <h3 className="font-syne font-extrabold text-slate-800 text-base">ИИ анализирует лекцию...</h3>
-                <p className="text-slate-500 text-xs max-w-xs font-semibold leading-relaxed">
+                <h3 className="font-syne font-extrabold text-sky-900 text-base">ИИ анализирует лекцию...</h3>
+                <p className="text-sky-600 text-xs max-w-xs font-semibold leading-relaxed">
                   Мы структурируем конспект, составляем резюме лекции и собираем новые термины. Это займет несколько секунд.
                 </p>
               </div>
             ) : analysisResult ? (
-              <div className="bg-white/60 border border-white/80 shadow-xl rounded-3xl p-6 space-y-5 text-left flex-1 flex flex-col justify-between">
+              <div className="bg-sky-50/60 border border-sky-100/80 shadow-xl rounded-3xl p-6 space-y-5 text-left flex-1 flex flex-col justify-between">
                 <div className="space-y-4 flex-1 overflow-y-auto max-h-[420px] pr-1">
-                  <h3 className="font-syne font-extrabold text-slate-800 text-lg">Результат анализа ИИ</h3>
+                  <h3 className="font-syne font-extrabold text-sky-900 text-lg">Результат анализа ИИ</h3>
                   
                   {/* Title input */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-slate-400 font-bold uppercase">Название лекции</label>
+                    <label className="text-[10px] text-sky-500 font-bold uppercase">Название лекции</label>
                     <input
                       type="text"
                       value={lectureTitle}
                       onChange={(e) => setLectureTitle(e.target.value)}
-                      className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white/85 text-xs font-bold outline-none focus:border-accent"
+                      className="px-3.5 py-2.5 rounded-xl border border-sky-200 bg-white/85 text-xs font-bold outline-none focus:border-accent"
                     />
                   </div>
 
                   {/* Summary */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Краткое содержание</span>
-                    <p className="text-slate-700 text-xs leading-relaxed bg-white/40 border border-slate-100 p-3 rounded-xl font-semibold">
+                    <span className="text-[10px] text-sky-500 font-bold uppercase">Краткое содержание</span>
+                    <p className="text-sky-700 text-xs leading-relaxed bg-white/40 border border-sky-100 p-3 rounded-xl font-semibold">
                       {analysisResult.summary}
                     </p>
                   </div>
 
                   {/* Highlights count */}
-                  <div className="flex justify-between text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-500 font-semibold">Выделено ключевых тезисов:</span>
+                  <div className="flex justify-between text-xs bg-sky-50 p-3 rounded-xl border border-sky-100">
+                    <span className="text-sky-600 font-semibold">Выделено ключевых тезисов:</span>
                     <span className="font-bold text-accent">{analysisResult.highlights?.length || 0}</span>
                   </div>
 
                   {/* Terms count */}
-                  <div className="flex justify-between text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-slate-500 font-semibold">Обнаружено терминов:</span>
+                  <div className="flex justify-between text-xs bg-sky-50 p-3 rounded-xl border border-sky-100">
+                    <span className="text-sky-600 font-semibold">Обнаружено терминов:</span>
                     <span className="font-bold text-purpleBrand">{analysisResult.key_terms?.length || 0}</span>
                   </div>
                 </div>
 
-                <div className="pt-5 border-t border-slate-100 flex gap-3">
+                <div className="pt-5 border-t border-sky-100 flex gap-3">
                   <button
                     onClick={handleSaveLecture}
                     className="flex-1 py-3 rounded-xl bg-green-500 text-white font-syne font-bold text-xs hover:bg-green-600 transition-all shadow-md shadow-green-500/10"
@@ -501,19 +499,19 @@ export default function StudyDashboard() {
                   </button>
                   <button
                     onClick={() => setAnalysisResult(null)}
-                    className="py-3 px-5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-500 font-bold text-xs"
+                    className="py-3 px-5 rounded-xl border border-sky-200 hover:bg-sky-50 text-sky-600 font-bold text-xs"
                   >
                     Сбросить
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="bg-white/40 border border-white/60 shadow-xl rounded-3xl p-8 text-center flex-1 flex flex-col justify-center items-center gap-3 min-h-[300px]">
-                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-xl text-slate-400">
+              <div className="bg-sky-50/40 border border-sky-100/60 shadow-xl rounded-3xl p-8 text-center flex-1 flex flex-col justify-center items-center gap-3 min-h-[300px]">
+                <div className="w-14 h-14 rounded-full bg-sky-100/50 flex items-center justify-center text-xl text-sky-400">
                   ✨
                 </div>
-                <h4 className="font-syne font-bold text-slate-800 text-sm">Готов к анализу</h4>
-                <p className="text-slate-500 text-[11px] leading-relaxed max-w-xs font-semibold">
+                <h4 className="font-syne font-bold text-sky-900 text-sm">Готов к анализу</h4>
+                <p className="text-sky-600 text-[11px] leading-relaxed max-w-xs font-semibold">
                   После записи лекции здесь появится умный конспект лекции, ключевые моменты и определения.
                 </p>
               </div>
@@ -525,10 +523,10 @@ export default function StudyDashboard() {
       {activeTab === "view" && selectedLecture && (
         <div className="space-y-6 text-left">
           {/* Lecture Navigation & Header */}
-          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-200 pb-4">
+          <div className="flex items-center justify-between flex-wrap gap-4 border-b border-sky-200 pb-4">
             <button
               onClick={() => setActiveTab("list")}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1"
+              className="text-xs font-bold text-sky-500 hover:text-sky-800 flex items-center gap-1"
             >
               ← Назад к списку
             </button>
@@ -540,12 +538,12 @@ export default function StudyDashboard() {
             </button>
           </div>
 
-          <div className="bg-white/60 border border-white/80 shadow-xl rounded-3xl p-6 md:p-8 space-y-6">
+          <div className="bg-sky-50/60 border border-sky-100/80 shadow-xl rounded-3xl p-6 md:p-8 space-y-6">
             <div className="space-y-2">
               <span className="text-[10px] text-accent font-extrabold uppercase bg-accent/15 px-3 py-1 rounded-md tracking-wider">
                 {new Date(selectedLecture.created_at).toLocaleString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })}
               </span>
-              <h2 className="font-syne font-extrabold text-2xl md:text-3xl text-slate-800">
+              <h2 className="font-syne font-extrabold text-2xl md:text-3xl text-sky-900">
                 {selectedLecture.title}
               </h2>
             </div>
@@ -557,7 +555,7 @@ export default function StudyDashboard() {
               <div className="lg:col-span-7 space-y-6">
                 
                 {/* Summary Card */}
-                <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-md relative overflow-hidden">
+                <div className="bg-sky-900 text-white rounded-3xl p-6 shadow-md relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl pointer-events-none"></div>
                   <h3 className="font-syne font-extrabold text-sm text-cyan-400 uppercase tracking-widest mb-3">Сводка лекции</h3>
                   <p className="font-dm text-sm leading-relaxed text-slate-200 font-medium">
@@ -566,15 +564,15 @@ export default function StudyDashboard() {
                 </div>
 
                 {/* Highlights Card */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-syne font-extrabold text-sm text-slate-700 uppercase tracking-widest">Ключевые тезисы</h3>
+                <div className="bg-white border border-sky-100 rounded-3xl p-6 shadow-sm space-y-4">
+                  <h3 className="font-syne font-extrabold text-sm text-sky-850 uppercase tracking-widest">Ключевые тезисы</h3>
                   <div className="space-y-3">
                     {selectedLecture.highlights?.highlights?.map((hl, i) => (
                       <div key={i} className="flex gap-3 items-start">
                         <span className="w-5 h-5 rounded-full bg-cyan-100/50 flex items-center justify-center text-cyan-500 font-bold text-xs shrink-0 mt-0.5">
                           ✓
                         </span>
-                        <p className="text-slate-600 text-xs font-semibold leading-relaxed">
+                        <p className="text-sky-900 text-xs font-semibold leading-relaxed">
                           {hl}
                         </p>
                       </div>
@@ -583,9 +581,9 @@ export default function StudyDashboard() {
                 </div>
 
                 {/* Full Transcript Card */}
-                <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-3">
-                  <h3 className="font-syne font-extrabold text-sm text-slate-700 uppercase tracking-widest">Полный текст лекции</h3>
-                  <p className="text-slate-600 text-xs leading-relaxed font-semibold max-h-[220px] overflow-y-auto bg-slate-50 p-4 rounded-2xl border border-slate-100 whitespace-pre-line">
+                <div className="bg-white border border-sky-100 rounded-3xl p-6 shadow-sm space-y-3">
+                  <h3 className="font-syne font-extrabold text-sm text-sky-850 uppercase tracking-widest">Полный текст лекции</h3>
+                  <p className="text-sky-900 text-xs leading-relaxed font-semibold max-h-[220px] overflow-y-auto bg-sky-50/70 p-4 rounded-2xl border border-sky-100 whitespace-pre-line">
                     {selectedLecture.transcript}
                   </p>
                 </div>
@@ -593,18 +591,18 @@ export default function StudyDashboard() {
 
               {/* Glossary (Right 5 Columns) */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="bg-white border border-sky-100 rounded-3xl p-6 shadow-sm space-y-4">
                   <h3 className="font-syne font-extrabold text-sm text-purpleBrand uppercase tracking-widest">Словарь терминов</h3>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
                     {selectedLecture.highlights?.key_terms?.map((term, i) => (
                       <div
                         key={i}
-                        className="p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-slate-100/70"
+                        className="p-4 rounded-2xl bg-sky-50 border border-sky-100 transition-all hover:bg-sky-100/40"
                       >
-                        <h4 className="font-syne font-extrabold text-xs text-slate-800 uppercase tracking-wide">
+                        <h4 className="font-syne font-extrabold text-xs text-sky-900 uppercase tracking-wide">
                           🔑 {term.term}
                         </h4>
-                        <p className="text-slate-500 text-[11px] font-semibold leading-normal mt-1">
+                        <p className="text-sky-600 text-[11px] font-semibold leading-normal mt-1">
                           {term.definition}
                         </p>
                       </div>

@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   lectureCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: "#f0f9ff", // soft sky blue instead of white
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 20,
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   cardFooter: {
     borderTopWidth: 1,
-    borderTopColor: "#f1f5f9",
+    borderTopColor: "#e0f2fe", // soft sky blue separator instead of gray
     paddingTop: Spacing.sm,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -617,9 +617,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   loadingBox: {
-    backgroundColor: Colors.white,
+    backgroundColor: "#f0f9ff", // soft sky blue instead of white
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: "#bae6fd", // sky blue border instead of Colors.border
     borderRadius: 20,
     padding: Spacing.lg,
     alignItems: "center",
@@ -632,9 +632,9 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   analysisResultBox: {
-    backgroundColor: Colors.white,
+    backgroundColor: "#f0f9ff", // soft sky blue instead of white
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: "#bae6fd", // sky blue border instead of Colors.border
     borderRadius: 24,
     padding: Spacing.md,
     marginVertical: Spacing.md,
@@ -654,8 +654,8 @@ const styles = StyleSheet.create({
   },
   titleInput: {
     borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: "#f8fafc",
+    borderColor: "#bae6fd", // sky blue border instead of Colors.border
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 10,
     fontSize: 13,
@@ -668,11 +668,11 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontWeight: "600",
     lineHeight: 18,
-    backgroundColor: "#f8fafc",
+    backgroundColor: Colors.white,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#bae6fd",
     marginBottom: Spacing.md,
   },
   metaBadgeRow: {
@@ -720,9 +720,9 @@ const styles = StyleSheet.create({
   },
   detailCard: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: "#f0f9ff", // soft sky blue instead of white
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: "#bae6fd", // sky blue border instead of Colors.border
     borderRadius: 24,
     padding: Spacing.md,
     marginTop: Spacing.xs,
@@ -742,7 +742,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#e0f2fe", // light sky blue instead of #f1f5f9
     padding: 3,
     borderRadius: 12,
     marginBottom: Spacing.md,
@@ -792,11 +792,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   rawTranscriptText: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: Colors.white, // white container inside blue card instead of #f8fafc
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#bae6fd", // sky blue border instead of #e2e8f0
   },
   highlightBulletRow: {
     flexDirection: "row",
@@ -818,9 +818,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   termItemCard: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: Colors.white, // white container inside blue card instead of #f8fafc
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#bae6fd", // sky blue border instead of #e2e8f0
     padding: 12,
     borderRadius: 14,
     marginBottom: Spacing.sm,
