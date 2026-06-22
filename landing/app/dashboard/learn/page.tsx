@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -28,6 +28,174 @@ export default function LearnSignLanguagePage() {
 
   // Status updates
   const [actionMessage, setActionMessage] = useState("");
+
+  // Category tabs
+  const [selectedCategory, setSelectedCategory] = useState("Все");
+
+  // Camera check states
+  const [cameraMode, setCameraMode] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<{
+    gesture: string;
+    confidence: number;
+    components: { hand_shape: number; position: number; movement: number };
+  } | null>(null);
+  const [verifyError, setVerifyError] = useState("");
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedGesture) {
+      stopCamera();
+    }
+  }, [selectedGesture]);
+
+  async function startCamera() {
+    setVerifyError("");
+    setVerificationResult(null);
+    setCameraMode(true);
+    setIsVerifying(true);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 400, height: 400, facingMode: "user" }
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      // Start capture interval (every 800ms)
+      intervalRef.current = setInterval(() => {
+        captureAndVerify();
+      }, 800);
+
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setVerifyError("Не удалось получить доступ к камере. Убедитесь, что разрешения предоставлены.");
+      setIsVerifying(false);
+      setCameraMode(false);
+    }
+  }
+
+  function stopCamera() {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsVerifying(false);
+    setCameraMode(false);
+  }
+
+  async function captureAndVerify() {
+    if (!videoRef.current || !canvasRef.current || !selectedGesture) return;
+
+    try {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+
+      if (context && video.videoWidth > 0) {
+        canvas.width = 300;
+        canvas.height = 300;
+        
+        // Crop/draw to square
+        const size = Math.min(video.videoWidth, video.videoHeight);
+        const startX = (video.videoWidth - size) / 2;
+        const startY = (video.videoHeight - size) / 2;
+        
+        context.drawImage(video, startX, startY, size, size, 0, 0, 300, 300);
+        
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.5);
+        const base64Image = dataUrl.split(",")[1];
+
+        const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
+
+        const response = await fetch(`${baseUrl}/gestures/recognize`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            image: base64Image,
+            target_gesture: selectedGesture.name
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setVerificationResult(result);
+
+          if (result.confidence >= 80) {
+            // Success! Save progress
+            handleSuccess(result.confidence);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error during gesture recognition:", e);
+    }
+  }
+
+  async function handleSuccess(confidence: number) {
+    if (!user || !selectedGesture) return;
+    
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setIsVerifying(false);
+
+    setActionMessage("Жест успешно распознан! 🎉");
+    setTimeout(() => {
+      setActionMessage("");
+      stopCamera();
+    }, 2500);
+
+    const supabase = createClient();
+    const currentProgress = progressMap[selectedGesture.id];
+
+    if (currentProgress) {
+      const updatedAttempts = currentProgress.attempts + 1;
+      await supabase
+        .from("user_progress")
+        .update({
+          learned: true,
+          accuracy: confidence,
+          attempts: updatedAttempts,
+          best_accuracy: Math.max(currentProgress.accuracy, confidence)
+        })
+        .eq("user_id", user.id)
+        .eq("gesture_id", selectedGesture.id);
+    } else {
+      await supabase
+        .from("user_progress")
+        .insert({
+          user_id: user.id,
+          gesture_id: selectedGesture.id,
+          attempts: 1,
+          accuracy: confidence,
+          best_accuracy: confidence,
+          learned: true
+        });
+    }
+
+    fetchData(user.id);
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -234,39 +402,118 @@ export default function LearnSignLanguagePage() {
                 <h3 className="font-syne font-black text-2xl text-slate-800">{selectedGesture.name}</h3>
               </div>
 
-              {/* Gesture visual illustration placeholder */}
-              <div className="relative aspect-square w-48 h-48 mx-auto rounded-full bg-gradient-to-tr from-accent/5 to-purpleBrand/5 border border-white flex items-center justify-center shadow-lg shadow-accent/5">
-                <span className="text-8xl animate-[float_4s_infinite_ease-in-out]">
-                  {translateNameToEmoji(selectedGesture.name)}
-                </span>
-                
-                {/* Visual scanning circle border */}
-                <div className="absolute inset-2 border border-dashed border-accent/20 rounded-full animate-[spin_40s_linear_infinite]"></div>
-              </div>
+              {/* Gesture visual illustration placeholder OR Webcam preview */}
+              {cameraMode ? (
+                <div className="relative aspect-square w-56 h-56 mx-auto rounded-2xl border-2 border-slate-300 bg-slate-950 overflow-hidden flex items-center justify-center shadow-2xl">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover scale-x-[-1]"
+                  />
+                  {/* Corner scan brackets */}
+                  <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-accent"></div>
+                  <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-accent"></div>
+                  <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-accent"></div>
+                  <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-accent"></div>
+
+                  {/* Recognition Status Overlay */}
+                  {verificationResult && (
+                    <div className="absolute bottom-4 left-4 right-4 py-2 px-3 rounded-xl bg-black/60 border border-white/10 backdrop-blur-sm flex justify-between items-center text-white text-[11px] font-bold">
+                      <span>Точность:</span>
+                      <span className={verificationResult.confidence >= 80 ? "text-green-400" : "text-amber-400"}>
+                        {verificationResult.confidence}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="relative aspect-square w-48 h-48 mx-auto rounded-full bg-gradient-to-tr from-accent/5 to-purpleBrand/5 border border-white flex items-center justify-center shadow-lg shadow-accent/5">
+                  <span className="text-8xl animate-[float_4s_infinite_ease-in-out]">
+                    {translateNameToEmoji(selectedGesture.name)}
+                  </span>
+                  
+                  {/* Visual scanning circle border */}
+                  <div className="absolute inset-2 border border-dashed border-accent/20 rounded-full animate-[spin_40s_linear_infinite]"></div>
+                </div>
+              )}
 
               {/* Action logs & message */}
               <div className="space-y-4">
                 {actionMessage && (
                   <p className="text-xs font-bold text-accent font-syne animate-pulse">{actionMessage}</p>
                 )}
+                {verifyError && (
+                  <p className="text-xs font-bold text-red-500 font-syne">{verifyError}</p>
+                )}
+
+                {/* Accuracy progress meters if verifying */}
+                {cameraMode && verificationResult && (
+                  <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3.5 space-y-2 text-left text-xs font-semibold">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Форма руки:</span>
+                      <span className="font-bold text-slate-700">{verificationResult.components.hand_shape}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                      <div style={{ width: `${verificationResult.components.hand_shape}%` }} className="bg-accent h-full"></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Позиция:</span>
+                      <span className="font-bold text-slate-700">{verificationResult.components.position}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                      <div style={{ width: `${verificationResult.components.position}%` }} className="bg-accent h-full"></div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Движение:</span>
+                      <span className="font-bold text-slate-700">{verificationResult.components.movement}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                      <div style={{ width: `${verificationResult.components.movement}%` }} className="bg-accent h-full"></div>
+                    </div>
+                  </div>
+                )}
                 
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleRepeatGesture}
-                    className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white/50 text-slate-700 hover:text-slate-850 hover:bg-white font-syne font-bold text-sm tracking-wide shadow-sm transition-all"
-                  >
-                    ✊ Повторить
-                  </button>
-                  <button
-                    onClick={handleRememberGesture}
-                    className={`flex-1 py-3.5 rounded-xl text-white font-syne font-bold text-sm tracking-wide shadow-md transition-all ${
-                      progressMap[selectedGesture.id]?.learned
-                        ? "bg-slate-800 hover:bg-slate-750"
-                        : "bg-accent hover:bg-accent/90"
-                    }`}
-                  >
-                    {progressMap[selectedGesture.id]?.learned ? "✓ Выучено" : "☆ Запомнить"}
-                  </button>
+                <div className="flex flex-col gap-2">
+                  {cameraMode ? (
+                    <button
+                      onClick={stopCamera}
+                      className="w-full py-3.5 rounded-xl border border-red-200 bg-red-500/10 text-red-650 hover:bg-red-500 hover:text-white font-syne font-bold text-sm tracking-wide shadow-sm transition-all"
+                    >
+                      ⏹ Остановить проверку
+                    </button>
+                  ) : (
+                    <button
+                      onClick={startCamera}
+                      className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-syne font-bold text-sm tracking-wide shadow-md transition-all flex justify-center items-center gap-2"
+                    >
+                      <span>🎥 Проверить через камеру</span>
+                    </button>
+                  )}
+
+                  {!cameraMode && (
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handleRepeatGesture}
+                        className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white/50 text-slate-700 hover:text-slate-850 hover:bg-white font-syne font-bold text-sm tracking-wide shadow-sm transition-all"
+                      >
+                        ✊ Повторить
+                      </button>
+                      <button
+                        onClick={handleRememberGesture}
+                        className={`flex-1 py-3.5 rounded-xl text-white font-syne font-bold text-sm tracking-wide shadow-md transition-all ${
+                          progressMap[selectedGesture.id]?.learned
+                            ? "bg-slate-800 hover:bg-slate-750"
+                            : "bg-accent hover:bg-accent/90"
+                        }`}
+                      >
+                        {progressMap[selectedGesture.id]?.learned ? "✓ Выучено" : "☆ Запомнить"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -280,10 +527,31 @@ export default function LearnSignLanguagePage() {
 
         {/* Right Side: Gesture Dictionary Grid (7 cols) */}
         <div className="lg:col-span-7 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
-          <h3 className="font-syne font-extrabold text-lg text-slate-800">Каталог жестов</h3>
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <h3 className="font-syne font-extrabold text-lg text-slate-800">Каталог жестов</h3>
+            
+            {/* Category tabs */}
+            <div className="flex gap-1 overflow-x-auto max-w-full pb-1 pr-1 custom-scrollbar">
+              {["Все", "Базовые", "Семья", "Еда", "Эмоции", "Числа"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all border shrink-0 ${
+                    selectedCategory === cat
+                      ? "bg-accent text-white border-accent shadow-sm"
+                      : "bg-white/50 text-slate-500 border-slate-200 hover:border-slate-350"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <div className="flex-1 overflow-y-auto max-h-[460px] grid grid-cols-1 md:grid-cols-2 gap-4 pr-1">
-            {gestures.map((item) => {
+          <div className="flex-1 overflow-y-auto max-h-[420px] grid grid-cols-1 md:grid-cols-2 gap-4 pr-1">
+            {gestures
+              .filter((item) => selectedCategory === "Все" || item.category === selectedCategory)
+              .map((item) => {
               const isSelected = selectedGesture?.id === item.id;
               const hasProgress = progressMap[item.id];
               return (
@@ -316,6 +584,8 @@ export default function LearnSignLanguagePage() {
           </div>
         </div>
       </div>
+      {/* Hidden canvas for video captures */}
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }
