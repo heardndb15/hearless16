@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import TabNavigator from "./src/navigation/TabNavigator";
 import GesturePracticeScreen from "./src/screens/GesturePracticeScreen";
-import type { RootStackParamList } from "./shared/types";
+import type { RootStackParamList } from "../shared/types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
