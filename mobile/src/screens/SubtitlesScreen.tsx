@@ -57,6 +57,9 @@ function AnimatedLine({
           color: textColor,
           textAlign: alignment,
           lineHeight: fontSize * 1.4,
+          textShadowColor: "rgba(0, 0, 0, 0.4)",
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 4,
         },
       ]}
       numberOfLines={2}
@@ -75,11 +78,58 @@ export default function SubtitlesScreen() {
     stopStreaming,
   } = useStreamingRecording();
 
-  const [fontSize, setFontSize] = useState(22); // 18, 22, 28, 36
-  const [textColor, setTextColor] = useState("#f3f8fc"); // White, Yellow, Cyan, Green
+  const [fontSize, setFontSize] = useState(28); // 18, 22, 28, 36
+  const [textColor, setTextColor] = useState("#22d3ee"); // White, Yellow, Cyan, Green
   const [bgOpacity, setBgOpacity] = useState(0.85); // 0.85, 0.5, 0
   const [alignment, setAlignment] = useState<"center" | "left">("center");
   const [settingsVisible, setSettingsVisible] = useState(false);
+
+  const [showPanel, setShowPanel] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (settingsVisible) {
+      setShowPanel(true);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setShowPanel(false));
+    }
+  }, [settingsVisible]);
+
+  const ringScale = useRef(new Animated.Value(1)).current;
+  const ringOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isRecording) {
+      ringScale.setValue(1);
+      ringOpacity.setValue(0.5);
+      Animated.loop(
+        Animated.parallel([
+          Animated.timing(ringScale, {
+            toValue: 1.6,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(ringOpacity, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+          })
+        ])
+      ).start();
+    } else {
+      ringScale.setValue(1);
+      ringOpacity.setValue(0);
+    }
+  }, [isRecording]);
 
   const recentChunks = chunks.slice(-3);
   const hasContent = recentChunks.length > 0 || streamText.length > 0;
@@ -92,31 +142,44 @@ export default function SubtitlesScreen() {
     }
   }
 
-  const getBgColor = (opacity: number) => {
-    if (opacity === 0) return "transparent";
-    return `rgba(33, 69, 89, ${opacity})`;
+  const getBgStyle = (opacity: number) => {
+    if (opacity === 0) {
+      return {
+        backgroundColor: "transparent",
+        borderWidth: 0,
+        shadowOpacity: 0,
+        elevation: 0,
+      };
+    }
+    return {
+      backgroundColor: `rgba(15, 23, 42, ${opacity})`, // Slate dark display
+      borderColor: "rgba(255, 255, 255, 0.08)",
+      borderWidth: 1,
+    };
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Субтитры</Text>
-        <Text style={styles.subtitle}>Речь преобразуется в текст в реальном времени</Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title}>Субтитры</Text>
+          <Text style={styles.subtitle}>Речь преобразуется в текст в реальном времени</Text>
+        </View>
         <TouchableOpacity
-          style={styles.settingsToggle}
+          style={[styles.settingsToggle, settingsVisible && styles.settingsToggleActive]}
           onPress={() => setSettingsVisible(!settingsVisible)}
         >
-          <Text style={{ fontSize: 18 }}>⚙️</Text>
+          <Text style={{ fontSize: 18, color: settingsVisible ? Colors.white : Colors.heading }}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
-      {settingsVisible && (
-        <View style={styles.settingsPanel}>
+      {showPanel && (
+        <Animated.View style={[styles.settingsPanel, { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) }] }]}>
           <Text style={styles.settingsPanelTitle}>Настройки отображения</Text>
           
           {/* Font Size */}
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Размер:</Text>
+            <Text style={styles.settingLabel}>Размер текста</Text>
             <View style={styles.settingOptions}>
               {[18, 22, 28, 36].map((sz) => (
                 <TouchableOpacity
@@ -124,7 +187,7 @@ export default function SubtitlesScreen() {
                   style={[styles.optionBtn, fontSize === sz && styles.optionBtnActive]}
                   onPress={() => setFontSize(sz)}
                 >
-                  <Text style={[styles.optionText, fontSize === sz && styles.optionTextActive]}>{sz}</Text>
+                  <Text style={[styles.optionText, fontSize === sz && styles.optionTextActive]}>{sz}px</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -132,7 +195,7 @@ export default function SubtitlesScreen() {
 
           {/* Text Color */}
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Цвет текста:</Text>
+            <Text style={styles.settingLabel}>Цвет текста</Text>
             <View style={styles.settingOptions}>
               {[
                 { code: "#ffffff", name: "Бел" },
@@ -153,7 +216,7 @@ export default function SubtitlesScreen() {
 
           {/* Background Opacity */}
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Задний фон:</Text>
+            <Text style={styles.settingLabel}>Задний фон</Text>
             <View style={styles.settingOptions}>
               {[
                 { opacity: 0.85, label: "Темн" },
@@ -173,7 +236,7 @@ export default function SubtitlesScreen() {
 
           {/* Alignment */}
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Выравнивание:</Text>
+            <Text style={styles.settingLabel}>Выравнивание</Text>
             <View style={styles.settingOptions}>
               {[
                 { key: "center", label: "Центр" },
@@ -189,12 +252,12 @@ export default function SubtitlesScreen() {
               ))}
             </View>
           </View>
-        </View>
+        </Animated.View>
       )}
 
       <View style={styles.subtitleArea}>
         {hasContent ? (
-          <View style={[styles.subtitleCard, { backgroundColor: getBgColor(bgOpacity) }]}>
+          <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
             {recentChunks.map((chunk, i) => (
               <AnimatedLine
                 key={`${chunk.text}-${i}`}
@@ -208,26 +271,45 @@ export default function SubtitlesScreen() {
           </View>
         ) : (
           <View style={styles.placeholderCard}>
+            <Text style={styles.placeholderIcon}>🎙️</Text>
             <Text style={styles.placeholderText}>
               {isRecording
-                ? "Слушаю..."
-                : "Нажмите кнопку микрофона и говорите..."}
+                ? "Слушаю вашу речь..."
+                : "Нажмите кнопку микрофона ниже и говорите"}
             </Text>
           </View>
         )}
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.recordButton,
-          isRecording && styles.recordingActive,
-        ]}
-        onPress={handleRecord}
-      >
-        <Text style={styles.recordButtonText}>
-          {isRecording ? "⏹ Остановить" : "🎤 Запись"}
+      <View style={styles.controlsContainer}>
+        <View style={styles.buttonContainer}>
+          {isRecording && (
+            <Animated.View
+              style={[
+                styles.pulseRing,
+                {
+                  transform: [{ scale: ringScale }],
+                  opacity: ringOpacity,
+                },
+              ]}
+            />
+          )}
+          <TouchableOpacity
+            style={[
+              styles.recordButton,
+              isRecording && styles.recordingActive,
+            ]}
+            onPress={handleRecord}
+          >
+            <Text style={styles.recordButtonIcon}>
+              {isRecording ? "⏹" : "🎤"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.recordLabel}>
+          {isRecording ? "Идет прослушивание..." : "Нажмите, чтобы говорить"}
         </Text>
-      </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -239,48 +321,62 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   header: {
-    paddingVertical: Spacing.lg,
+    paddingVertical: Spacing.md,
+    flexDirection: "row",
     alignItems: "center",
-    position: "relative",
+    justifyContent: "space-between",
     width: "100%",
   },
+  headerTextContainer: {
+    flex: 1,
+    paddingRight: Spacing.md,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     color: Colors.heading,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+    marginTop: 2,
   },
   settingsToggle: {
-    position: "absolute",
-    right: 8,
-    top: 22,
-    backgroundColor: "rgba(33, 69, 89, 0.08)",
-    padding: 8,
-    borderRadius: 20,
+    backgroundColor: "rgba(33, 69, 89, 0.06)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  settingsToggleActive: {
+    backgroundColor: Colors.accent,
   },
   settingsPanel: {
-    backgroundColor: Colors.white,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
     borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 16,
+    borderColor: "rgba(33, 69, 89, 0.1)",
+    borderRadius: 24,
     padding: Spacing.md,
     marginBottom: Spacing.md,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
   },
   settingsPanelTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "bold",
     color: Colors.heading,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
+    textAlign: "center",
   },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginVertical: 4,
+    marginVertical: 6,
   },
   settingLabel: {
     fontSize: 12,
@@ -293,18 +389,18 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   optionBtn: {
-    backgroundColor: "#f1f5f9",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
+    backgroundColor: "rgba(33, 69, 89, 0.05)",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
   optionBtnActive: {
     backgroundColor: Colors.accent,
   },
   optionText: {
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: "bold",
   },
   optionTextActive: {
     color: Colors.white,
@@ -316,43 +412,90 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   subtitleCard: {
-    borderRadius: 16,
-    padding: Spacing.lg,
-    minHeight: 200,
+    borderRadius: 24,
+    padding: Spacing.xl,
+    minHeight: 240,
     justifyContent: "center",
     width: width - Spacing.md * 2,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 6,
   },
   line: {
     marginVertical: 4,
   },
   placeholderCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: Spacing.lg,
-    minHeight: 200,
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    padding: Spacing.xl,
+    minHeight: 240,
     justifyContent: "center",
     alignItems: "center",
     width: width - Spacing.md * 2,
+    borderWidth: 1,
+    borderColor: "rgba(33, 69, 89, 0.08)",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 10,
+    elevation: 1,
+  },
+  placeholderIcon: {
+    fontSize: 40,
+    marginBottom: Spacing.md,
   },
   placeholderText: {
-    fontSize: 22,
+    fontSize: 16,
     color: Colors.textSecondary,
     textAlign: "center",
+    lineHeight: 22,
+    maxWidth: 240,
+  },
+  controlsContainer: {
+    alignItems: "center",
+    paddingBottom: Spacing.lg,
+  },
+  buttonContainer: {
+    position: "relative",
+    width: 100,
+    height: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pulseRing: {
+    position: "absolute",
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: Colors.sos,
   },
   recordButton: {
     backgroundColor: Colors.button,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: 32,
-    alignSelf: "center",
-    marginVertical: Spacing.md,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: Colors.button,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   recordingActive: {
     backgroundColor: Colors.sos,
+    shadowColor: Colors.sos,
   },
-  recordButtonText: {
+  recordButtonIcon: {
     color: Colors.white,
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 24,
+  },
+  recordLabel: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: Spacing.xs,
+    fontWeight: "500",
   },
 });
