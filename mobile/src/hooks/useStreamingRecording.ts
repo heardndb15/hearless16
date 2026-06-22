@@ -16,6 +16,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const [isRecording, setIsRecording] = useState(false);
   const [streamText, setStreamText] = useState("");
   const [chunks, setChunks] = useState<StreamChunk[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -26,7 +27,20 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === "text" || data.type === "final") {
+        if (data.type === "error") {
+          setError(data.message || "Unknown error");
+          setIsRecording(false);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          if (recordingRef.current) {
+            recordingRef.current.stopAndUnloadAsync().catch(() => {});
+            recordingRef.current = null;
+          }
+          ws.close();
+        } else if (data.type === "text" || data.type === "final") {
+          setError(null);
           const chunk: StreamChunk = {
             text: data.text || "",
             full_text: data.full_text || "",
@@ -49,11 +63,13 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
         }
       } catch {}
     };
-    ws.onerror = () => {};
+    ws.onerror = () => {
+      setError("WebSocket connection error");
+    };
     ws.onclose = () => {};
     wsRef.current = ws;
     return ws;
-  }, []);
+  }, [options]);
 
   const sendChunk = useCallback(async (ws: WebSocket) => {
     const oldRec = recordingRef.current;
@@ -94,6 +110,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
 
   const startStreaming = useCallback(async () => {
     try {
+      setError(null);
       await Audio.requestPermissionsAsync();
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
@@ -169,6 +186,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
     isRecording,
     streamText,
     chunks,
+    error,
     startStreaming,
     stopStreaming,
   };

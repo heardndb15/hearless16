@@ -74,6 +74,7 @@ export default function SubtitlesScreen() {
     isRecording,
     streamText,
     chunks,
+    error,
     startStreaming,
     stopStreaming,
   } = useStreamingRecording();
@@ -284,9 +285,11 @@ export default function SubtitlesScreen() {
           </View>
         ) : (
           <View style={styles.placeholderCard}>
-            <Text style={styles.placeholderIcon}>🎙️</Text>
-            <Text style={styles.placeholderText}>
-              {isRecording
+            <Text style={styles.placeholderIcon}>{error ? "⚠️" : "🎙️"}</Text>
+            <Text style={[styles.placeholderText, error ? { color: Colors.sos } : null]}>
+              {error
+                ? error
+                : isRecording
                 ? "Слушаю вашу речь..."
                 : "Нажмите кнопку микрофона ниже и говорите"}
             </Text>
