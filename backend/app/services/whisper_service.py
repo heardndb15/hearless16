@@ -82,35 +82,61 @@ def floats_to_wav_bytes(floats: np.ndarray, sr: int = 16000) -> bytes:
 
 
 def transcribe_local(audio_bytes: bytes) -> str | None:
-    model = get_local_whisper()
-    if model is None:
+    try:
+        model = get_local_whisper()
+        if model is None:
+            return None
+
+        audio = audio_bytes_to_float(audio_bytes)
+        if len(audio) == 0:
+            return ""
+        segments, _ = model.transcribe(audio, beam_size=1)
+        return " ".join(seg.text for seg in segments)
+    except Exception as e:
+        import sys
+        print(f"Error in transcribe_local: {e}", file=sys.stderr)
         return None
 
-    audio = audio_bytes_to_float(audio_bytes)
-    if len(audio) == 0:
-        return ""
-    segments, _ = model.transcribe(audio, beam_size=1)
-    return " ".join(seg.text for seg in segments)
+
+def detect_audio_format(audio_bytes: bytes) -> str:
+    if audio_bytes.startswith(b"\x1a\x45\xdf\xa3"):
+        return "webm"
+    if b"ftyp" in audio_bytes[:20]:
+        return "m4a"
+    if audio_bytes.startswith(b"RIFF"):
+        return "wav"
+    return "wav"
 
 
 def transcribe_openai(audio_bytes: bytes, language: str = "ru") -> str:
-    from openai import OpenAI
-    from app.config import OPENAI_API_KEY
+    try:
+        from openai import OpenAI
+        from app.config import OPENAI_API_KEY
 
-    if not OPENAI_API_KEY:
+        if not OPENAI_API_KEY:
+            return ""
+
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        ext = detect_audio_format(audio_bytes)
+        response = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=(f"audio.{ext}", audio_bytes),
+            language=language,
+        )
+        return response.text
+    except Exception as e:
+        import sys
+        print(f"Error in transcribe_openai: {e}", file=sys.stderr)
         return ""
-
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    response = client.audio.transcriptions.create(
-        model="whisper-1",
-        file=("audio.wav", audio_bytes),
-        language=language,
-    )
-    return response.text
 
 
 def transcribe_audio(audio_bytes: bytes, language: str = "ru") -> str:
-    result = transcribe_local(audio_bytes)
-    if result is not None:
-        return result
-    return transcribe_openai(audio_bytes, language)
+    try:
+        result = transcribe_local(audio_bytes)
+        if result is not None:
+            return result
+        return transcribe_openai(audio_bytes, language)
+    except Exception as e:
+        import sys
+        print(f"Error in transcribe_audio: {e}", file=sys.stderr)
+        return ""

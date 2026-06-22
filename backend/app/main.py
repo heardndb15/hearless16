@@ -48,11 +48,13 @@ async def websocket_transcribe(websocket: WebSocket):
         await websocket.close()
         return
 
-    import numpy as np
-    from app.services.whisper_service import audio_bytes_to_float, floats_to_wav_bytes
-
-    session_floats = np.array([], dtype=np.float32)
-    transcribed_len = 0
+    session_bytes = b""
+    last_transcribed_len = 0
+    
+    # Режим стриминга (True для потокового WebM с веба, False для независимых M4A с мобильного)
+    is_stream = None
+    transcribed_texts = []
+    current_full_text = ""
 
     try:
         while True:
@@ -64,30 +66,70 @@ async def websocket_transcribe(websocket: WebSocket):
                 audio_b64 = data.get("audio", "")
                 import base64
                 audio_bytes = base64.b64decode(audio_b64)
-                chunk_floats = audio_bytes_to_float(audio_bytes)
-                if len(chunk_floats) > 0:
-                    session_floats = np.concatenate([session_floats, chunk_floats])
+                if len(audio_bytes) == 0:
+                    continue
 
-                if len(session_floats) - transcribed_len >= 16000:
-                    wav_bytes = floats_to_wav_bytes(session_floats)
-                    text = await asyncio.to_thread(transcribe_audio, wav_bytes)
-                    if text:
+                # При первом чанке определяем формат
+                if is_stream is None:
+                    from app.services.whisper_service import detect_audio_format
+                    ext = detect_audio_format(audio_bytes)
+                    if ext == "webm":
+                        is_stream = True
+                    else:
+                        is_stream = False
+
+                if is_stream:
+                    # Если это непрерывный поток (WebM)
+                    session_bytes += audio_bytes
+                    # Распознаем на первом чанке или при накоплении 12KB новых данных (~1.5-2 сек)
+                    if last_transcribed_len == 0 or len(session_bytes) - last_transcribed_len >= 12000:
+                        try:
+                            text = await asyncio.to_thread(transcribe_audio, session_bytes)
+                        except Exception as e:
+                            import sys
+                            print(f"Error in ws stream transcribe: {e}", file=sys.stderr)
+                            text = ""
+                        if text:
+                            current_full_text = text.strip()
+                            await websocket.send_json({
+                                "type": "text",
+                                "text": current_full_text,
+                                "full_text": current_full_text,
+                            })
+                        last_transcribed_len = len(session_bytes)
+                else:
+                    # Если это независимые файлы (M4A на мобильном)
+                    # Распознаем каждый чанк отдельно и склеиваем тексты
+                    try:
+                        text = await asyncio.to_thread(transcribe_audio, audio_bytes)
+                    except Exception as e:
+                        import sys
+                        print(f"Error in ws chunk transcribe: {e}", file=sys.stderr)
+                        text = ""
+                    if text and text.strip():
+                        transcribed_texts.append(text.strip())
+                        current_full_text = " ".join(transcribed_texts)
                         await websocket.send_json({
                             "type": "text",
                             "text": text.strip(),
-                            "full_text": text.strip(),
+                            "full_text": current_full_text,
                         })
-                    transcribed_len = len(session_floats)
 
             elif action == "stop":
-                if len(session_floats) > 0:
-                    wav_bytes = floats_to_wav_bytes(session_floats)
-                    text = await asyncio.to_thread(transcribe_audio, wav_bytes)
-                    if text:
+                if is_stream:
+                    if len(session_bytes) > 0:
+                        try:
+                            text = await asyncio.to_thread(transcribe_audio, session_bytes)
+                        except Exception as e:
+                            import sys
+                            print(f"Error in ws stop transcribe: {e}", file=sys.stderr)
+                            text = ""
+                        if text:
+                            current_full_text = text.strip()
                         await websocket.send_json({
                             "type": "final",
-                            "text": text.strip(),
-                            "full_text": text.strip(),
+                            "text": current_full_text,
+                            "full_text": current_full_text,
                         })
                     else:
                         await websocket.send_json({
@@ -96,10 +138,11 @@ async def websocket_transcribe(websocket: WebSocket):
                             "full_text": "",
                         })
                 else:
+                    # Для мобильного финальный текст - это накопленный текст
                     await websocket.send_json({
                         "type": "final",
                         "text": "",
-                        "full_text": "",
+                        "full_text": current_full_text,
                     })
                 break
 

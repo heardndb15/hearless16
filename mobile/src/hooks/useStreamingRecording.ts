@@ -116,7 +116,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
         if (wsRef.current) {
           sendChunk(wsRef.current);
         }
-      }, 600);
+      }, 3000);
     } catch {}
   }, [connectWs, sendChunk]);
 
