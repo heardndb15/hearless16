@@ -158,3 +158,21 @@ async def websocket_transcribe(websocket: WebSocket):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/debug")
+async def debug():
+    import shutil
+    import os
+    import sys
+    ffmpeg_path = shutil.which("ffmpeg")
+    ffprobe_path = shutil.which("ffprobe")
+    return {
+        "ffmpeg": ffmpeg_path,
+        "ffprobe": ffprobe_path,
+        "sys_path": sys.path,
+        "cwd": os.getcwd(),
+        "has_openai_key": bool(os.getenv("OPENAI_API_KEY")),
+        "openai_key_prefix": os.getenv("OPENAI_API_KEY", "")[:10] if os.getenv("OPENAI_API_KEY") else ""
+    }
+
