@@ -57,7 +57,12 @@ export default function StudyScreen() {
   async function fetchLectures(uid: string) {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/study/lectures/${uid}`);
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await axios.get(`${API_URL}/study/lectures/${uid}`, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+        },
+      });
       setLectures(res.data);
     } catch (e) {
       console.log("Error loading lectures:", e);
@@ -88,8 +93,13 @@ export default function StudyScreen() {
 
     setAiStatus("analyzing");
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await axios.post(`${API_URL}/study/analyze`, {
         transcript: streamText,
+      }, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+        },
       });
 
       setAnalysisResult(response.data);
@@ -120,7 +130,12 @@ export default function StudyScreen() {
         highlights: analysisResult,
       };
 
-      await axios.post(`${API_URL}/study/lectures`, payload);
+      const { data: { session } } = await supabase.auth.getSession();
+      await axios.post(`${API_URL}/study/lectures`, payload, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+        },
+      });
       fetchLectures(userId);
       setViewMode("list");
       setAnalysisResult(null);
@@ -141,7 +156,12 @@ export default function StudyScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await axios.delete(`${API_URL}/study/lectures/${id}`);
+              const { data: { session } } = await supabase.auth.getSession();
+              await axios.delete(`${API_URL}/study/lectures/${id}`, {
+                headers: {
+                  Authorization: `Bearer ${session?.access_token || ""}`,
+                },
+              });
               if (userId) fetchLectures(userId);
               setViewMode("list");
               setSelectedLecture(null);

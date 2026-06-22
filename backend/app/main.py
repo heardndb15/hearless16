@@ -33,12 +33,40 @@ app.include_router(study.router)
 
 
 @app.websocket("/ws/transcribe")
-async def websocket_transcribe(websocket: WebSocket, lang: str = "ru"):
+async def websocket_transcribe(websocket: WebSocket, token: str | None = None, lang: str = "ru"):
     await websocket.accept()
     
+    if not token:
+        await websocket.send_json({
+            "type": "error",
+            "message": "Требуется токен авторизации для подключения к транскрипции."
+        })
+        await websocket.close()
+        return
+
+    from app.database import get_supabase
+    db = get_supabase()
+    try:
+        user_res = db.auth.get_user(token)
+        if not user_res or not getattr(user_res, "user", None):
+            await websocket.send_json({
+                "type": "error",
+                "message": "Неверный или просроченный токен авторизации."
+            })
+            await websocket.close()
+            return
+    except Exception as e:
+        await websocket.send_json({
+            "type": "error",
+            "message": f"Ошибка авторизации: {str(e)}"
+        })
+        await websocket.close()
+        return
+
     # Check if a transcription model or API key is available
     from app.services.whisper_service import get_local_whisper
     from app.config import OPENAI_API_KEY
+
     
     if get_local_whisper() is None and not OPENAI_API_KEY:
         await websocket.send_json({

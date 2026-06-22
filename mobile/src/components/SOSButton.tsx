@@ -139,6 +139,10 @@ export default function SOSButton() {
         lat,
         lng,
         timestamp: new Date().toISOString(),
+      }, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
       alert("SOS сигнал бедствия успешно отправлен!");
     } catch (err) {

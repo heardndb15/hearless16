@@ -9,7 +9,6 @@ const FEATURES = [
   { icon: "🎓", title: "AI-преподаватель", desc: "Чат с ИИ, видеоразборы, тесты, анимации. Отслеживает твой прогресс и подбирает уроки.", color: "var(--purple)", span: "normal", href: "/ai-tutor" },
   { icon: "📷", title: "Камера → Текст", desc: "Распознавание жестов через камеру в реальном времени. Мгновенная обратная связь от ИИ.", color: "var(--accent)", span: "normal", href: "/camera-to-text" },
   { icon: "👤", title: "Текст → Жесты", desc: "Введи текст — 3D-аватар покажет его на жестовом языке. Поддержка КАЗ / РУС / ENG.", color: "var(--accent)", span: "normal", href: "/text-to-sign" },
-  { icon: "🆘", title: "Экстренная помощь", desc: "SOS-кнопка с геолокацией. Экстренный чат. Мгновенное уведомление родственников.", color: "var(--sos)", span: "normal", href: "/sos" },
   { icon: "🏆", title: "Геймификация", desc: "XP, стрики, ачивки, ежедневные задания, уровни. Учиться — весело!", color: "var(--success)", span: "normal", href: "/gamification" },
 ];
 
@@ -24,7 +23,7 @@ export default function FeaturesSection() {
             <span className="gradient-text">доступного мира</span>
           </h2>
           <p className="section-subtitle">
-            Восемь ключевых функций, которые превращают твой смартфон в мост между
+            Семь ключевых функций, которые превращают твой смартфон в мост между
             миром звуков и тишины. Нажми на карточку, чтобы узнать больше.
           </p>
         </div>

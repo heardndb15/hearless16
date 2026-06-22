@@ -45,11 +45,18 @@ export default function SilentSOS() {
       const loc = await getLocation();
       if (!loc) return;
 
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || "";
+
       await axios.post(`${API_URL}/sos/silent`, {
         user_id: userId,
         lat: loc.lat,
         lng: loc.lng,
         timestamp: new Date().toISOString(),
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
     } catch {
     } finally {

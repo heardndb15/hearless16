@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Colors, Spacing, FontSize } from "../constants/theme";
-import SOSButton from "../components/SOSButton";
 import SilentSOS from "../components/SilentSOS";
 import { supabase } from "../services/supabase";
 import axios from "axios";
@@ -73,7 +72,11 @@ export default function AlertsScreen() {
           }
 
           if (session?.user) {
-            const response = await axios.get(`${API_URL}/alerts/${session.user.id}`);
+            const response = await axios.get(`${API_URL}/alerts/${session.user.id}`, {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            });
             if (isMounted) {
               setHistory(response.data);
             }
@@ -107,17 +110,20 @@ export default function AlertsScreen() {
   }
 
   async function triggerMockAlert(soundType: string) {
-    if (!userId) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || "";
+    const headers = { Authorization: `Bearer ${token}` };
+
     setSimulating(true);
     try {
       // Create new sound alert in DB
       await axios.post(`${API_URL}/alerts`, {
         user_id: userId,
         sound_type: soundType,
-      });
+      }, { headers });
 
       // Refetch history
-      const response = await axios.get(`${API_URL}/alerts/${userId}`);
+      const response = await axios.get(`${API_URL}/alerts/${userId}`, { headers });
       setHistory(response.data);
     } catch (err) {
       console.log("Error simulating sound alert", err);
@@ -158,7 +164,6 @@ export default function AlertsScreen() {
       </View>
 
       <View style={styles.sosRow}>
-        <SOSButton />
         <SilentSOS />
       </View>
 

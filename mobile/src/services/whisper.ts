@@ -1,13 +1,14 @@
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
+import { supabase } from "./supabase";
 
-const WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 
 export async function transcribeAudio(
   audioUri: string
 ): Promise<string> {
-  const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY || "";
-  if (!apiKey) throw new Error("API ключ OpenAI не найден");
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || "";
 
   const formData = new FormData();
   const fileInfo = await FileSystem.getInfoAsync(audioUri);
@@ -17,12 +18,10 @@ export async function transcribeAudio(
     type: "audio/m4a",
     name: fileInfo.uri.split("/").pop() || "audio.m4a",
   } as any);
-  formData.append("model", "whisper-1");
-  formData.append("language", "ru");
 
-  const response = await axios.post(WHISPER_API_URL, formData, {
+  const response = await axios.post(`${API_URL}/transcribe`, formData, {
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "multipart/form-data",
     },
   });

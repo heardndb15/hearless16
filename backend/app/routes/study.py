@@ -1,14 +1,15 @@
 import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_supabase
 from app.models import LectureSaveRequest, LectureAnalyzeRequest
 from app.config import OPENAI_API_KEY
+from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/study", tags=["study"])
 
 
 @router.post("/analyze")
-async def analyze_lecture(data: LectureAnalyzeRequest):
+async def analyze_lecture(data: LectureAnalyzeRequest, current_user: dict = Depends(get_current_user)):
     if not data.transcript.strip():
         raise HTTPException(status_code=400, detail="Текст лекции пуст")
 
@@ -72,15 +73,18 @@ async def analyze_lecture(data: LectureAnalyzeRequest):
 
 
 @router.post("/lectures")
-async def save_lecture(data: LectureSaveRequest):
+async def save_lecture(data: LectureSaveRequest, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
     lecture_data = data.model_dump()
+    lecture_data["user_id"] = current_user["id"]
     response = db.table("study_lectures").insert(lecture_data).execute()
     return response.data
 
 
 @router.get("/lectures/{user_id}")
-async def get_lectures(user_id: str):
+async def get_lectures(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["id"] != user_id:
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
     response = (
         db.table("study_lectures")
@@ -93,8 +97,15 @@ async def get_lectures(user_id: str):
 
 
 @router.delete("/lectures/{lecture_id}")
-async def delete_lecture(lecture_id: str):
+async def delete_lecture(lecture_id: str, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
+    # Check ownership of the lecture first
+    lecture = db.table("study_lectures").select("user_id").eq("id", lecture_id).execute()
+    if not lecture.data:
+        raise HTTPException(status_code=404, detail="Конспект не найден")
+    if lecture.data[0]["user_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
+
     response = (
         db.table("study_lectures")
         .delete()
@@ -102,3 +113,4 @@ async def delete_lecture(lecture_id: str):
         .execute()
     )
     return response.data
+

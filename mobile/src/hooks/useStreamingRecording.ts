@@ -25,8 +25,8 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const chunkIndexRef = useRef(0);
   const userLangRef = useRef<string>("ru");
 
-  const connectWs = useCallback(() => {
-    const wsUrl = BACKEND_WS + (BACKEND_WS.includes("?") ? "&" : "?") + `lang=${userLangRef.current}`;
+  const connectWs = useCallback((token: string) => {
+    const wsUrl = BACKEND_WS + (BACKEND_WS.includes("?") ? "&" : "?") + `lang=${userLangRef.current}&token=${token}`;
     const ws = new WebSocket(wsUrl);
     ws.onmessage = (event) => {
       try {
@@ -57,10 +57,18 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
             supabase.auth.getSession().then(({ data: { session } }) => {
               if (session?.user) {
                 const API_URL = BACKEND_WS.replace("wss://", "https://").replace("ws://", "http://").replace("/ws/transcribe", "");
-                axios.post(`${API_URL}/subtitles`, {
-                  user_id: session.user.id,
-                  text: data.full_text.trim(),
-                }).catch(err => console.log("Failed to auto-save subtitle:", err));
+                axios.post(
+                  `${API_URL}/subtitles`,
+                  {
+                    user_id: session.user.id,
+                    text: data.full_text.trim(),
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${session.access_token}`,
+                    },
+                  }
+                ).catch(err => console.log("Failed to auto-save subtitle:", err));
               }
             });
           }
@@ -131,7 +139,9 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
         staysActiveInBackground: true,
       });
 
-      const ws = connectWs();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || "";
+      const ws = connectWs(token);
       await new Promise<void>((resolve) => {
         const check = () => {
           if (ws.readyState === WebSocket.OPEN) {

@@ -10,7 +10,6 @@ const FEATURE_LINKS = [
   { label: "AI-преподаватель", href: "/ai-tutor", icon: "🎓" },
   { label: "Камера → Текст", href: "/camera-to-text", icon: "📷" },
   { label: "Текст → Жесты", href: "/text-to-sign", icon: "👤" },
-  { label: "Экстренная помощь", href: "/sos", icon: "🆘" },
   { label: "Геймификация", href: "/gamification", icon: "🏆" },
 ];
 

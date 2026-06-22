@@ -86,7 +86,11 @@ export default function GesturesScreen() {
           let progressMap: Record<string, any> = {};
           if (session?.user) {
             // Fetch learning progress from backend database
-            const progressRes = await axios.get(`${API_URL}/gestures/progress/${session.user.id}`);
+            const progressRes = await axios.get(`${API_URL}/gestures/progress/${session.user.id}`, {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            });
             const dbProgress = progressRes.data;
             dbProgress.forEach((p: any) => {
               progressMap[p.gesture_id] = p;

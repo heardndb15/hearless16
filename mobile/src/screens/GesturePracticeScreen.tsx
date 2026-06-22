@@ -135,6 +135,10 @@ export default function GesturePracticeScreen() {
           accuracy: confidence,
           attempts: frames,
           best_accuracy: confidence,
+        }, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         });
       }
     } catch (err) {

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from app.config import OPENAI_API_KEY
+from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/transcribe", tags=["transcribe"])
 
 
 @router.post("/")
-async def transcribe_audio(file: UploadFile = File(...)):
+async def transcribe_audio(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     if not OPENAI_API_KEY:
         raise HTTPException(
             status_code=500, detail="API ключ OpenAI не настроен"
@@ -21,3 +22,4 @@ async def transcribe_audio(file: UploadFile = File(...)):
         language="ru",
     )
     return {"text": response.text}
+

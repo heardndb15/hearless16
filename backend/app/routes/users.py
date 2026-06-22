@@ -1,19 +1,24 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_supabase
 from app.models import UserCreate
+from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/")
-async def create_user(data: UserCreate):
+async def create_user(data: UserCreate, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    response = db.table("users").insert(data.model_dump()).execute()
+    payload = data.model_dump()
+    payload["id"] = current_user["id"]
+    response = db.table("users").insert(payload).execute()
     return response.data
 
 
 @router.get("/{user_id}")
-async def get_user(user_id: str):
+async def get_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["id"] != user_id:
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
     response = db.table("users").select("*").eq("id", user_id).execute()
     if not response.data:
@@ -22,7 +27,9 @@ async def get_user(user_id: str):
 
 
 @router.put("/{user_id}")
-async def update_user(user_id: str, data: UserCreate):
+async def update_user(user_id: str, data: UserCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["id"] != user_id:
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
     response = (
         db.table("users")
@@ -31,3 +38,4 @@ async def update_user(user_id: str, data: UserCreate):
         .execute()
     )
     return response.data
+

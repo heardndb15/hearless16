@@ -93,7 +93,15 @@ export default function StudyDashboard() {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
       
-      const res = await fetch(`${baseUrl}/study/lectures/${userId}`);
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${baseUrl}/study/lectures/${userId}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setLectures(data);
@@ -140,8 +148,13 @@ export default function StudyDashboard() {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
       const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
       const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
+      
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || "";
+
       const wsBaseUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
-      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}`;
+      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}&token=${token}`;
 
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -282,9 +295,17 @@ export default function StudyDashboard() {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
 
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${baseUrl}/study/analyze`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ transcript: transcriptionText }),
       });
 
@@ -317,9 +338,17 @@ export default function StudyDashboard() {
         highlights: analysisResult
       };
 
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${baseUrl}/study/lectures`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
 
@@ -341,8 +370,17 @@ export default function StudyDashboard() {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
 
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${baseUrl}/study/lectures/${id}`, {
         method: "DELETE",
+        headers,
       });
 
       if (response.ok) {
