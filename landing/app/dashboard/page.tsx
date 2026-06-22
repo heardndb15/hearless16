@@ -20,6 +20,7 @@ export default function SubtitlesDashboard() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcriptionText, setTranscriptionText] = useState("");
   const [aiStatus, setAiStatus] = useState<"ready" | "listening" | "processing" | "fallback">("ready");
+  const [userLanguage, setUserLanguage] = useState<string>("ru");
 
   // Subtitle Custom Styling States
   const [fontSize, setFontSize] = useState("md"); // sm, md, lg, xl
@@ -30,6 +31,7 @@ export default function SubtitlesDashboard() {
 
   // Web Speech API Ref
   const recognitionRef = useRef<any>(null);
+  const isRecordingRef = useRef(false);
 
   // WebSocket Ref (for Whisper)
   const wsRef = useRef<WebSocket | null>(null);
@@ -77,6 +79,17 @@ export default function SubtitlesDashboard() {
       if (data?.user) {
         setUser(data.user);
         fetchHistory(data.user.id);
+        
+        // Fetch user language profile
+        supabase.from("users")
+          .select("language")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile?.language) {
+              setUserLanguage(profile.language);
+            }
+          });
       }
     });
 
@@ -108,6 +121,7 @@ export default function SubtitlesDashboard() {
 
   // Stop recording and close connections
   function stopRecordingSession() {
+    isRecordingRef.current = false;
     setIsRecording(false);
     setAiStatus("ready");
 
@@ -131,91 +145,17 @@ export default function SubtitlesDashboard() {
     }
   }
 
-  // Start Whisper WebSocket or Fallback to Web Speech API
+  // Start Browser-based Native Speech Recognition
   async function startRecordingSession() {
+    isRecordingRef.current = true;
     setIsRecording(true);
     setTranscriptionText("");
-    setAiStatus("processing");
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioStreamRef.current = stream;
-
-      const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
-      const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
-      const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
-      const wsUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
-      console.log(`Connecting to Whisper WebSocket: ${wsUrl}`);
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        console.log("Whisper WS Connected. Starting stream...");
-        setAiStatus("listening");
-
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-        mediaRecorderRef.current = mediaRecorder;
-
-        mediaRecorder.ondataavailable = async (event) => {
-          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = (reader.result as string).split(",")[1];
-              ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
-            };
-            reader.readAsDataURL(event.data);
-          }
-        };
-
-        mediaRecorder.start(1500);
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "error") {
-            console.warn("Server transcription error:", data.message);
-            switchToFallbackRecognition();
-          } else if (data.text) {
-            setTranscriptionText(data.text);
-          }
-        } catch (e) {}
-      };
-
-      ws.onerror = (err) => {
-        console.warn("Whisper WS encountered an error. Falling back to Web Speech API...", err);
-        switchToFallbackRecognition();
-      };
-
-      ws.onclose = () => {
-        console.log("Whisper WS closed.");
-        if (wsRef.current === ws) {
-          console.log("WS closed unexpectedly by server, switching to Web Speech API fallback...");
-          switchToFallbackRecognition();
-        }
-      };
-
-    } catch (err) {
-      console.warn("Could not capture mic or connect to WS. Falling back to Web Speech API.", err);
-      switchToFallbackRecognition();
-    }
-  }
-
-  // Fallback: Web Speech API
-  function switchToFallbackRecognition() {
-    setAiStatus("fallback");
-    
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      try { mediaRecorderRef.current.stop(); } catch (e) {}
-    }
-    if (wsRef.current) {
-      try { wsRef.current.close(); } catch (e) {}
-      wsRef.current = null;
-    }
+    setAiStatus("listening");
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setTranscriptionText("Распознавание речи не поддерживается вашим браузером.");
+      setTranscriptionText("Распознавание речи не поддерживается вашим браузером. Пожалуйста, используйте Google Chrome или Safari.");
+      isRecordingRef.current = false;
       setIsRecording(false);
       setAiStatus("ready");
       return;
@@ -225,27 +165,53 @@ export default function SubtitlesDashboard() {
     recognitionRef.current = recognition;
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = "ru-RU";
+    recognition.lang = userLanguage === "kk" ? "kk-KZ" : "ru-RU";
 
     recognition.onresult = (event: any) => {
       let resultText = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        resultText += event.results[i][0].transcript;
+      for (let i = 0; i < event.results.length; ++i) {
+        const transcript = event.results[i][0].transcript;
+        if (resultText && !resultText.endsWith(" ") && !transcript.startsWith(" ")) {
+          resultText += " ";
+        }
+        resultText += transcript;
       }
       setTranscriptionText(resultText);
     };
 
-    recognition.onerror = () => {
-      setIsRecording(false);
-      setAiStatus("ready");
+    recognition.onerror = (err: any) => {
+      console.error("Speech recognition error:", err);
+      if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
+        setTranscriptionText("Доступ к микрофону отклонен.");
+        isRecordingRef.current = false;
+        setIsRecording(false);
+        setAiStatus("ready");
+      }
     };
 
     recognition.onend = () => {
-      setIsRecording(false);
-      setAiStatus("ready");
+      if (isRecordingRef.current) {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error("Failed to restart speech recognition:", e);
+          setIsRecording(false);
+          setAiStatus("ready");
+        }
+      } else {
+        setIsRecording(false);
+        setAiStatus("ready");
+      }
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      setAiStatus("ready");
+    }
   }
 
   // Save current speech transcript to database
@@ -364,7 +330,7 @@ export default function SubtitlesDashboard() {
                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </span>
                     <span className="text-[10px] font-syne font-extrabold tracking-widest text-green-400 uppercase">
-                      🎤 ИИ Слушает (Whisper)
+                      🎤 Локальный ввод (Браузер)
                     </span>
                   </div>
                 )}

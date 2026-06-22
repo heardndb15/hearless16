@@ -34,12 +34,14 @@ export default function StudyDashboard() {
   const [transcriptionText, setTranscriptionText] = useState("");
   const [aiStatus, setAiStatus] = useState<"ready" | "listening" | "processing" | "analyzing">("ready");
   const [lectureTitle, setLectureTitle] = useState("");
+  const [userLanguage, setUserLanguage] = useState<string>("ru");
 
   // Analysis result temporary state
   const [analysisResult, setAnalysisResult] = useState<LectureHighlight | null>(null);
 
   // Web Speech API / WebSocket refs
   const recognitionRef = useRef<any>(null);
+  const isRecordingRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
@@ -50,6 +52,17 @@ export default function StudyDashboard() {
       if (data?.user) {
         setUser(data.user);
         fetchLectures(data.user.id);
+        
+        // Fetch user language profile
+        supabase.from("users")
+          .select("language")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile?.language) {
+              setUserLanguage(profile.language);
+            }
+          });
       }
     });
 
@@ -76,6 +89,7 @@ export default function StudyDashboard() {
   }
 
   function stopRecordingSession() {
+    isRecordingRef.current = false;
     setIsRecording(false);
     setAiStatus("ready");
 
@@ -94,67 +108,20 @@ export default function StudyDashboard() {
     }
   }
 
+  // Start Browser-based Native Speech Recognition
   async function startRecordingSession() {
+    isRecordingRef.current = true;
     setIsRecording(true);
     setTranscriptionText("");
     setAnalysisResult(null);
-    setAiStatus("processing");
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioStreamRef.current = stream;
-
-      const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
-      const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
-      const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
-      const wsUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
-
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        setAiStatus("listening");
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-        mediaRecorderRef.current = mediaRecorder;
-
-        mediaRecorder.ondataavailable = async (event) => {
-          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = (reader.result as string).split(",")[1];
-              ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
-            };
-            reader.readAsDataURL(event.data);
-          }
-        };
-        mediaRecorder.start(1500);
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.text) {
-            setTranscriptionText(data.text);
-          }
-        } catch (e) {}
-      };
-
-      ws.onerror = () => switchToFallback();
-      ws.onclose = () => {
-        if (wsRef.current === ws) switchToFallback();
-      };
-
-    } catch (err) {
-      switchToFallback();
-    }
-  }
-
-  function switchToFallback() {
     setAiStatus("listening");
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setTranscriptionText("Распознавание речи не поддерживается браузером.");
+      setTranscriptionText("Распознавание речи не поддерживается браузером. Пожалуйста, используйте Google Chrome или Safari.");
+      isRecordingRef.current = false;
       setIsRecording(false);
+      setAiStatus("ready");
       return;
     }
 
@@ -162,17 +129,53 @@ export default function StudyDashboard() {
     recognitionRef.current = recognition;
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = "ru-RU";
+    recognition.lang = userLanguage === "kk" ? "kk-KZ" : "ru-RU";
 
     recognition.onresult = (event: any) => {
       let resultText = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        resultText += event.results[i][0].transcript;
+      for (let i = 0; i < event.results.length; ++i) {
+        const transcript = event.results[i][0].transcript;
+        if (resultText && !resultText.endsWith(" ") && !transcript.startsWith(" ")) {
+          resultText += " ";
+        }
+        resultText += transcript;
       }
       setTranscriptionText(resultText);
     };
 
-    recognition.start();
+    recognition.onerror = (err: any) => {
+      console.error("Speech recognition error:", err);
+      if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
+        setTranscriptionText("Доступ к микрофону отклонен.");
+        isRecordingRef.current = false;
+        setIsRecording(false);
+        setAiStatus("ready");
+      }
+    };
+
+    recognition.onend = () => {
+      if (isRecordingRef.current) {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error("Failed to restart speech recognition:", e);
+          setIsRecording(false);
+          setAiStatus("ready");
+        }
+      } else {
+        setIsRecording(false);
+        setAiStatus("ready");
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      setAiStatus("ready");
+    }
   }
 
   async function handleAnalyze() {
