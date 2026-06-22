@@ -131,8 +131,13 @@ export default function SubtitlesScreen() {
     }
   }, [isRecording]);
 
-  const recentChunks = chunks.slice(-6);
-  const hasContent = recentChunks.length > 0 || streamText.length > 0;
+  const getRollingLines = () => {
+    if (!streamText.trim()) return [];
+    const sentences = streamText.match(/[^.!?\n]+[.!?\n]*/g) || [streamText];
+    return sentences.map(s => s.trim()).filter(Boolean).slice(-6);
+  };
+  const rollingLines = getRollingLines();
+  const hasContent = rollingLines.length > 0;
 
   async function handleRecord() {
     if (isRecording) {
@@ -259,19 +264,19 @@ export default function SubtitlesScreen() {
         {hasContent ? (
           <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
             <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
-              {recentChunks.map((chunk, i) => {
-                const isLast = i === recentChunks.length - 1;
+              {rollingLines.map((line, i) => {
+                const isLast = i === rollingLines.length - 1;
                 const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
                 return (
                   <Text
-                    key={`${chunk.text}-${i}`}
+                    key={`${line}-${i}`}
                     style={{
                       fontSize,
                       color: isLast ? textColor : fadedColor,
                       fontWeight: isLast ? "bold" : "500",
                     }}
                   >
-                    {chunk.text}{" "}
+                    {line}{" "}
                   </Text>
                 );
               })}

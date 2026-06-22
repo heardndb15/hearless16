@@ -140,3 +140,43 @@ def transcribe_audio(audio_bytes: bytes, language: str = "ru") -> str:
         import sys
         print(f"Error in transcribe_audio: {e}", file=sys.stderr)
         return ""
+
+
+def merge_audio_chunks(chunks: list[bytes], format: str = "m4a") -> bytes:
+    from pydub import AudioSegment
+    import io
+    import tempfile
+    import os
+
+    if not chunks:
+        return b""
+    if len(chunks) == 1:
+        return chunks[0]
+
+    try:
+        combined = None
+        for chunk in chunks:
+            with tempfile.NamedTemporaryFile(suffix=f".{format}", delete=False) as tmp:
+                tmp.write(chunk)
+                tmp.flush()
+                tmp_name = tmp.name
+            try:
+                segment = AudioSegment.from_file(tmp_name)
+                if combined is None:
+                    combined = segment
+                else:
+                    combined += segment
+            finally:
+                if os.path.exists(tmp_name):
+                    os.unlink(tmp_name)
+
+        if combined is None:
+            return b""
+
+        out_buf = io.BytesIO()
+        combined.export(out_buf, format="wav")
+        return out_buf.getvalue()
+    except Exception as e:
+        import sys
+        print(f"Error merging audio chunks: {e}", file=sys.stderr)
+        return b""

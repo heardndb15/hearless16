@@ -49,11 +49,11 @@ async def websocket_transcribe(websocket: WebSocket):
         return
 
     session_bytes = b""
+    session_chunks = [] # Для M4A файлов с мобильного
     last_transcribed_len = 0
     
     # Режим стриминга (True для потокового WebM с веба, False для независимых M4A с мобильного)
     is_stream = None
-    transcribed_texts = []
     current_full_text = ""
 
     try:
@@ -99,19 +99,24 @@ async def websocket_transcribe(websocket: WebSocket):
                         last_transcribed_len = len(session_bytes)
                 else:
                     # Если это независимые файлы (M4A на мобильном)
-                    # Распознаем каждый чанк отдельно и склеиваем тексты
+                    session_chunks.append(audio_bytes)
+                    from app.services.whisper_service import merge_audio_chunks, detect_audio_format
+                    first_ext = detect_audio_format(session_chunks[0])
                     try:
-                        text = await asyncio.to_thread(transcribe_audio, audio_bytes)
+                        merged_bytes = await asyncio.to_thread(merge_audio_chunks, session_chunks, first_ext)
+                        if merged_bytes:
+                            text = await asyncio.to_thread(transcribe_audio, merged_bytes)
+                        else:
+                            text = ""
                     except Exception as e:
                         import sys
-                        print(f"Error in ws chunk transcribe: {e}", file=sys.stderr)
+                        print(f"Error in ws merged transcribe: {e}", file=sys.stderr)
                         text = ""
-                    if text and text.strip():
-                        transcribed_texts.append(text.strip())
-                        current_full_text = " ".join(transcribed_texts)
+                    if text:
+                        current_full_text = text.strip()
                         await websocket.send_json({
                             "type": "text",
-                            "text": text.strip(),
+                            "text": current_full_text,
                             "full_text": current_full_text,
                         })
 

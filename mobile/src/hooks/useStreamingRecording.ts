@@ -56,31 +56,40 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   }, []);
 
   const sendChunk = useCallback(async (ws: WebSocket) => {
-    const rec = recordingRef.current;
-    if (!rec) return;
+    const oldRec = recordingRef.current;
+    if (!oldRec) return;
 
     try {
-      await rec.stopAndUnloadAsync();
-      const uri = rec.getURI();
-      if (!uri) return;
+      // 1. Stop the current recording as quickly as possible
+      await oldRec.stopAndUnloadAsync();
+      const uri = oldRec.getURI();
 
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ action: "chunk", audio: base64 }));
+      // 2. IMMEDIATELY start the next recording to minimize hardware gap
+      try {
+        const { recording } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY
+        );
+        recordingRef.current = recording;
+      } catch (err) {
+        console.log("Failed to restart recording:", err);
       }
 
-      await FileSystem.deleteAsync(uri, { idempotent: true });
-    } catch {}
-
-    try {
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      recordingRef.current = recording;
-    } catch {}
+      // 3. Process and send the previous audio chunk in the background
+      if (uri) {
+        FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        }).then(async (base64) => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ action: "chunk", audio: base64 }));
+          }
+          await FileSystem.deleteAsync(uri, { idempotent: true });
+        }).catch(err => {
+          console.log("Error processing audio file:", err);
+        });
+      }
+    } catch (err) {
+      console.log("Error in sendChunk:", err);
+    }
   }, []);
 
   const startStreaming = useCallback(async () => {
