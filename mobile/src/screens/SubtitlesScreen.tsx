@@ -131,7 +131,7 @@ export default function SubtitlesScreen() {
     }
   }, [isRecording]);
 
-  const recentChunks = chunks.slice(-3);
+  const recentChunks = chunks.slice(-6);
   const hasContent = recentChunks.length > 0 || streamText.length > 0;
 
   async function handleRecord() {
@@ -258,16 +258,24 @@ export default function SubtitlesScreen() {
       <View style={styles.subtitleArea}>
         {hasContent ? (
           <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
-            {recentChunks.map((chunk, i) => (
-              <AnimatedLine
-                key={`${chunk.text}-${i}`}
-                text={chunk.text}
-                index={recentChunks.length - 1 - i}
-                fontSize={fontSize}
-                textColor={textColor}
-                alignment={alignment}
-              />
-            ))}
+            <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
+              {recentChunks.map((chunk, i) => {
+                const isLast = i === recentChunks.length - 1;
+                const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
+                return (
+                  <Text
+                    key={`${chunk.text}-${i}`}
+                    style={{
+                      fontSize,
+                      color: isLast ? textColor : fadedColor,
+                      fontWeight: isLast ? "bold" : "500",
+                    }}
+                  >
+                    {chunk.text}{" "}
+                  </Text>
+                );
+              })}
+            </Text>
           </View>
         ) : (
           <View style={styles.placeholderCard}>

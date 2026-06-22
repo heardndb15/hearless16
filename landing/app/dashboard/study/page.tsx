@@ -259,6 +259,13 @@ export default function StudyDashboard() {
     }
   }
 
+  const getRollingLines = () => {
+    if (!transcriptionText.trim()) return [];
+    const sentences = transcriptionText.match(/[^.!?\n]+[.!?\n]*/g) || [transcriptionText];
+    return sentences.map(s => s.trim()).filter(Boolean).slice(-6);
+  };
+  const rollingLines = getRollingLines();
+
   return (
     <div className="space-y-6">
       {/* Styles Injection */}
@@ -397,13 +404,29 @@ export default function StudyDashboard() {
               </div>
 
               {/* Transcription Content Area */}
-              <div className="flex-1 flex flex-col justify-center text-center max-w-xl mx-auto w-full z-10 py-6 overflow-y-auto max-h-[220px]">
+              <div className="flex-1 flex flex-col justify-end text-left max-w-2xl mx-auto w-full z-10 py-6 overflow-y-auto max-h-[220px] px-4">
                 {transcriptionText ? (
-                  <p className="text-white text-lg md:text-xl font-bold leading-relaxed max-w-lg mx-auto font-dm">
-                    {transcriptionText}
-                  </p>
+                  <div className="bg-slate-900/80 border border-white/10 p-5 rounded-2xl backdrop-blur-md w-full">
+                    <p className="font-dm font-semibold text-lg md:text-xl leading-relaxed transition-all duration-300">
+                      {rollingLines.map((line, idx) => {
+                        const isLast = idx === rollingLines.length - 1;
+                        return (
+                          <span
+                            key={idx}
+                            className={`mr-2.5 transition-all duration-500 inline ${
+                              isLast ? "text-cyan-400 font-extrabold" : "text-white/25 font-medium"
+                            }`}
+                          >
+                            {line}
+                          </span>
+                        );
+                      })}
+                      {/* Blinking cursor */}
+                      <span className="inline-block w-0.5 h-5 bg-cyan-400 ml-1 vertical-align-middle animate-[cursor-blink_0.8s_step-end_infinite]" />
+                    </p>
+                  </div>
                 ) : (
-                  <div className="space-y-3 animate-pulse">
+                  <div className="my-auto space-y-3 animate-pulse text-center w-full">
                     <p className="text-sky-300 text-sm font-semibold">
                       {isRecording ? "Слушаю лекцию преподавателя..." : "Нажмите кнопку ниже для записи"}
                     </p>

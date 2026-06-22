@@ -126,18 +126,58 @@ export default function SubtitlesPage() {
               </div>
 
               {/* Subtitles text */}
-              <div style={{ 
-                fontSize: `${fontSize}px`, 
-                fontWeight: 600, 
-                color: textColor, 
-                lineHeight: 1.4, 
-                textAlign: alignment,
-                minHeight: 90,
-                textShadow: bgOpacity === 0 ? "none" : "0 2px 10px rgba(0, 0, 0, 0.5)"
-              }}>
-                {displayText || "‌"}
-                <span style={{ display: "inline-block", width: 3, height: fontSize - 4, background: textColor, marginLeft: 6, verticalAlign: "middle", animation: "cursor-blink 0.8s step-end infinite" }} />
-              </div>
+              {isDemo ? (
+                <div style={{ 
+                  fontSize: `${fontSize}px`, 
+                  fontWeight: 600, 
+                  lineHeight: 1.6, 
+                  textAlign: alignment,
+                  minHeight: 90,
+                  textShadow: bgOpacity === 0 ? "none" : "0 2px 10px rgba(0, 0, 0, 0.4)"
+                }}>
+                  {/* Previous phrases faded */}
+                  {PHRASES[lang].slice(0, phraseIdx).map((ph, idx) => (
+                    <span key={idx} style={{ color: "rgba(255, 255, 255, 0.25)", marginRight: 10, fontWeight: 500 }}>
+                      {ph}
+                    </span>
+                  ))}
+                  {/* Current phrase highlighted */}
+                  <span style={{ color: textColor, fontWeight: 800 }}>
+                    {PHRASES[lang][phraseIdx].slice(0, chars)}
+                  </span>
+                  <span style={{ display: "inline-block", width: 3, height: fontSize - 4, background: textColor, marginLeft: 6, verticalAlign: "middle", animation: "cursor-blink 0.8s step-end infinite" }} />
+                </div>
+              ) : (
+                <div style={{ 
+                  fontSize: `${fontSize}px`, 
+                  fontWeight: 600, 
+                  lineHeight: 1.6, 
+                  textAlign: alignment,
+                  minHeight: 90,
+                  textShadow: bgOpacity === 0 ? "none" : "0 2px 10px rgba(0, 0, 0, 0.4)"
+                }}>
+                  {(() => {
+                    const sentences = inputText.match(/[^.!?\n]+[.!?\n]*/g) || [inputText];
+                    const cleaned = sentences.map(s => s.trim()).filter(Boolean);
+                    return cleaned.map((line, idx) => {
+                      const isLast = idx === cleaned.length - 1;
+                      return (
+                        <span
+                          key={idx}
+                          style={{
+                            color: isLast ? textColor : "rgba(255, 255, 255, 0.25)",
+                            fontWeight: isLast ? 800 : 500,
+                            marginRight: 10
+                          }}
+                        >
+                          {line}
+                        </span>
+                      );
+                    });
+                  })()}
+                  <span style={{ display: "inline-block", width: 3, height: fontSize - 4, background: textColor, marginLeft: 6, verticalAlign: "middle", animation: "cursor-blink 0.8s step-end infinite" }} />
+                </div>
+              )}
 
               {/* Bottom details */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>

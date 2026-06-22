@@ -280,7 +280,7 @@ export default function SubtitlesDashboard() {
     if (!transcriptionText.trim()) return [];
     const sentences = transcriptionText.match(/[^.!?\n]+[.!?\n]*/g) || [transcriptionText];
     const cleaned = sentences.map(s => s.trim()).filter(Boolean);
-    return cleaned.slice(-3);
+    return cleaned.slice(-6);
   };
 
   const rollingLines = getRollingLines();
@@ -402,55 +402,53 @@ export default function SubtitlesDashboard() {
             </div>
 
             {/* Subtitles Area (Netflix Screen) */}
-            <div className="flex-1 flex flex-col justify-end text-center z-10 py-6 max-w-4xl mx-auto w-full">
+            <div className="flex-1 flex flex-col justify-end text-left z-10 py-6 max-w-4xl mx-auto w-full px-4">
               {isRecording ? (
                 rollingLines.length > 0 ? (
-                  <div className="space-y-4 flex flex-col items-center justify-end min-h-[180px]">
-                    {rollingLines.map((line, idx) => {
-                      const total = rollingLines.length;
-                      const isLast = idx === total - 1;
-                      const isSecondLast = idx === total - 2;
-                      const isThirdLast = idx === total - 3;
+                  <div className={`transition-all duration-300 w-full ${
+                    bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-[2px]" : ""
+                  }`}>
+                    <p style={{
+                      fontSize: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
+                      lineHeight: "1.6"
+                    }} className="font-dm font-semibold transition-all duration-300">
+                      {rollingLines.map((line, idx) => {
+                        const isLast = idx === rollingLines.length - 1;
+                        
+                        let customStyle: React.CSSProperties = {};
+                        if (isLast) {
+                          customStyle = {
+                            color: getColorCode(textColor),
+                            textShadow: textGlow ? getShadow(textColor) : "none",
+                            fontWeight: 800
+                          };
+                        } else {
+                          customStyle = {
+                            color: "rgba(255, 255, 255, 0.25)",
+                            fontWeight: 500
+                          };
+                        }
 
-                      let itemStyle = "";
-                      let customStyle: React.CSSProperties = {};
-
-                      if (isLast) {
-                        const szClass = fontSize === "sm" ? "text-xl md:text-3xl" : fontSize === "lg" ? "text-4xl md:text-6xl" : fontSize === "xl" ? "text-5xl md:text-7xl" : "text-3xl md:text-5xl";
-                        itemStyle = `${szClass} font-black tracking-wide leading-snug animate-[slide-up_0.25s_ease-out]`;
-                        customStyle = {
-                          color: getColorCode(textColor),
-                          textShadow: textGlow ? getShadow(textColor) : "none"
-                        };
-                      } else if (isSecondLast) {
-                        const szClass = fontSize === "sm" ? "text-lg md:text-2xl" : fontSize === "lg" ? "text-2xl md:text-4xl" : fontSize === "xl" ? "text-3xl md:text-5xl" : "text-xl md:text-3xl";
-                        itemStyle = `${szClass} opacity-60 font-bold leading-normal scale-97 transition-all duration-500`;
-                        customStyle = {
-                          color: getColorCode(textColor),
-                        };
-                      } else if (isThirdLast) {
-                        const szClass = fontSize === "sm" ? "text-base md:text-xl" : fontSize === "lg" ? "text-xl md:text-3xl" : fontSize === "xl" ? "text-2xl md:text-4xl" : "text-lg md:text-2xl";
-                        itemStyle = `${szClass} opacity-20 font-semibold leading-normal scale-94 transition-all duration-500 blur-[0.5px]`;
-                        customStyle = {
-                          color: getColorCode(textColor),
-                        };
-                      }
-
-                      const bgClass = bgColor === "dark" ? "bg-slate-950/85 border border-white/10" : bgColor === "semi" ? "bg-black/35 backdrop-blur-[2px] border border-white/5" : "bg-transparent border-transparent shadow-none";
-
-                      return (
-                        <div
-                          key={idx}
-                          className={`${itemStyle} ${bgClass} font-dm max-w-3xl px-6 py-2 rounded-2xl transition-all duration-500 transform origin-bottom`}
-                          style={customStyle}
-                        >
-                          {line}
-                        </div>
-                      );
-                    })}
+                        return (
+                          <span
+                            key={idx}
+                            className="mr-2.5 transition-all duration-500 inline"
+                            style={customStyle}
+                          >
+                            {line}
+                          </span>
+                        );
+                      })}
+                      {/* Blinking cursor */}
+                      <span className="inline-block w-0.5 ml-1 vertical-align-middle animate-[cursor-blink_0.8s_step-end_infinite]"
+                            style={{ 
+                              height: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
+                              backgroundColor: getColorCode(textColor)
+                            }} />
+                    </p>
                   </div>
                 ) : (
-                  <div className="my-auto space-y-4 animate-pulse">
+                  <div className="my-auto space-y-4 animate-pulse text-center w-full">
                     <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
                       🎙️
                     </div>
@@ -460,7 +458,7 @@ export default function SubtitlesDashboard() {
                   </div>
                 )
               ) : (
-                <div className="my-auto space-y-4 py-8">
+                <div className="my-auto space-y-4 py-8 text-center w-full">
                   <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center mx-auto text-2xl shadow-xl">
                     🎬
                   </div>
