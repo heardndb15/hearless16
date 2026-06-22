@@ -65,7 +65,6 @@ export type RootTabParamList = {
   Subtitles: undefined;
   Gestures: undefined;
   Study: undefined;
-  Alerts: undefined;
   Profile: undefined;
 };
 
