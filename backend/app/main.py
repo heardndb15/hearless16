@@ -106,19 +106,28 @@ async def websocket_transcribe(websocket: WebSocket):
                         merged_bytes = await asyncio.to_thread(merge_audio_chunks, session_chunks, first_ext)
                         if merged_bytes:
                             text = await asyncio.to_thread(transcribe_audio, merged_bytes)
+                            if text:
+                                current_full_text = text.strip()
                         else:
-                            text = ""
+                            raise Exception("Merging failed or returned empty bytes")
                     except Exception as e:
                         import sys
-                        print(f"Error in ws merged transcribe: {e}", file=sys.stderr)
-                        text = ""
-                    if text:
-                        current_full_text = text.strip()
-                        await websocket.send_json({
-                            "type": "text",
-                            "text": current_full_text,
-                            "full_text": current_full_text,
-                        })
+                        print(f"Fallback to single chunk transcribe due to merge error: {e}", file=sys.stderr)
+                        try:
+                            chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes)
+                            if chunk_text and chunk_text.strip():
+                                if not current_full_text:
+                                    current_full_text = chunk_text.strip()
+                                else:
+                                    current_full_text += " " + chunk_text.strip()
+                        except Exception as ex:
+                            print(f"Error in fallback transcribe: {ex}", file=sys.stderr)
+                    
+                    await websocket.send_json({
+                        "type": "text",
+                        "text": current_full_text,
+                        "full_text": current_full_text,
+                    })
 
             elif action == "stop":
                 if is_stream:
