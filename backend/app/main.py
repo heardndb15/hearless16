@@ -176,3 +176,39 @@ async def debug():
         "openai_key_prefix": os.getenv("OPENAI_API_KEY", "")[:10] if os.getenv("OPENAI_API_KEY") else ""
     }
 
+
+@app.get("/test-merge")
+async def test_merge():
+    import traceback
+    try:
+        from pydub import AudioSegment
+        import io
+        
+        # 1. Create a 1-second silent audio segment
+        silence = AudioSegment.silent(duration=1000, frame_rate=16000)
+        
+        # 2. Export it as M4A to bytes
+        buf1 = io.BytesIO()
+        silence.export(buf1, format="ipod") # pydub uses 'ipod' or 'm4a' for AAC/M4A
+        chunk1 = buf1.getvalue()
+        
+        buf2 = io.BytesIO()
+        silence.export(buf2, format="ipod")
+        chunk2 = buf2.getvalue()
+        
+        # 3. Try to merge them using our helper function
+        from app.services.whisper_service import merge_audio_chunks
+        merged = merge_audio_chunks([chunk1, chunk2], "m4a")
+        
+        return {
+            "status": "success",
+            "merged_bytes_len": len(merged)
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error_message": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
