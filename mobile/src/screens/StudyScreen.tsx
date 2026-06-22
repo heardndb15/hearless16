@@ -19,8 +19,9 @@ import type { StudyLecture } from "../../../shared/types";
 
 const { width } = Dimensions.get("window");
 
-const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || "wss://hearless16-1.onrender.com/ws/transcribe";
-const API_URL = BACKEND_WS.replace("wss://", "https://").replace("ws://", "http://").replace("/ws/transcribe", "");
+const DEFAULT_API_URL = "https://hearless16-1.onrender.com";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
+const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || API_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws/transcribe";
 
 export default function StudyScreen() {
   const [userId, setUserId] = useState<string | null>(null);

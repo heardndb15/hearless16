@@ -4,7 +4,9 @@ import * as FileSystem from "expo-file-system";
 import { supabase } from "../services/supabase";
 import axios from "axios";
 
-const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || "wss://hearless16-1.onrender.com/ws/transcribe";
+const DEFAULT_API_URL = "https://hearless16-1.onrender.com";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
+const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || API_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws/transcribe";
 
 export interface StreamChunk {
   text: string;
@@ -111,7 +113,12 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const startStreaming = useCallback(async () => {
     try {
       setError(null);
-      await Audio.requestPermissionsAsync();
+      const { granted } = await Audio.requestPermissionsAsync();
+      if (!granted) {
+        setError("Доступ к микрофону отклонен");
+        return;
+      }
+
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
@@ -143,7 +150,10 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
           sendChunk(wsRef.current);
         }
       }, 3000);
-    } catch {}
+    } catch (err: any) {
+      setError(err?.message || "Не удалось запустить запись. Проверьте настройки микрофона.");
+      setIsRecording(false);
+    }
   }, [connectWs, sendChunk]);
 
   const stopStreaming = useCallback(async () => {
