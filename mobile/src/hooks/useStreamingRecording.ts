@@ -23,9 +23,11 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const recordingRef = useRef<Audio.Recording | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const chunkIndexRef = useRef(0);
+  const userLangRef = useRef<string>("ru");
 
   const connectWs = useCallback(() => {
-    const ws = new WebSocket(BACKEND_WS);
+    const wsUrl = BACKEND_WS + (BACKEND_WS.includes("?") ? "&" : "?") + `lang=${userLangRef.current}`;
+    const ws = new WebSocket(wsUrl);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -198,6 +200,21 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   }, []);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase
+          .from("users")
+          .select("language")
+          .eq("id", session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.language) {
+              userLangRef.current = data.language;
+            }
+          });
+      }
+    });
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       wsRef.current?.close();

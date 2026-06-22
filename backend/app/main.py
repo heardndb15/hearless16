@@ -33,7 +33,7 @@ app.include_router(study.router)
 
 
 @app.websocket("/ws/transcribe")
-async def websocket_transcribe(websocket: WebSocket):
+async def websocket_transcribe(websocket: WebSocket, lang: str = "ru"):
     await websocket.accept()
     
     # Check if a transcription model or API key is available
@@ -84,7 +84,7 @@ async def websocket_transcribe(websocket: WebSocket):
                     # Распознаем на первом чанке или при накоплении 12KB новых данных (~1.5-2 сек)
                     if last_transcribed_len == 0 or len(session_bytes) - last_transcribed_len >= 12000:
                         try:
-                            text = await asyncio.to_thread(transcribe_audio, session_bytes)
+                            text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
                         except Exception as e:
                             import sys
                             print(f"Error in ws stream transcribe: {e}", file=sys.stderr)
@@ -105,7 +105,7 @@ async def websocket_transcribe(websocket: WebSocket):
                     try:
                         merged_bytes = await asyncio.to_thread(merge_audio_chunks, session_chunks, first_ext)
                         if merged_bytes:
-                            text = await asyncio.to_thread(transcribe_audio, merged_bytes)
+                            text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
                             if text:
                                 current_full_text = text.strip()
                         else:
@@ -114,7 +114,7 @@ async def websocket_transcribe(websocket: WebSocket):
                         import sys
                         print(f"Fallback to single chunk transcribe due to merge error: {e}", file=sys.stderr)
                         try:
-                            chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes)
+                            chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes, language=lang)
                             if chunk_text and chunk_text.strip():
                                 if not current_full_text:
                                     current_full_text = chunk_text.strip()
@@ -133,7 +133,7 @@ async def websocket_transcribe(websocket: WebSocket):
                 if is_stream:
                     if len(session_bytes) > 0:
                         try:
-                            text = await asyncio.to_thread(transcribe_audio, session_bytes)
+                            text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
                         except Exception as e:
                             import sys
                             print(f"Error in ws stop transcribe: {e}", file=sys.stderr)

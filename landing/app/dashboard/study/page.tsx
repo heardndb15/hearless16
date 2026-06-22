@@ -35,9 +35,15 @@ export default function StudyDashboard() {
   const [aiStatus, setAiStatus] = useState<"ready" | "listening" | "processing" | "analyzing">("ready");
   const [lectureTitle, setLectureTitle] = useState("");
   const [userLanguage, setUserLanguage] = useState<string>("ru");
+  const [recognitionEngine, setRecognitionEngine] = useState<"browser" | "whisper">("browser");
 
   // Analysis result temporary state
   const [analysisResult, setAnalysisResult] = useState<LectureHighlight | null>(null);
+
+  const changeRecognitionEngine = (val: "browser" | "whisper") => {
+    setRecognitionEngine(val);
+    if (typeof window !== "undefined") localStorage.setItem("study_recognitionEngine", val);
+  };
 
   // Web Speech API / WebSocket refs
   const recognitionRef = useRef<any>(null);
@@ -66,6 +72,10 @@ export default function StudyDashboard() {
           });
       }
     });
+
+    if (typeof window !== "undefined") {
+      setRecognitionEngine((localStorage.getItem("study_recognitionEngine") as any) || "browser");
+    }
 
     return () => {
       stopRecordingSession();
@@ -115,8 +125,86 @@ export default function StudyDashboard() {
     }
   }
 
-  // Start Browser-based Native Speech Recognition
+  // Start Whisper AI WebSocket Recording
+  async function startWhisperRecording() {
+    isRecordingRef.current = true;
+    setIsRecording(true);
+    setTranscriptionText("");
+    setAnalysisResult(null);
+    setAiStatus("processing");
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+
+      const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+      const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
+      const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
+      const wsBaseUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
+      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}`;
+
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setAiStatus("listening");
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = async (event) => {
+          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = (reader.result as string).split(",")[1];
+              ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
+            };
+            reader.readAsDataURL(event.data);
+          }
+        };
+        mediaRecorder.start(1500);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.text) {
+            setTranscriptionText(data.text);
+          }
+        } catch (e) {}
+      };
+
+      ws.onerror = () => switchToFallback();
+      ws.onclose = () => {
+        if (wsRef.current === ws) switchToFallback();
+      };
+
+    } catch (err) {
+      switchToFallback();
+    }
+  }
+
+  function switchToFallback() {
+    setAiStatus("listening");
+    if (wsRef.current) {
+      try { wsRef.current.close(); } catch (e) {}
+      wsRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try { mediaRecorderRef.current.stop(); } catch (e) {}
+    }
+    startBrowserRecognition();
+  }
+
   async function startRecordingSession() {
+    if (recognitionEngine === "whisper") {
+      await startWhisperRecording();
+    } else {
+      await startBrowserRecognition();
+    }
+  }
+
+  // Start Browser-based Native Speech Recognition
+  async function startBrowserRecognition() {
     isRecordingRef.current = true;
     setIsRecording(true);
     setTranscriptionText("");
@@ -406,7 +494,7 @@ export default function StudyDashboard() {
               {/* Status Header */}
               <div className="flex justify-between items-center z-10">
                 <span className="text-[10px] font-syne font-extrabold text-sky-300 uppercase tracking-widest bg-sky-900/80 border border-white/5 px-3 py-1.5 rounded-full">
-                  {isRecording ? "🔴 Запись аудио" : "⚪ Готов к записи"}
+                  {isRecording ? (recognitionEngine === "whisper" ? "🔴 Запись (Whisper ИИ)" : "🔴 Запись (Браузер)") : "⚪ Готов к записи"}
                 </span>
 
                 {isRecording && (
@@ -480,16 +568,39 @@ export default function StudyDashboard() {
               </div>
             </div>
 
-            {/* Back Button */}
-            <button
-              onClick={() => {
-                stopRecordingSession();
-                setActiveTab("list");
-              }}
-              className="self-start text-xs font-bold text-sky-500 hover:text-sky-800 flex items-center gap-1"
-            >
-              ← Отмена
-            </button>
+            {/* Engine Selector & Back Button Row */}
+            <div className="flex justify-between items-center w-full flex-wrap gap-4 mt-2">
+              <button
+                onClick={() => {
+                  stopRecordingSession();
+                  setActiveTab("list");
+                }}
+                className="text-xs font-bold text-sky-500 hover:text-sky-800 flex items-center gap-1"
+              >
+                ← Отмена
+              </button>
+
+              {/* Engine Selector */}
+              <div className="flex items-center gap-2 bg-sky-50/80 border border-sky-100 p-1.5 rounded-xl shadow-sm">
+                <span className="text-[9px] text-sky-600 font-bold uppercase px-2">Качество записи:</span>
+                <div className="flex gap-1">
+                  {[
+                    { key: "browser", label: "Браузер" },
+                    { key: "whisper", label: "Whisper ИИ" }
+                  ].map((eng) => (
+                    <button
+                      key={eng.key}
+                      onClick={() => changeRecognitionEngine(eng.key as any)}
+                      className={`text-[9px] font-bold py-1.5 px-3 rounded-lg transition-all ${
+                        recognitionEngine === eng.key ? "bg-accent text-white shadow-sm font-extrabold" : "text-sky-600 hover:text-sky-800"
+                      }`}
+                    >
+                      {eng.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* AI Analysis and Save Form */}

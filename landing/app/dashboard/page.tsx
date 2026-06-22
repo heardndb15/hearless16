@@ -57,6 +57,8 @@ export default function SubtitlesDashboard() {
     }
   };
 
+  const [recognitionEngine, setRecognitionEngine] = useState<"browser" | "whisper">("browser");
+
   const changeFontSize = (val: string) => {
     setFontSize(val);
     if (typeof window !== "undefined") localStorage.setItem("sub_fontSize", val);
@@ -72,6 +74,10 @@ export default function SubtitlesDashboard() {
   const changeTextGlow = (val: boolean) => {
     setTextGlow(val);
     if (typeof window !== "undefined") localStorage.setItem("sub_textGlow", val ? "true" : "false");
+  };
+  const changeRecognitionEngine = (val: "browser" | "whisper") => {
+    setRecognitionEngine(val);
+    if (typeof window !== "undefined") localStorage.setItem("sub_recognitionEngine", val);
   };
 
   useEffect(() => {
@@ -99,6 +105,7 @@ export default function SubtitlesDashboard() {
       setTextColor(localStorage.getItem("sub_textColor") || "white");
       setBgColor(localStorage.getItem("sub_bgColor") || "dark");
       setTextGlow(localStorage.getItem("sub_textGlow") !== "false");
+      setRecognitionEngine((localStorage.getItem("sub_recognitionEngine") as any) || "browser");
     }
 
     return () => {
@@ -152,8 +159,93 @@ export default function SubtitlesDashboard() {
     }
   }
 
-  // Start Browser-based Native Speech Recognition
+  // Start Whisper AI WebSocket Recording
+  async function startWhisperRecording() {
+    isRecordingRef.current = true;
+    setIsRecording(true);
+    setTranscriptionText("");
+    setAiStatus("processing");
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+
+      const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+      const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
+      const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
+      const wsBaseUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
+      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}`;
+
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setAiStatus("listening");
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = async (event) => {
+          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = (reader.result as string).split(",")[1];
+              ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
+            };
+            reader.readAsDataURL(event.data);
+          }
+        };
+        mediaRecorder.start(1500);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "error") {
+            console.warn("Server transcription error:", data.message);
+            switchToFallbackRecognition();
+          } else if (data.text) {
+            setTranscriptionText(data.text);
+          }
+        } catch (e) {}
+      };
+
+      ws.onerror = (err) => {
+        console.warn("Whisper WS encountered an error. Falling back...", err);
+        switchToFallbackRecognition();
+      };
+
+      ws.onclose = () => {
+        console.log("Whisper WS closed.");
+      };
+
+    } catch (err) {
+      console.warn("Whisper initialization failed. Falling back...", err);
+      switchToFallbackRecognition();
+    }
+  }
+
+  function switchToFallbackRecognition() {
+    setAiStatus("fallback");
+    if (wsRef.current) {
+      try { wsRef.current.close(); } catch (e) {}
+      wsRef.current = null;
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try { mediaRecorderRef.current.stop(); } catch (e) {}
+    }
+    startBrowserRecognition();
+  }
+
   async function startRecordingSession() {
+    if (recognitionEngine === "whisper") {
+      await startWhisperRecording();
+    } else {
+      await startBrowserRecognition();
+    }
+  }
+
+  // Start Browser-based Native Speech Recognition
+  async function startBrowserRecognition() {
     isRecordingRef.current = true;
     setIsRecording(true);
     setTranscriptionText("");
@@ -351,7 +443,7 @@ export default function SubtitlesDashboard() {
                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </span>
                     <span className="text-[10px] font-syne font-extrabold tracking-widest text-green-400 uppercase">
-                      🎤 Локальный ввод (Браузер)
+                      {recognitionEngine === "whisper" ? "🎤 ИИ Слушает (Whisper)" : "🎤 Локальный ввод (Браузер)"}
                     </span>
                   </div>
                 )}
@@ -362,7 +454,7 @@ export default function SubtitlesDashboard() {
                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400"></span>
                     </span>
                     <span className="text-[10px] font-syne font-extrabold tracking-widest text-cyan-400 uppercase">
-                      🎙️ Локальный ввод
+                      🎙️ Резервный ввод (Браузер)
                     </span>
                   </div>
                 )}
@@ -483,8 +575,8 @@ export default function SubtitlesDashboard() {
           {settingsOpen && (
             <div className="bg-white/70 backdrop-blur-xl border border-white/80 shadow-lg rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-[slide-up_0.2s_ease-out]">
               <div className="flex flex-col gap-4 w-full">
-                <h4 className="font-syne font-bold text-xs text-slate-700 uppercase tracking-wider">Настройка стиля субтитров</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                <h4 className="font-syne font-bold text-xs text-slate-700 uppercase tracking-wider">Настройка стиля и качества субтитров</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
                   {/* Font Size Selector */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Размер шрифта</span>
@@ -560,6 +652,27 @@ export default function SubtitlesDashboard() {
                     >
                       {textGlow ? "✨ ВКЛЮЧЕНО" : "🔇 ВЫКЛЮЧЕНО"}
                     </button>
+                  </div>
+
+                  {/* Recognition Engine Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Движок распознавания</span>
+                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                      {[
+                        { key: "browser", label: "Браузер" },
+                        { key: "whisper", label: "Whisper ИИ" }
+                      ].map((eng) => (
+                        <button
+                          key={eng.key}
+                          onClick={() => changeRecognitionEngine(eng.key as any)}
+                          className={`flex-1 text-[9px] font-bold py-1.5 rounded transition-all ${
+                            recognitionEngine === eng.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          {eng.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
