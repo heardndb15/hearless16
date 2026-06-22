@@ -68,7 +68,11 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
     ws.onerror = () => {
       setError("WebSocket connection error");
     };
-    ws.onclose = () => {};
+    ws.onclose = () => {
+      if (wsRef.current === ws) {
+        wsRef.current = null;
+      }
+    };
     wsRef.current = ws;
     return ws;
   }, [options]);
@@ -177,11 +181,19 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
       }
     } catch {}
 
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ action: "stop" }));
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ action: "stop" }));
+      // Wait up to 2.5 seconds for the server to transcribe, send "final", and close the socket
+      setTimeout(() => {
+        if (wsRef.current === ws) {
+          ws.close();
+          wsRef.current = null;
+        }
+      }, 2500);
+    } else {
+      wsRef.current = null;
     }
-    wsRef.current?.close();
-    wsRef.current = null;
     recordingRef.current = null;
   }, []);
 
