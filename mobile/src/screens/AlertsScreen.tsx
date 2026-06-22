@@ -55,7 +55,6 @@ export default function AlertsScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [simulating, setSimulating] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -109,28 +108,7 @@ export default function AlertsScreen() {
     );
   }
 
-  async function triggerMockAlert(soundType: string) {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token || "";
-    const headers = { Authorization: `Bearer ${token}` };
 
-    setSimulating(true);
-    try {
-      // Create new sound alert in DB
-      await axios.post(`${API_URL}/alerts`, {
-        user_id: userId,
-        sound_type: soundType,
-      }, { headers });
-
-      // Refetch history
-      const response = await axios.get(`${API_URL}/alerts/${userId}`, { headers });
-      setHistory(response.data);
-    } catch (err) {
-      console.log("Error simulating sound alert", err);
-    } finally {
-      setSimulating(false);
-    }
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -142,7 +120,7 @@ export default function AlertsScreen() {
       {!isLoggedIn && (
         <View style={styles.loginBanner}>
           <Text style={styles.loginBannerText}>
-            🔑 Войдите в профиль, чтобы сохранять историю звуков и использовать симуляцию!
+            🔑 Войдите в профиль, чтобы сохранять историю звуков!
           </Text>
         </View>
       )}
@@ -167,30 +145,7 @@ export default function AlertsScreen() {
         <SilentSOS />
       </View>
 
-      {isLoggedIn && (
-        <View style={styles.simulationSection}>
-          <Text style={styles.sectionTitle}>Симуляция обнаружения звуков</Text>
-          <View style={styles.simButtonsContainer}>
-            {alerts
-              .filter((a) => a.enabled)
-              .map((alert) => (
-                <TouchableOpacity
-                  key={alert.key}
-                  style={styles.simButton}
-                  onPress={() => triggerMockAlert(alert.key)}
-                  disabled={simulating}
-                >
-                  <Text style={styles.simButtonText}>
-                    {alert.icon} {alert.label.split(" ")[0]}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-          </View>
-          {simulating && (
-            <ActivityIndicator size="small" color={Colors.accent} style={{ marginTop: 8 }} />
-          )}
-        </View>
-      )}
+
 
       <View style={styles.historySection}>
         <View style={styles.historyHeader}>
@@ -292,32 +247,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.body,
     color: Colors.textPrimary,
   },
-  simulationSection: {
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  simButtonsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  simButton: {
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  simButtonText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: Colors.textPrimary,
-  },
+
   historySection: {
     flex: 1,
   },

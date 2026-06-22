@@ -40,6 +40,13 @@ export default function StudyDashboard() {
   // Analysis result temporary state
   const [analysisResult, setAnalysisResult] = useState<LectureHighlight | null>(null);
 
+  // Chat states
+  const [rightTab, setRightTab] = useState<"glossary" | "chat">("glossary");
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
   const changeRecognitionEngine = (val: "browser" | "whisper") => {
     setRecognitionEngine(val);
     if (typeof window !== "undefined") localStorage.setItem("study_recognitionEngine", val);
@@ -52,6 +59,18 @@ export default function StudyDashboard() {
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    setChatMessages([]);
+    setChatInput("");
+    setRightTab("glossary");
+  }, [selectedLecture]);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages, chatLoading]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -360,6 +379,52 @@ export default function StudyDashboard() {
       }
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  async function handleSendChatMessage() {
+    if (!chatInput.trim() || !selectedLecture || chatLoading) return;
+
+    const userMsg = chatInput.trim();
+    setChatInput("");
+    setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    setChatLoading(true);
+
+    try {
+      const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
+
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const historyToSend = chatMessages.slice(-10);
+
+      const response = await fetch(`${baseUrl}/study/chat`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          transcript: selectedLecture.transcript,
+          message: userMsg,
+          history: historyToSend
+        }),
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        setChatMessages((prev) => [...prev, { role: "assistant", content: json.response }]);
+      } else {
+        setChatMessages((prev) => [...prev, { role: "assistant", content: "Произошла ошибка при общении с ИИ. Пожалуйста, попробуйте еще раз." }]);
+      }
+    } catch (e) {
+      console.error(e);
+      setChatMessages((prev) => [...prev, { role: "assistant", content: "Не удалось подключиться к серверу." }]);
+    } finally {
+      setChatLoading(false);
     }
   }
 
@@ -787,25 +852,102 @@ export default function StudyDashboard() {
                 </div>
               </div>
 
-              {/* Glossary (Right 5 Columns) */}
+              {/* Glossary & Chat Tab (Right 5 Columns) */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white border border-sky-100 rounded-3xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-syne font-extrabold text-sm text-purpleBrand uppercase tracking-widest">Словарь терминов</h3>
-                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-                    {selectedLecture.highlights?.key_terms?.map((term, i) => (
-                      <div
-                        key={i}
-                        className="p-4 rounded-2xl bg-sky-50 border border-sky-100 transition-all hover:bg-sky-100/40"
-                      >
-                        <h4 className="font-syne font-extrabold text-xs text-sky-900 uppercase tracking-wide">
-                          🔑 {term.term}
-                        </h4>
-                        <p className="text-sky-600 text-[11px] font-semibold leading-normal mt-1">
-                          {term.definition}
-                        </p>
-                      </div>
-                    ))}
+                <div className="bg-white border border-sky-100 rounded-3xl p-6 shadow-sm space-y-4 flex flex-col min-h-[450px]">
+                  {/* Tab switches */}
+                  <div className="flex gap-4 border-b border-sky-100 pb-2">
+                    <button
+                      onClick={() => setRightTab("glossary")}
+                      className={`font-syne font-extrabold text-xs uppercase tracking-widest pb-1 transition-all ${
+                        rightTab === "glossary" ? "text-purpleBrand border-b-2 border-purpleBrand" : "text-sky-400 hover:text-sky-600"
+                      }`}
+                    >
+                      Словарь
+                    </button>
+                    <button
+                      onClick={() => setRightTab("chat")}
+                      className={`font-syne font-extrabold text-xs uppercase tracking-widest pb-1 transition-all ${
+                        rightTab === "chat" ? "text-accent border-b-2 border-accent" : "text-sky-400 hover:text-sky-600"
+                      }`}
+                    >
+                      ИИ Ассистент
+                    </button>
                   </div>
+
+                  {rightTab === "glossary" ? (
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1 flex-1">
+                      {selectedLecture.highlights?.key_terms?.map((term, i) => (
+                        <div
+                          key={i}
+                          className="p-4 rounded-2xl bg-sky-50 border border-sky-100 transition-all hover:bg-sky-100/40 text-left"
+                        >
+                          <h4 className="font-syne font-extrabold text-xs text-sky-900 uppercase tracking-wide">
+                            🔑 {term.term}
+                          </h4>
+                          <p className="text-sky-600 text-[11px] font-semibold leading-normal mt-1">
+                            {term.definition}
+                          </p>
+                        </div>
+                      ))}
+                      {(!selectedLecture.highlights?.key_terms || selectedLecture.highlights.key_terms.length === 0) && (
+                        <p className="text-xs text-sky-400 text-center py-8">Словарь пуст</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col flex-1 h-[400px] justify-between">
+                      {/* Chat messages */}
+                      <div className="flex-1 overflow-y-auto space-y-3 pr-1 mb-4 flex flex-col custom-scrollbar">
+                        <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-100 text-sky-700 text-xs font-semibold text-left">
+                          💬 Привет! Я твой ИИ-помощник по этой лекции. Спроси меня о чём-нибудь из её содержания!
+                        </div>
+                        {chatMessages.map((msg, idx) => (
+                          <div
+                            key={idx}
+                            className={`p-3 rounded-2xl max-w-[85%] text-xs font-semibold text-left ${
+                              msg.role === "user"
+                                ? "bg-accent text-white self-end"
+                                : "bg-sky-50 border border-sky-100 text-sky-850 self-start"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                        ))}
+                        {chatLoading && (
+                          <div className="p-3 rounded-2xl bg-sky-50 border border-sky-100 text-sky-500 text-xs font-semibold self-start flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-accent animate-ping"></span>
+                            Думаю...
+                          </div>
+                        )}
+                        <div ref={chatEndRef} />
+                      </div>
+
+                      {/* Chat input */}
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleSendChatMessage();
+                        }}
+                        className="flex gap-2"
+                      >
+                        <input
+                          type="text"
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          placeholder="Задать вопрос ИИ..."
+                          className="flex-1 px-3.5 py-2.5 rounded-xl border border-sky-200 bg-white text-xs font-bold outline-none focus:border-accent"
+                          disabled={chatLoading}
+                        />
+                        <button
+                          type="submit"
+                          className="px-4 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-white font-syne font-bold text-xs shadow-md transition-all disabled:bg-sky-200"
+                          disabled={chatLoading || !chatInput.trim()}
+                        >
+                          Отправить
+                        </button>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

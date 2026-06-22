@@ -1,11 +1,66 @@
 import json
 from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_supabase
-from app.models import LectureSaveRequest, LectureAnalyzeRequest
+from app.models import LectureSaveRequest, LectureAnalyzeRequest, LectureChatRequest
 from app.config import OPENAI_API_KEY
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/study", tags=["study"])
+
+
+@router.post("/chat")
+async def chat_with_lecture(data: LectureChatRequest, current_user: dict = Depends(get_current_user)):
+    if not data.transcript.strip():
+        raise HTTPException(status_code=400, detail="Текст лекции пуст")
+    if not data.message.strip():
+        raise HTTPException(status_code=400, detail="Вопрос пуст")
+
+    if not OPENAI_API_KEY:
+        # Временная заглушка, если ключ не настроен
+        return {
+            "response": f"Это демонстрационный ответ ИИ (ключ OpenAI не настроен). Вы спросили: '{data.message}'."
+        }
+
+    try:
+        from openai import OpenAI
+        if OPENAI_API_KEY.startswith("xai-"):
+            client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.x.ai/v1")
+            model_name = "grok-beta"
+        else:
+            client = OpenAI(api_key=OPENAI_API_KEY)
+            model_name = "gpt-4o-mini"
+        
+        system_content = (
+            "Вы — профессиональный академический ассистент для глухих и слабослышащих студентов. "
+            "Вам предоставлен текст лекции, расшифрованный из аудио. Ваша задача — отвечать на вопросы студента "
+            "исключительно по содержанию этой лекции. Отвечайте понятно, точно и структурированно. "
+            "Если ответ нельзя найти в тексте лекции, вежливо скажите, что этой информации нет в материалах.\n\n"
+            f"Текст лекции:\n{data.transcript}"
+        )
+        
+        messages = [{"role": "system", "content": system_content}]
+        
+        # Add history if present
+        if data.history:
+            for msg in data.history:
+                messages.append({"role": msg.role, "content": msg.content})
+                
+        # Add current message
+        messages.append({"role": "user", "content": data.message})
+        
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            temperature=0.5
+        )
+        
+        result_content = response.choices[0].message.content
+        return {"response": result_content}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Ошибка чата через OpenAI: {str(e)}"
+        )
 
 
 @router.post("/analyze")
@@ -30,7 +85,12 @@ async def analyze_lecture(data: LectureAnalyzeRequest, current_user: dict = Depe
 
     try:
         from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
+        if OPENAI_API_KEY.startswith("xai-"):
+            client = OpenAI(api_key=OPENAI_API_KEY, base_url="https://api.x.ai/v1")
+            model_name = "grok-beta"
+        else:
+            client = OpenAI(api_key=OPENAI_API_KEY)
+            model_name = "gpt-4o-mini"
         
         prompt = (
             "Вы — профессиональный академический ассистент для глухих и слабослышащих студентов. "
@@ -54,7 +114,7 @@ async def analyze_lecture(data: LectureAnalyzeRequest, current_user: dict = Depe
         )
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=model_name,
             messages=[
                 {"role": "system", "content": "Вы — академический помощник, структурирующий текст в формат JSON."},
                 {"role": "user", "content": prompt}

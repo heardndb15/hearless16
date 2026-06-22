@@ -14,8 +14,6 @@ export default function SoundsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [alerts, setAlerts] = useState<SoundAlert[]>([]);
   const [monitoring, setMonitoring] = useState(false);
-  const [simulating, setSimulating] = useState(false);
-  const [currentSound, setCurrentSound] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,29 +38,6 @@ export default function SoundsPage() {
       setAlerts(data);
     }
     setLoading(false);
-  }
-
-  async function handleSimulateSound() {
-    if (!user) return;
-    setSimulating(true);
-    setCurrentSound(null);
-
-    setTimeout(async () => {
-      const soundTypes = ["siren", "baby_cry", "doorbell", "fire_alarm", "knock"];
-      const randomType = soundTypes[Math.floor(Math.random() * soundTypes.length)];
-      
-      setCurrentSound(randomType);
-      setSimulating(false);
-
-      const supabase = createClient();
-      await supabase.from("sound_alerts").insert({
-        user_id: user.id,
-        sound_type: randomType,
-        detected_at: new Date().toISOString()
-      });
-
-      fetchAlerts(user.id);
-    }, 800);
   }
 
   function getSoundMetadata(type: string) {
@@ -101,9 +76,6 @@ export default function SoundsPage() {
             <button
               onClick={() => {
                 setMonitoring(!monitoring);
-                if (monitoring) {
-                  setCurrentSound(null);
-                }
               }}
               className={`px-4 py-2 rounded-xl text-xs font-bold font-syne shadow-sm transition-all duration-200 ${
                 monitoring
@@ -139,39 +111,7 @@ export default function SoundsPage() {
                 </p>
               </div>
             )}
-
-            {/* Simulated Alarm Alert pop-up - Netflix glass style */}
-            {monitoring && currentSound && (
-              <div className="absolute inset-x-6 bottom-6 p-4 rounded-xl bg-black/60 border border-white/5 shadow-2xl backdrop-blur-sm flex items-center gap-4 animate-[fade-up_0.3s_ease-out]">
-                <span className="text-3xl">{getSoundMetadata(currentSound).emoji}</span>
-                <div className="flex-1 min-w-0 text-left">
-                  <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider">Обнаружен звук!</span>
-                  <h4 className="font-syne font-black text-sm text-white truncate">{getSoundMetadata(currentSound).label}</h4>
-                </div>
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></div>
-              </div>
-            )}
-
-            {monitoring && simulating && (
-              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center space-y-2">
-                  <div className="w-8 h-8 border-4 border-purpleBrand border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-xs text-purpleBrand font-semibold tracking-wider font-syne">Слушаем резкий шум...</p>
-                </div>
-              </div>
-            )}
           </div>
-
-          {/* Trigger button */}
-          {monitoring && (
-            <button
-              onClick={handleSimulateSound}
-              disabled={simulating}
-              className="w-full py-4.5 rounded-2xl bg-purpleBrand hover:bg-purpleBrand/90 disabled:bg-slate-800 disabled:text-slate-500 text-white font-syne font-bold text-sm tracking-wide shadow-md transition-all duration-200"
-            >
-              {simulating ? "Обработка..." : "Симулировать громкий звук"}
-            </button>
-          )}
         </div>
 
         {/* Right Side: Log History (5 cols) */}

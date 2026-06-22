@@ -6,20 +6,10 @@ router = APIRouter(prefix="/transcribe", tags=["transcribe"])
 
 
 @router.post("/")
-async def transcribe_audio(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
-    if not OPENAI_API_KEY:
-        raise HTTPException(
-            status_code=500, detail="API ключ OpenAI не настроен"
-        )
-
-    from openai import OpenAI
-    client = OpenAI(api_key=OPENAI_API_KEY)
-
+async def transcribe_audio_route(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    from app.services.whisper_service import transcribe_audio
     contents = await file.read()
-    response = client.audio.transcriptions.create(
-        model="whisper-1",
-        file=(file.filename or "audio.wav", contents),
-        language="ru",
-    )
-    return {"text": response.text}
+    text = transcribe_audio(contents, language="ru")
+    return {"text": text}
+
 

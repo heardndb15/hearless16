@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -61,4 +61,16 @@ class LectureSaveRequest(BaseModel):
 
 class LectureAnalyzeRequest(BaseModel):
     transcript: str
+
+
+class MessageItem(BaseModel):
+    role: str
+    content: str
+
+
+class LectureChatRequest(BaseModel):
+    transcript: str
+    message: str
+    history: Optional[List[MessageItem]] = []
+
 

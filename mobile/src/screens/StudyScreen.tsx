@@ -43,7 +43,18 @@ export default function StudyScreen() {
   const [analysisResult, setAnalysisResult] = useState<StudyLecture["highlights"] | null>(null);
 
   // Tab selection inside details view
-  const [detailTab, setDetailTab] = useState<"summary" | "highlights" | "terms" | "transcript">("summary");
+  const [detailTab, setDetailTab] = useState<"summary" | "highlights" | "terms" | "transcript" | "chat">("summary");
+
+  // Chat states
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatScrollViewRef = React.useRef<ScrollView | null>(null);
+
+  useEffect(() => {
+    setChatMessages([]);
+    setChatInput("");
+  }, [selectedLecture]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -142,6 +153,36 @@ export default function StudyScreen() {
       setLectureTitle("");
     } catch (e) {
       Alert.alert("Ошибка", "Не удалось сохранить лекцию.");
+    }
+  }
+
+  async function handleSendChatMessage() {
+    if (!chatInput.trim() || !selectedLecture || chatLoading) return;
+    const userMsg = chatInput.trim();
+    setChatInput("");
+    setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    setChatLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const historyToSend = chatMessages.slice(-10);
+
+      const response = await axios.post(`${API_URL}/study/chat`, {
+        transcript: selectedLecture.transcript,
+        message: userMsg,
+        history: historyToSend,
+      }, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ""}`,
+        },
+      });
+
+      setChatMessages((prev) => [...prev, { role: "assistant", content: response.data.response }]);
+    } catch (e) {
+      console.log("Error in mobile chat assistant:", e);
+      setChatMessages((prev) => [...prev, { role: "assistant", content: "Ошибка соединения с ИИ-помощником." }]);
+    } finally {
+      setChatLoading(false);
     }
   }
 
@@ -370,6 +411,7 @@ export default function StudyScreen() {
                 { key: "highlights", label: "Тезисы" },
                 { key: "terms", label: "Термины" },
                 { key: "transcript", label: "Текст" },
+                { key: "chat", label: "Чат" },
               ].map((tb) => (
                 <TouchableOpacity
                   key={tb.key}
@@ -384,49 +426,108 @@ export default function StudyScreen() {
             </View>
 
             {/* Details Content Scroll */}
-            <ScrollView style={styles.tabContentContainer}>
-              {detailTab === "summary" && (
-                <View style={styles.summaryTabBox}>
-                  <Text style={styles.tabHeader}>ИИ-Резюме лекции</Text>
-                  <Text style={styles.tabBodyText}>
-                    {selectedLecture.summary || selectedLecture.highlights?.summary}
-                  </Text>
-                </View>
-              )}
-
-              {detailTab === "highlights" && (
-                <View style={styles.listTabBox}>
-                  <Text style={styles.tabHeader}>Ключевые моменты</Text>
-                  {selectedLecture.highlights?.highlights?.map((hl, index) => (
-                    <View key={index} style={styles.highlightBulletRow}>
-                      <Text style={styles.bulletCheck}>✓</Text>
-                      <Text style={styles.bulletText}>{hl}</Text>
+            {detailTab === "chat" ? (
+              <View style={{ flex: 1, marginTop: Spacing.sm }}>
+                <ScrollView
+                  ref={chatScrollViewRef}
+                  style={{ flex: 1, marginBottom: 8 }}
+                  contentContainerStyle={{ gap: 8, paddingBottom: 16 }}
+                  onContentSizeChange={() => chatScrollViewRef.current?.scrollToEnd({ animated: true })}
+                >
+                  <View style={styles.chatWelcomeBubble}>
+                    <Text style={styles.chatWelcomeText}>
+                      💬 Привет! Спросите меня о содержании этой лекции.
+                    </Text>
+                  </View>
+                  {chatMessages.map((msg, idx) => (
+                    <View
+                      key={idx}
+                      style={[
+                        styles.chatBubble,
+                        msg.role === "user" ? styles.chatBubbleUser : styles.chatBubbleAssistant,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.chatBubbleText,
+                          msg.role === "user" ? styles.chatBubbleTextUser : styles.chatBubbleTextAssistant,
+                        ]}
+                      >
+                        {msg.content}
+                      </Text>
                     </View>
                   ))}
-                </View>
-              )}
-
-              {detailTab === "terms" && (
-                <View style={styles.listTabBox}>
-                  <Text style={styles.tabHeader}>Новые понятия и определения</Text>
-                  {selectedLecture.highlights?.key_terms?.map((term, index) => (
-                    <View key={index} style={styles.termItemCard}>
-                      <Text style={styles.termTitle}>🔑 {term.term}</Text>
-                      <Text style={styles.termDefinition}>{term.definition}</Text>
+                  {chatLoading && (
+                    <View style={[styles.chatBubble, styles.chatBubbleAssistant, { flexDirection: "row", gap: 6, alignItems: "center" }]}>
+                      <ActivityIndicator size="small" color={Colors.accent} />
+                      <Text style={[styles.chatBubbleText, styles.chatBubbleTextAssistant]}>Думаю...</Text>
                     </View>
-                  ))}
-                </View>
-              )}
+                  )}
+                </ScrollView>
 
-              {detailTab === "transcript" && (
-                <View style={styles.summaryTabBox}>
-                  <Text style={styles.tabHeader}>Полный расшифрованный текст</Text>
-                  <Text style={[styles.tabBodyText, styles.rawTranscriptText]}>
-                    {selectedLecture.transcript}
-                  </Text>
+                <View style={styles.chatInputRow}>
+                  <TextInput
+                    style={styles.chatTextInput}
+                    value={chatInput}
+                    onChangeText={setChatInput}
+                    placeholder="Вопрос ИИ..."
+                    placeholderTextColor={Colors.textSecondary}
+                    editable={!chatLoading}
+                  />
+                  <TouchableOpacity
+                    style={[styles.chatSendBtn, !chatInput.trim() && styles.chatSendBtnDisabled]}
+                    onPress={handleSendChatMessage}
+                    disabled={chatLoading || !chatInput.trim()}
+                  >
+                    <Text style={styles.chatSendBtnText}>Отправить</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
-            </ScrollView>
+              </View>
+            ) : (
+              <ScrollView style={styles.tabContentContainer}>
+                {detailTab === "summary" && (
+                  <View style={styles.summaryTabBox}>
+                    <Text style={styles.tabHeader}>ИИ-Резюме лекции</Text>
+                    <Text style={styles.tabBodyText}>
+                      {selectedLecture.summary || selectedLecture.highlights?.summary}
+                    </Text>
+                  </View>
+                )}
+
+                {detailTab === "highlights" && (
+                  <View style={styles.listTabBox}>
+                    <Text style={styles.tabHeader}>Ключевые моменты</Text>
+                    {selectedLecture.highlights?.highlights?.map((hl, index) => (
+                      <View key={index} style={styles.highlightBulletRow}>
+                        <Text style={styles.bulletCheck}>✓</Text>
+                        <Text style={styles.bulletText}>{hl}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {detailTab === "terms" && (
+                  <View style={styles.listTabBox}>
+                    <Text style={styles.tabHeader}>Новые понятия и определения</Text>
+                    {selectedLecture.highlights?.key_terms?.map((term, index) => (
+                      <View key={index} style={styles.termItemCard}>
+                        <Text style={styles.termTitle}>🔑 {term.term}</Text>
+                        <Text style={styles.termDefinition}>{term.definition}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {detailTab === "transcript" && (
+                  <View style={styles.summaryTabBox}>
+                    <Text style={styles.tabHeader}>Полный расшифрованный текст</Text>
+                    <Text style={[styles.tabBodyText, styles.rawTranscriptText]}>
+                      {selectedLecture.transcript}
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            )}
 
             <TouchableOpacity
               style={styles.deleteLectureBtn}
@@ -871,5 +972,81 @@ const styles = StyleSheet.create({
     color: "#ef4444",
     fontSize: 12,
     fontWeight: "700",
+  },
+  chatWelcomeBubble: {
+    backgroundColor: "rgba(60, 149, 187, 0.08)",
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 4,
+  },
+  chatWelcomeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.heading,
+    lineHeight: 18,
+  },
+  chatBubble: {
+    padding: 12,
+    borderRadius: 16,
+    maxWidth: "85%",
+  },
+  chatBubbleUser: {
+    backgroundColor: Colors.accent,
+    alignSelf: "flex-end",
+  },
+  chatBubbleAssistant: {
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    alignSelf: "flex-start",
+  },
+  chatBubbleText: {
+    fontSize: 12,
+    fontWeight: "600",
+    lineHeight: 18,
+  },
+  chatBubbleTextUser: {
+    color: Colors.white,
+  },
+  chatBubbleTextAssistant: {
+    color: Colors.heading,
+  },
+  chatInputRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#e0f2fe",
+  },
+  chatTextInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+  },
+  chatSendBtn: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  chatSendBtnDisabled: {
+    backgroundColor: "#bae6fd",
+  },
+  chatSendBtnText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });
