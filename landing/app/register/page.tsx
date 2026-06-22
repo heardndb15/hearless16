@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
 
   const {
     register,
@@ -56,7 +57,11 @@ export default function RegisterPage() {
         setServerError(json.error || "Ошибка регистрации");
       } else {
         setSuccess(true);
-        setTimeout(() => router.push("/dashboard"), 1500);
+        if (json.session) {
+          setTimeout(() => router.push("/dashboard"), 1500);
+        } else {
+          setConfirmationRequired(true);
+        }
       }
     } catch {
       setServerError("Ошибка подключения к серверу");
@@ -68,12 +73,28 @@ export default function RegisterPage() {
       <div style={styles.page}>
         <div style={styles.card}>
           <h1 style={styles.title}>Регистрация успешна!</h1>
-          <p style={styles.text}>
-            Вход в личный кабинет...
-          </p>
-          <p style={styles.text}>
-            Пожалуйста, подождите.
-          </p>
+          {confirmationRequired ? (
+            <div style={{ marginTop: 16 }}>
+              <p style={styles.text}>
+                На ваш email отправлено письмо для подтверждения аккаунта.
+              </p>
+              <p style={styles.text}>
+                Пожалуйста, подтвердите email по ссылке в письме перед входом в личный кабинет.
+              </p>
+              <Link href="/login" style={{ ...styles.button, display: "block", textAlign: "center", textDecoration: "none", marginTop: 24 }}>
+                Перейти к входу
+              </Link>
+            </div>
+          ) : (
+            <div style={{ marginTop: 16 }}>
+              <p style={styles.text}>
+                Вход в личный кабинет...
+              </p>
+              <p style={styles.text}>
+                Пожалуйста, подождите.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );

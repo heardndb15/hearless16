@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         options: { data: { name, language: language || "ru" } },
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      const res = NextResponse.json({ user: data.user });
+      const res = NextResponse.json({ user: data.user, session: data.session });
       cookieStore.forEach(c => res.cookies.set(c.name, c.value, c.options));
       return res;
     }
