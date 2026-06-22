@@ -6,35 +6,35 @@
 
 
 :root {
-  /* Новые переменные (Светлая тема с голубыми акцентами) */
-  --bg: transparent;
-  --bgCard: rgba(255, 255, 255, 0.45);
-  --bgCardHover: rgba(235, 245, 255, 0.7);
-  --accent: #0066FF;
-  --accentGlow: rgba(0, 102, 255, 0.15);
-  --purple: #00A3FF;
-  --purpleGlow: rgba(0, 163, 255, 0.15);
-  --text: #0F172A;
-  --textSecondary: #475569;
-  --textMuted: #64748B;
-  --border: rgba(226, 232, 240, 0.6);
+  /* Новые переменные (Светлая тема с светло-голубыми акцентами) */
+  --bg: #f0f9ff;
+  --bgCard: rgba(224, 242, 254, 0.6);
+  --bgCardHover: rgba(186, 230, 253, 0.8);
+  --accent: #0284c7;
+  --accentGlow: rgba(2, 132, 199, 0.15);
+  --purple: #38bdf8;
+  --purpleGlow: rgba(56, 189, 248, 0.15);
+  --text: #0369a1;
+  --textSecondary: #0e7490;
+  --textMuted: #0284c7;
+  --border: rgba(186, 230, 253, 0.6);
   --sos: #EF4444;
   /* Совместимость со старыми страницами */
   --background: var(--bg);
-  --white: rgba(255, 255, 255, 0.6);
-  --card: rgba(226, 232, 240, 0.5);
+  --white: rgba(240, 249, 255, 0.85);
+  --card: rgba(224, 242, 254, 0.75);
   --heading: var(--text);
   --button: var(--accent);
-  --dark: rgba(15, 23, 42, 0.85);
+  --dark: rgba(14, 116, 144, 0.95);
   --success: #22C55E;
-  --gradient: linear-gradient(135deg, #00A3FF 0%, #0066FF 100%);
+  --gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
   --radius: 16px;
   --radiusSm: 10px;
 
   /* Дополнительные переменные для светлой темы */
-  --headerBg: rgba(255, 255, 255, 0.35);
-  --shadow: 0 16px 48px rgba(15, 23, 42, 0.04);
-  --shadowPhone: 0 24px 80px rgba(15, 23, 42, 0.12), 0 0 40px var(--accentGlow);
+  --headerBg: rgba(224, 242, 254, 0.4);
+  --shadow: 0 16px 48px rgba(2, 132, 199, 0.05);
+  --shadowPhone: 0 24px 80px rgba(2, 132, 199, 0.15), 0 0 40px var(--accentGlow);
 }
 
 * {
@@ -49,7 +49,8 @@ html {
 
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-image: url('/bg-main.png');
+  background-color: #f0f9ff;
+  background-image: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
