@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,6 +28,11 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
   const [confirmationRequired, setConfirmationRequired] = useState(false);
+
+  // Предварительно кэшируем страницу личного кабинета для мгновенного перехода после регистрации
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
 
   const {
     register,
@@ -58,7 +63,8 @@ export default function RegisterPage() {
       } else {
         setSuccess(true);
         if (json.session) {
-          setTimeout(() => router.push("/dashboard"), 1500);
+          // Сокращаем задержку с 1500мс до 600мс для ускорения редиректа
+          setTimeout(() => router.push("/dashboard"), 600);
         } else {
           setConfirmationRequired(true);
         }
@@ -112,25 +118,25 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)} style={styles.form}>
           <div style={styles.field}>
             <label style={styles.label}>Имя</label>
-            <input {...register("name")} style={styles.input} placeholder="Ваше имя" />
+            <input {...register("name")} style={styles.input} placeholder="Ваше имя" autoComplete="name" />
             {errors.name && <p style={styles.error}>{errors.name.message}</p>}
           </div>
 
           <div style={styles.field}>
             <label style={styles.label}>Email</label>
-            <input {...register("email")} style={styles.input} placeholder="you@example.com" type="email" />
+            <input {...register("email")} style={styles.input} placeholder="you@example.com" type="email" autoComplete="email" />
             {errors.email && <p style={styles.error}>{errors.email.message}</p>}
           </div>
 
           <div style={styles.field}>
             <label style={styles.label}>Пароль</label>
-            <input {...register("password")} style={styles.input} placeholder="Не менее 6 символов" type="password" />
+            <input {...register("password")} style={styles.input} placeholder="Не менее 6 символов" type="password" autoComplete="new-password" />
             {errors.password && <p style={styles.error}>{errors.password.message}</p>}
           </div>
 
           <div style={styles.field}>
             <label style={styles.label}>Подтверждение пароля</label>
-            <input {...register("confirmPassword")} style={styles.input} placeholder="Повторите пароль" type="password" />
+            <input {...register("confirmPassword")} style={styles.input} placeholder="Повторите пароль" type="password" autoComplete="new-password" />
             {errors.confirmPassword && <p style={styles.error}>{errors.confirmPassword.message}</p>}
           </div>
 
@@ -155,7 +161,17 @@ export default function RegisterPage() {
 
           {serverError && <p style={styles.error}>{serverError}</p>}
 
-          <button type="submit" disabled={isSubmitting} style={styles.button}>
+          <button 
+            type="submit" 
+            disabled={isSubmitting} 
+            style={{
+              ...styles.button,
+              opacity: isSubmitting ? 0.6 : 1,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              background: isSubmitting ? "var(--textMuted)" : "var(--button)",
+              transition: "all 0.2s ease"
+            }}
+          >
             {isSubmitting ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>
