@@ -142,6 +142,70 @@ def transcribe_audio(audio_bytes: bytes, language: str = "ru") -> str:
         return ""
 
 
+def pcm_to_wav_bytes(pcm_bytes: bytes, sr: int = 16000) -> bytes:
+    """Wraps raw 16-bit signed PCM bytes with a standard 44-byte WAV header in-memory."""
+    num_samples = len(pcm_bytes) // 2
+    chunk_size = 36 + len(pcm_bytes)
+    byte_rate = sr * 2  # 16-bit = 2 bytes per sample, 1 channel
+    block_align = 2
+    
+    header = bytearray(44)
+    # RIFF Header
+    header[0:4] = b"RIFF"
+    header[4:8] = chunk_size.to_bytes(4, byteorder="little")
+    header[8:12] = b"WAVE"
+    # fmt Subchunk
+    header[12:16] = b"fmt "
+    header[16:20] = (16).to_bytes(4, byteorder="little")  # Subchunk1Size (16 for PCM)
+    header[20:22] = (1).to_bytes(2, byteorder="little")   # AudioFormat (1 for PCM)
+    header[22:24] = (1).to_bytes(2, byteorder="little")   # NumChannels (1 for mono)
+    header[24:28] = sr.to_bytes(4, byteorder="little")    # SampleRate
+    header[28:32] = byte_rate.to_bytes(4, byteorder="little")  # ByteRate
+    header[32:34] = block_align.to_bytes(2, byteorder="little")  # BlockAlign
+    header[34:36] = (16).to_bytes(2, byteorder="little")  # BitsPerSample (16)
+    # data Subchunk
+    header[36:40] = b"data"
+    header[40:44] = len(pcm_bytes).to_bytes(4, byteorder="little")  # Subchunk2Size
+    
+    return bytes(header) + pcm_bytes
+
+
+def transcribe_pcm(pcm_bytes: bytes, language: str = "ru") -> str:
+    """Transcribes raw PCM bytes by wrapping them in a WAV header and calling transcribe_audio."""
+    wav_bytes = pcm_to_wav_bytes(pcm_bytes)
+    return transcribe_audio(wav_bytes, language=language)
+
+
+def merge_transcripts(old_text: str, new_text: str) -> str:
+    """Stitches together two overlapping transcript segments using suffix-prefix alignment."""
+    old_words = old_text.strip().split()
+    new_words = new_text.strip().split()
+    
+    if not old_words:
+        return new_text
+    if not new_words:
+        return old_text
+        
+    # Find the longest suffix of old_words that matches a prefix of new_words
+    max_overlap = min(len(old_words), len(new_words))
+    overlap_len = 0
+    
+    for i in range(1, max_overlap + 1):
+        if old_words[-i:] == new_words[:i]:
+            overlap_len = i
+            
+    if overlap_len > 0:
+        return " ".join(old_words[:-overlap_len] + new_words)
+    else:
+        # Fallback: if no match, check if old ends with punctuation
+        if old_text.strip().endswith((".", "?", "!")):
+            return old_text.strip() + " " + new_text.strip()
+        # Fuzzy fallback: if words are similar, stitch them or just space-join
+        return old_text.strip() + " " + new_text.strip()
+
+
+
+
 def merge_audio_chunks(chunks: list[bytes], format: str = "m4a") -> bytes:
     from pydub import AudioSegment
     import io

@@ -33,7 +33,7 @@ app.include_router(study.router)
 
 
 @app.websocket("/ws/transcribe")
-async def websocket_transcribe(websocket: WebSocket, token: str | None = None, lang: str = "ru"):
+async def websocket_transcribe(websocket: WebSocket, token: str | None = None, lang: str = "ru", format: str = "webm"):
     await websocket.accept()
     
     if not token:
@@ -84,6 +84,12 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     is_stream = None
     current_full_text = ""
 
+    # Streaming PCM variables
+    pcm_buffer = bytearray()
+    finalized_text = ""
+    interim_text = ""
+    chunk_counter = 0
+
     try:
         while True:
             message = await websocket.receive_text()
@@ -97,95 +103,144 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                 if len(audio_bytes) == 0:
                     continue
 
-                # При первом чанке определяем формат
-                if is_stream is None:
-                    from app.services.whisper_service import detect_audio_format
-                    ext = detect_audio_format(audio_bytes)
-                    if ext == "webm":
-                        is_stream = True
-                    else:
-                        is_stream = False
-
-                if is_stream:
-                    # Если это непрерывный поток (WebM)
-                    session_bytes += audio_bytes
-                    # Распознаем на первом чанке или при накоплении 12KB новых данных (~1.5-2 сек)
-                    if last_transcribed_len == 0 or len(session_bytes) - last_transcribed_len >= 12000:
-                        try:
-                            text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
-                        except Exception as e:
-                            import sys
-                            print(f"Error in ws stream transcribe: {e}", file=sys.stderr)
-                            text = ""
-                        if text:
-                            current_full_text = text.strip()
-                            await websocket.send_json({
-                                "type": "text",
-                                "text": current_full_text,
-                                "full_text": current_full_text,
-                            })
-                        last_transcribed_len = len(session_bytes)
-                else:
-                    # Если это независимые файлы (M4A на мобильном)
-                    session_chunks.append(audio_bytes)
-                    from app.services.whisper_service import merge_audio_chunks, detect_audio_format
-                    first_ext = detect_audio_format(session_chunks[0])
-                    try:
-                        merged_bytes = await asyncio.to_thread(merge_audio_chunks, session_chunks, first_ext)
-                        if merged_bytes:
-                            text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
-                            if text:
-                                current_full_text = text.strip()
-                        else:
-                            raise Exception("Merging failed or returned empty bytes")
-                    except Exception as e:
-                        import sys
-                        print(f"Fallback to single chunk transcribe due to merge error: {e}", file=sys.stderr)
-                        try:
-                            chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes, language=lang)
-                            if chunk_text and chunk_text.strip():
-                                if not current_full_text:
-                                    current_full_text = chunk_text.strip()
-                                else:
-                                    current_full_text += " " + chunk_text.strip()
-                        except Exception as ex:
-                            print(f"Error in fallback transcribe: {ex}", file=sys.stderr)
+                if format == "pcm":
+                    pcm_buffer.extend(audio_bytes)
+                    chunk_counter += 1
                     
-                    await websocket.send_json({
-                        "type": "text",
-                        "text": current_full_text,
-                        "full_text": current_full_text,
-                    })
-
-            elif action == "stop":
-                if is_stream:
-                    if len(session_bytes) > 0:
-                        try:
-                            text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
-                        except Exception as e:
-                            import sys
-                            print(f"Error in ws stop transcribe: {e}", file=sys.stderr)
-                            text = ""
-                        if text:
-                            current_full_text = text.strip()
+                    # Transcribe every 2 chunks (~400-600ms of audio) to balance latency and CPU
+                    if chunk_counter % 2 == 0:
+                        from app.services.whisper_service import transcribe_pcm
+                        
+                        # If buffer exceeds 8 seconds, we commit the stable part and slide the window
+                        # 8 seconds at 16kHz 16-bit mono PCM is 16000 * 2 * 8 = 256000 bytes
+                        if len(pcm_buffer) >= 256000:
+                            # Transcribe the whole buffer
+                            full_window_text = await asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang)
+                            
+                            # Slide window: keep the last 2 seconds (16000 * 2 * 2 = 64000 bytes) for context overlap
+                            pcm_buffer = pcm_buffer[-64000:]
+                            
+                            # Merge transcripts
+                            from app.services.whisper_service import merge_transcripts
+                            finalized_text = merge_transcripts(finalized_text, full_window_text)
+                            interim_text = ""
+                        else:
+                            # Transcribe current buffer as interim results
+                            interim_text = await asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang)
+                        
+                        current_full_text = finalized_text
+                        if interim_text:
+                            if current_full_text:
+                                current_full_text += " " + interim_text
+                            else:
+                                current_full_text = interim_text
+                                
                         await websocket.send_json({
-                            "type": "final",
+                            "type": "text",
                             "text": current_full_text,
                             "full_text": current_full_text,
                         })
+                else:
+                    # При первом чанке определяем формат
+                    if is_stream is None:
+                        from app.services.whisper_service import detect_audio_format
+                        ext = detect_audio_format(audio_bytes)
+                        if ext == "webm":
+                            is_stream = True
+                        else:
+                            is_stream = False
+
+                    if is_stream:
+                        # Если это непрерывный поток (WebM)
+                        session_bytes += audio_bytes
+                        # Распознаем на первом чанке или при накоплении 12KB новых данных (~1.5-2 сек)
+                        if last_transcribed_len == 0 or len(session_bytes) - last_transcribed_len >= 12000:
+                            try:
+                                text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
+                            except Exception as e:
+                                import sys
+                                print(f"Error in ws stream transcribe: {e}", file=sys.stderr)
+                                text = ""
+                            if text:
+                                current_full_text = text.strip()
+                                await websocket.send_json({
+                                    "type": "text",
+                                    "text": current_full_text,
+                                    "full_text": current_full_text,
+                                })
+                            last_transcribed_len = len(session_bytes)
                     else:
+                        # Если это независимые файлы (M4A на мобильном)
+                        session_chunks.append(audio_bytes)
+                        from app.services.whisper_service import merge_audio_chunks, detect_audio_format
+                        first_ext = detect_audio_format(session_chunks[0])
+                        try:
+                            merged_bytes = await asyncio.to_thread(merge_audio_chunks, session_chunks, first_ext)
+                            if merged_bytes:
+                                text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
+                                if text:
+                                    current_full_text = text.strip()
+                            else:
+                                raise Exception("Merging failed or returned empty bytes")
+                        except Exception as e:
+                            import sys
+                            print(f"Fallback to single chunk transcribe due to merge error: {e}", file=sys.stderr)
+                            try:
+                                chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes, language=lang)
+                                if chunk_text and chunk_text.strip():
+                                    if not current_full_text:
+                                        current_full_text = chunk_text.strip()
+                                    else:
+                                        current_full_text += " " + chunk_text.strip()
+                            except Exception as ex:
+                                print(f"Error in fallback transcribe: {ex}", file=sys.stderr)
+                        
+                        await websocket.send_json({
+                            "type": "text",
+                            "text": current_full_text,
+                            "full_text": current_full_text,
+                        })
+
+            elif action == "stop":
+                if format == "pcm":
+                    if len(pcm_buffer) > 0:
+                        from app.services.whisper_service import transcribe_pcm, merge_transcripts
+                        last_text = await asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang)
+                        current_full_text = merge_transcripts(finalized_text, last_text)
+                    await websocket.send_json({
+                        "type": "final",
+                        "text": current_full_text,
+                        "full_text": current_full_text,
+                    })
+                else:
+                    if is_stream:
+                        if len(session_bytes) > 0:
+                            try:
+                                text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
+                            except Exception as e:
+                                import sys
+                                print(f"Error in ws stop transcribe: {e}", file=sys.stderr)
+                                text = ""
+                            if text:
+                                current_full_text = text.strip()
+                            await websocket.send_json({
+                                "type": "final",
+                                "text": current_full_text,
+                                "full_text": current_full_text,
+                            })
+                        else:
+                            await websocket.send_json({
+                                "type": "final",
+                                "text": "",
+                                "full_text": "",
+                            })
+                    else:
+                        # Для мобильного финальный текст - это накопленный текст
                         await websocket.send_json({
                             "type": "final",
                             "text": "",
-                            "full_text": "",
+                            "full_text": current_full_text,
                         })
-                else:
-                    # Для мобильного финальный текст - это накопленный текст
-                    await websocket.send_json({
-                        "type": "final",
-                        "text": "",
-                        "full_text": current_full_text,
-                    })
                 break
 
     except WebSocketDisconnect:

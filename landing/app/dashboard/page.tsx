@@ -154,6 +154,13 @@ export default function SubtitlesDashboard() {
       audioStreamRef.current.getTracks().forEach(track => track.stop());
     }
     if (wsRef.current) {
+      const wsAny = wsRef.current as any;
+      if (wsAny.audioContext) {
+        try { wsAny.audioContext.close(); } catch (e) {}
+      }
+      if (wsAny.audioProcessor) {
+        try { wsAny.audioProcessor.disconnect(); } catch (e) {}
+      }
       wsRef.current.close();
       wsRef.current = null;
     }
@@ -179,27 +186,72 @@ export default function SubtitlesDashboard() {
       const token = session?.access_token || "";
 
       const wsBaseUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
-      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}&token=${token}`;
+      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}&token=${token}&format=pcm`;
 
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
         setAiStatus("listening");
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-        mediaRecorderRef.current = mediaRecorder;
+        
+        try {
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          const audioContext = new AudioContextClass();
+          (ws as any).audioContext = audioContext;
 
-        mediaRecorder.ondataavailable = async (event) => {
-          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = (reader.result as string).split(",")[1];
-              ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
-            };
-            reader.readAsDataURL(event.data);
-          }
-        };
-        mediaRecorder.start(1500);
+          const source = audioContext.createMediaStreamSource(stream);
+          const processor = audioContext.createScriptProcessor(4096, 1, 1);
+          (ws as any).audioProcessor = processor;
+
+          source.connect(processor);
+          processor.connect(audioContext.destination);
+
+          const inputSampleRate = audioContext.sampleRate;
+          const targetSampleRate = 16000;
+
+          let pcmBuffer: Int16Array[] = [];
+          let pcmLength = 0;
+
+          processor.onaudioprocess = (e) => {
+            if (!isRecordingRef.current) return;
+            const inputData = e.inputBuffer.getChannelData(0);
+
+            // Resample and convert to 16-bit PCM
+            const resampledData = resample(inputData, inputSampleRate, targetSampleRate);
+            const int16Data = float32ToInt16(resampledData);
+
+            pcmBuffer.push(int16Data);
+            pcmLength += int16Data.length;
+
+            // Send chunks of ~250ms (4000 samples at 16kHz)
+            if (pcmLength >= 4000) {
+              const merged = mergeInt16Arrays(pcmBuffer, pcmLength);
+              pcmBuffer = [];
+              pcmLength = 0;
+
+              const base64 = int16ToBase64(merged);
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: "chunk", audio: base64 }));
+              }
+            }
+          };
+        } catch (audioErr) {
+          console.error("Web Audio API initialization failed, falling back to MediaRecorder WebM:", audioErr);
+          // Fallback to WebM MediaRecorder if Web Audio fails
+          const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+          mediaRecorderRef.current = mediaRecorder;
+          mediaRecorder.ondataavailable = async (event) => {
+            if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64data = (reader.result as string).split(",")[1];
+                ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
+              };
+              reader.readAsDataURL(event.data);
+            }
+          };
+          mediaRecorder.start(1500);
+        }
       };
 
       ws.onmessage = (event) => {
@@ -820,3 +872,58 @@ export default function SubtitlesDashboard() {
     </div>
   );
 }
+
+// Audio helper utilities for raw PCM streaming
+function resample(inputData: Float32Array, inputSampleRate: number, outputSampleRate: number): Float32Array {
+  if (inputSampleRate === outputSampleRate) {
+    return inputData;
+  }
+  const sampleRateRatio = inputSampleRate / outputSampleRate;
+  const newLength = Math.round(inputData.length / sampleRateRatio);
+  const result = new Float32Array(newLength);
+  let offsetResult = 0;
+  let offsetInput = 0;
+  while (offsetResult < result.length) {
+    const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+    let accum = 0, count = 0;
+    for (let i = offsetInput; i < nextOffsetBuffer && i < inputData.length; i++) {
+      accum += inputData[i];
+      count++;
+    }
+    result[offsetResult] = accum / (count || 1);
+    offsetResult++;
+    offsetInput = nextOffsetBuffer;
+  }
+  return result;
+}
+
+function float32ToInt16(buffer: Float32Array): Int16Array {
+  const l = buffer.length;
+  const buf = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    let s = Math.max(-1, Math.min(1, buffer[i]));
+    buf[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
+  return buf;
+}
+
+function mergeInt16Arrays(arrays: Int16Array[], totalLength: number): Int16Array {
+  const result = new Int16Array(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+}
+
+function int16ToBase64(buffer: Int16Array): string {
+  const bytes = new Uint8Array(buffer.buffer);
+  let binary = "";
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
