@@ -28,7 +28,10 @@ export default function SubtitlesPage() {
   const [chars, setChars] = useState(0);
   const [inputText, setInputText] = useState("");
   const [history, setHistory] = useState<string[]>([]);
-  const isDemo = inputText.trim() === "";
+  const [isMicActive, setIsMicActive] = useState(false);
+  const [interimText, setInterimText] = useState("");
+  const recognitionRef = useRef<any>(null);
+  const isDemo = inputText.trim() === "" && !isMicActive;
 
   // Настройки дисплея (совпадающие с мобильным клиентом)
   const [fontSize, setFontSize] = useState(24);
@@ -73,7 +76,113 @@ export default function SubtitlesPage() {
     return () => clearTimeout(p);
   }, [chars, phraseIdx, lang, isDemo, mode]);
 
-  const displayText = isDemo ? PHRASES[lang][phraseIdx].slice(0, chars) : inputText;
+  const displayText = isMicActive
+    ? interimText
+    : (isDemo ? PHRASES[lang][phraseIdx].slice(0, chars) : inputText);
+
+  // --- ЛОГИКА РАБОТЫ МИКРОФОНА (WEB SPEECH API) ---
+  const speechSimIntervalRef = useRef<any>(null);
+  const runSpeechAudioSimulation = () => {
+    if (speechSimIntervalRef.current) clearInterval(speechSimIntervalRef.current);
+    speechSimIntervalRef.current = setInterval(() => {
+      if (recognitionRef.current && isMicActive) {
+        setFrequencyData([
+          Math.max(4, Math.round(Math.random() * 22)),
+          Math.max(4, Math.round(Math.random() * 26)),
+          Math.max(4, Math.round(Math.random() * 20)),
+          Math.max(4, Math.round(Math.random() * 28)),
+          Math.max(4, Math.round(Math.random() * 18)),
+        ]);
+      } else {
+        clearInterval(speechSimIntervalRef.current);
+      }
+    }, 100);
+  };
+
+  const toggleMicrophone = () => {
+    if (typeof window === "undefined") return;
+
+    if (isMicActive) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsMicActive(false);
+      setInterimText("");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("К сожалению, Web Speech API (распознавание речи) не поддерживается вашим браузером. Пожалуйста, используйте Google Chrome или Microsoft Edge.");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      let recognitionLang = "ru-RU";
+      if (lang === "ҚАЗ") recognitionLang = "kk-KZ";
+      else if (lang === "ENG") recognitionLang = "en-US";
+      recognition.lang = recognitionLang;
+
+      recognition.onstart = () => {
+        setIsMicActive(true);
+        setInterimText("Слушаю вас...");
+        runSpeechAudioSimulation();
+      };
+
+      recognition.onresult = (event: any) => {
+        let interim = "";
+        let final = "";
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            final += result[0].transcript + " ";
+          } else {
+            interim += result[0].transcript;
+          }
+        }
+
+        if (final.trim()) {
+          setHistory((prev) => [...prev, final.trim()]);
+        }
+        setInterimText(interim);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        if (event.error === "not-allowed") {
+          alert("Доступ к микрофону заблокирован. Пожалуйста, разрешите доступ в настройках браузера.");
+        }
+        setIsMicActive(false);
+        setInterimText("");
+      };
+
+      recognition.onend = () => {
+        setIsMicActive(false);
+        setInterimText("");
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (e) {
+      console.error(e);
+      setIsMicActive(false);
+      setInterimText("");
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (speechSimIntervalRef.current) clearInterval(speechSimIntervalRef.current);
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   // --- BROADCAST CHANNEL СИНХРОНИЗАЦИЯ ---
   const channelRef = useRef<BroadcastChannel | null>(null);
@@ -395,6 +504,11 @@ export default function SubtitlesPage() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+        @keyframes mic-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+          70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
         .glass-display {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -501,7 +615,18 @@ export default function SubtitlesPage() {
                     minHeight: 90,
                     textShadow: bgOpacity === 0 ? "none" : "0 2px 10px rgba(0, 0, 0, 0.4)"
                   }}>
-                    {isDemo ? (
+                    {isMicActive ? (
+                      <>
+                        {history.slice(-3).map((ph, idx) => (
+                          <span key={idx} style={{ color: "rgba(255, 255, 255, 0.25)", marginRight: 10, fontWeight: 500 }}>
+                            {ph}
+                          </span>
+                        ))}
+                        <span style={{ color: textColor, fontWeight: 800 }}>
+                          {interimText || "Слушаю вас..."}
+                        </span>
+                      </>
+                    ) : isDemo ? (
                       <>
                         {PHRASES[lang].slice(0, phraseIdx).map((ph, idx) => (
                           <span key={idx} style={{ color: "rgba(255, 255, 255, 0.25)", marginRight: 10, fontWeight: 500 }}>
@@ -547,13 +672,44 @@ export default function SubtitlesPage() {
                     className="focus:border-sky-500" />
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-                    <button onClick={() => { if (inputText.trim()) { setHistory(h => [...h, inputText.trim()]); setInputText(""); } }}
-                      className="btn btn-primary" style={{ padding: "12px 28px", fontSize: 13, borderRadius: 50 }}>
-                      Добавить в историю →
-                    </button>
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                      <button 
+                        onClick={toggleMicrophone}
+                        className="btn"
+                        style={{ 
+                          padding: "12px 24px", 
+                          fontSize: 13, 
+                          borderRadius: 50,
+                          background: isMicActive ? "var(--sos)" : "var(--gradient)",
+                          color: "white",
+                          boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
+                          animation: isMicActive ? "mic-pulse 1.5s infinite" : "none"
+                        }}
+                      >
+                        {isMicActive ? "🛑 Выключить микрофон" : "🎙️ Включить микрофон"}
+                      </button>
+
+                      <button 
+                        onClick={() => { if (inputText.trim()) { setHistory(h => [...h, inputText.trim()]); setInputText(""); } }}
+                        disabled={isMicActive}
+                        className="btn btn-primary" 
+                        style={{ 
+                          padding: "12px 28px", 
+                          fontSize: 13, 
+                          borderRadius: 50,
+                          opacity: isMicActive ? 0.5 : 1,
+                          cursor: isMicActive ? "not-allowed" : "pointer"
+                        }}
+                      >
+                        Добавить в историю →
+                      </button>
+                    </div>
+
                     <div style={{ display: "flex", gap: 8 }}>
                       <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(2,132,199,0.08)", color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>{lang}</span>
-                      <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>Whisper Engine</span>
+                      <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
+                        {isMicActive ? "Web Speech API" : "Whisper Engine"}
+                      </span>
                     </div>
                   </div>
                 </div>
