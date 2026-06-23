@@ -173,8 +173,13 @@ export default function SubtitlesDashboard() {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
       const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
       const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
+      
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || "";
+
       const wsBaseUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
-      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}`;
+      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}&token=${token}`;
 
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
