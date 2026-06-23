@@ -44,12 +44,19 @@ export default function SubtitlesPage() {
   const [audioSourceConnected, setAudioSourceConnected] = useState(false);
   const [frequencyData, setFrequencyData] = useState<number[]>([10, 15, 8, 12, 6]);
 
+  // Состояния для плавающего окна (Picture-in-Picture)
+  const [isPipActive, setIsPipActive] = useState(false);
+
   // Референсы для видео и веб-аудио
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationRef = useRef<number | null>(null);
+
+  // Референсы для Picture-in-Picture
+  const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pipVideoRef = useRef<HTMLVideoElement | null>(null);
 
   // --- ЭФФЕКТ ДЛЯ РЕЖИМА ДИКТОВКИ ---
   useEffect(() => {
@@ -67,6 +74,81 @@ export default function SubtitlesPage() {
   }, [chars, phraseIdx, lang, isDemo, mode]);
 
   const displayText = isDemo ? PHRASES[lang][phraseIdx].slice(0, chars) : inputText;
+
+  // --- BROADCAST CHANNEL СИНХРОНИЗАЦИЯ ---
+  const channelRef = useRef<BroadcastChannel | null>(null);
+
+  // Реф для хранения последнего актуального состояния (во избежание stale closures)
+  const stateRef = useRef({
+    mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText
+  });
+
+  useEffect(() => {
+    stateRef.current = {
+      mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText
+    };
+  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText]);
+
+  // Функция для отправки полного состояния
+  const sendStateToChannel = () => {
+    if (channelRef.current) {
+      const s = stateRef.current;
+      channelRef.current.postMessage({
+        type: "sync-state",
+        payload: {
+          mode: s.mode,
+          lang: s.lang,
+          phraseIdx: s.phraseIdx,
+          chars: s.chars,
+          inputText: s.inputText,
+          history: s.history,
+          fontSize: s.fontSize,
+          textColor: s.textColor,
+          bgOpacity: s.bgOpacity,
+          alignment: s.alignment,
+          videoSubtitle: s.videoSubtitle,
+          currentTime: videoElementRef.current?.currentTime || 0,
+          isVideoPlaying: s.isVideoPlaying,
+          subtitlesList: DEMO_VIDEO_SUBTITLES,
+          displayText: s.displayText
+        },
+      });
+    }
+  };
+
+  // Инициализация канала и слушателей
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const channel = new BroadcastChannel("hearless-subtitles");
+      channelRef.current = channel;
+
+      const handleMessage = (event: MessageEvent) => {
+        const { type, payload } = event.data;
+        if (type === "seek-video") {
+          if (videoElementRef.current) {
+            videoElementRef.current.currentTime = payload.time;
+          }
+        } else if (type === "request-sync") {
+          sendStateToChannel();
+        }
+      };
+
+      channel.addEventListener("message", handleMessage);
+
+      // Сразу шлем статус при монтировании
+      sendStateToChannel();
+
+      return () => {
+        channel.removeEventListener("message", handleMessage);
+        channel.close();
+      };
+    }
+  }, []);
+
+  // Отправка состояния при любом изменении
+  useEffect(() => {
+    sendStateToChannel();
+  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText]);
 
   // --- ИНИЦИАЛИЗАЦИЯ И ОБРАБОТКА ВЕБ-АУДИО ДЛЯ ВИЗУАЛИЗАЦИИ ---
   const initAudioAnalyser = (videoEl: HTMLVideoElement) => {
@@ -143,7 +225,19 @@ export default function SubtitlesPage() {
     const activeSub = DEMO_VIDEO_SUBTITLES.find(
       sub => time >= sub.start && time <= sub.end
     );
-    setVideoSubtitle(activeSub ? activeSub.text : "");
+    const subtitleText = activeSub ? activeSub.text : "";
+    setVideoSubtitle(subtitleText);
+
+    // Отправляем время и активный субтитр в канал
+    if (channelRef.current) {
+      channelRef.current.postMessage({
+        type: "time-update",
+        payload: {
+          currentTime: time,
+          videoSubtitle: subtitleText,
+        }
+      });
+    }
   };
 
   const handlePlayPause = (playing: boolean) => {
@@ -165,7 +259,103 @@ export default function SubtitlesPage() {
     }
   };
 
-  // Очистка при размонтировании
+  // --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА (PICTURE IN PICTURE) ---
+  
+  // Автоперенос слов для рисования на Canvas
+  const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+    const words = text.split(" ");
+    let line = "";
+    const lines = [];
+
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + " ";
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth && n > 0) {
+        lines.push(line);
+        line = words[n] + " ";
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line);
+
+    const totalHeight = lines.length * lineHeight;
+    let startY = y - totalHeight / 2 + lineHeight / 2;
+
+    lines.forEach((l) => {
+      ctx.fillText(l.trim(), x, startY);
+      startY += lineHeight;
+    });
+  };
+
+  // Отрисовка субтитров на Canvas
+  const drawPipSubtitles = () => {
+    const canvas = pipCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Очистка и заливка темного фона (высококонтрастная подложка)
+    ctx.fillStyle = "rgba(9, 13, 22, 0.95)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Добавляем красивую полупрозрачную рамку для эстетики
+    ctx.strokeStyle = "rgba(34, 132, 199, 0.3)";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+
+    // Отрисовка текста субтитров
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const text = mode === "speech" ? displayText : videoSubtitle;
+    wrapText(ctx, text || "Ожидание звукового потока...", canvas.width / 2, canvas.height / 2, canvas.width - 40, 28);
+  };
+
+  // Переключение состояния Picture-in-Picture
+  const togglePipSubtitles = async () => {
+    const pipVideo = pipVideoRef.current;
+    const canvas = pipCanvasRef.current;
+    if (!pipVideo || !canvas) return;
+
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      setIsPipActive(false);
+    } else {
+      try {
+        // Отрисовываем стартовый кадр
+        drawPipSubtitles();
+
+        // Захватываем видеопоток с Canvas (10 кадров в секунду для экономии ресурсов)
+        const stream = (canvas as any).captureStream(10);
+        pipVideo.srcObject = stream;
+
+        await pipVideo.play();
+        await pipVideo.requestPictureInPicture();
+        setIsPipActive(true);
+
+        // Отслеживаем закрытие окна пользователем вручную
+        pipVideo.addEventListener("leavepictureinpicture", () => {
+          setIsPipActive(false);
+        }, { once: true });
+      } catch (err) {
+        console.error("Ошибка запуска Picture-in-Picture: ", err);
+        alert("Режим Картинка-в-картинке не поддерживается вашим браузером или заблокирован.");
+      }
+    }
+  };
+
+  // Реактивный перерендер плавающего окна при изменении текста или цвета
+  useEffect(() => {
+    if (isPipActive) {
+      drawPipSubtitles();
+    }
+  }, [displayText, videoSubtitle, textColor, isPipActive, mode]);
+
+  // Очистка анимации при размонтировании
   useEffect(() => {
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -180,6 +370,10 @@ export default function SubtitlesPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      {/* Скрытые элементы для реализации PiP хака через Canvas */}
+      <canvas ref={pipCanvasRef} width="400" height="180" style={{ display: "none" }} />
+      <video ref={pipVideoRef} style={{ display: "none" }} playsInline muted />
+
       {/* Стили звуковой волны */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes soundBar {
@@ -468,6 +662,56 @@ export default function SubtitlesPage() {
                 </div>
               </div>
             )}
+
+            {/* Кнопки запуска Picture-in-Picture и Открытия Транскрипта под экраном */}
+            <div style={{ display: "flex", justifyContent: "flex-start", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
+              <button 
+                onClick={togglePipSubtitles}
+                className="btn btn-outline" 
+                style={{ 
+                  display: "inline-flex", 
+                  alignItems: "center", 
+                  gap: 8, 
+                  padding: "12px 24px", 
+                  fontSize: 13, 
+                  borderRadius: 50,
+                  borderColor: isPipActive ? "var(--success)" : "var(--border)",
+                  color: isPipActive ? "var(--success)" : "var(--text)",
+                  background: isPipActive ? "rgba(34, 197, 94, 0.05)" : "transparent"
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <rect x="13" y="13" width="7" height="7"/>
+                </svg>
+                <span>{isPipActive ? "Закрыть плавающее окно" : "Открыть в плавающем окне (PiP)"}</span>
+              </button>
+
+              <Link 
+                href="/subtitles/transcript" 
+                target="_blank"
+                className="btn btn-outline"
+                style={{ 
+                  display: "inline-flex", 
+                  alignItems: "center", 
+                  gap: 8, 
+                  padding: "12px 24px", 
+                  fontSize: 13, 
+                  borderRadius: 50,
+                  borderColor: "var(--border)",
+                  color: "var(--text)",
+                  background: "transparent",
+                  transition: "all 0.3s ease"
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                <span>Открыть транскрипт на весь экран</span>
+              </Link>
+            </div>
           </div>
 
           {/* ==========================================
@@ -625,7 +869,7 @@ export default function SubtitlesPage() {
         {/* Описание технологий */}
         <div style={{ marginTop: 64, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
           {[
-            { title: "Транскрипция видеофайлов", desc: "Загрузите файл или укажите прямую ссылку. Плеер автоматически наложит сгенерированные AI-субтитры." },
+            { title: "Режим Картинка-в-картинке", desc: "Запустите всегда находящийся поверх окон плавающий виджет и перетащите его на YouTube или Netflix, чтобы смотреть фильмы с субтитрами." },
             { title: "Реактивная аудио-волна", desc: "Датчик спектра Web Audio API анализирует звуковые частоты видеоролика в реальном времени." },
             { title: "Гибкая адаптация под глаза", desc: "Меняйте контрастность, размер шрифта и цветовые палитры субтитров прямо во время просмотра фильма." },
             { title: "Прямой коннект к FastAPI", desc: "Переключитесь в режим API для интеграции с вашим Whisper WebSocket сервером." },
