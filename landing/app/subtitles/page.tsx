@@ -188,10 +188,16 @@ export default function SubtitlesPage() {
     }, 100);
   };
 
+  // Реф для отслеживания статуса записи без замыканий в колбеках Speech API
+  const isMicActiveRef = useRef(false);
+  useEffect(() => {
+    isMicActiveRef.current = isMicActive;
+  }, [isMicActive]);
+
   const toggleMicrophone = () => {
     if (typeof window === "undefined") return;
 
-    if (isMicActive) {
+    if (isMicActiveRef.current) {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
@@ -238,18 +244,23 @@ export default function SubtitlesPage() {
         if (final.trim()) {
           const textToProcess = final.trim();
           if (useAiPunctuation) {
-            setHistory((prev) => [...prev, textToProcess]);
-            getPunctuationWithGemini(textToProcess).then((punctuatedText) => {
-              if (punctuatedText && punctuatedText !== textToProcess) {
-                setHistory((prev) => {
-                  const updated = [...prev];
-                  const idx = updated.lastIndexOf(textToProcess);
-                  if (idx !== -1) {
-                    updated[idx] = punctuatedText;
-                  }
-                  return updated;
-                });
-              }
+            setHistory((prev) => {
+              const updated = [...prev, textToProcess];
+              const targetIdx = updated.length - 1; // Запоминаем точный индекс фразы
+              
+              getPunctuationWithGemini(textToProcess).then((punctuatedText) => {
+                if (punctuatedText && punctuatedText !== textToProcess) {
+                  setHistory((currentHistory) => {
+                    const nextHistory = [...currentHistory];
+                    // Обновляем только если на этом индексе все еще лежит исходный сырой текст
+                    if (nextHistory[targetIdx] === textToProcess) {
+                      nextHistory[targetIdx] = punctuatedText;
+                    }
+                    return nextHistory;
+                  });
+                }
+              });
+              return updated;
             });
           } else {
             setHistory((prev) => [...prev, textToProcess]);
@@ -259,17 +270,33 @@ export default function SubtitlesPage() {
       };
 
       recognition.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        if (event.error === "not-allowed") {
-          alert("Доступ к микрофону заблокирован. Пожалуйста, разрешите доступ в настройках браузера.");
+        console.error("Speech recognition error:", event.error);
+        
+        // Отключаем микрофон только при фатальных ошибках доступа или оборудования
+        if (event.error === "not-allowed" || event.error === "audio-capture") {
+          if (event.error === "not-allowed") {
+            alert("Доступ к микрофону заблокирован. Пожалуйста, разрешите доступ в настройках браузера.");
+          } else {
+            alert("Не удалось обнаружить микрофон. Проверьте подключение устройства.");
+          }
+          setIsMicActive(false);
+          setInterimText("");
         }
-        setIsMicActive(false);
-        setInterimText("");
+        // Ошибки тишины (no-speech) или сброса (aborted) игнорируем, onend сделает мягкий перезапуск
       };
 
       recognition.onend = () => {
-        setIsMicActive(false);
-        setInterimText("");
+        // Если пользователь не нажимал кнопку выключения, перезапускаем запись
+        if (isMicActiveRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            console.warn("Попытка авто-перезапуска SpeechRecognition после onend:", e);
+          }
+        } else {
+          setIsMicActive(false);
+          setInterimText("");
+        }
       };
 
       recognitionRef.current = recognition;
