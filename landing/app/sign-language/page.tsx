@@ -32,6 +32,41 @@ export default function SignLanguagePage() {
           Казахский жестовый язык. Алфавит, цифры, базовые слова. Три уровня сложности: начальный, средний, продвинутый.
         </p>
 
+        {/* Banner for Interactive Simulator */}
+        <div style={{
+          background: "linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(56, 189, 248, 0.1) 100%)",
+          borderRadius: "var(--radius)",
+          border: "1px solid var(--accent)",
+          padding: "32px",
+          marginTop: "32px",
+          marginBottom: "40px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "32px" }}>🤖</span>
+            <div>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 700, color: "var(--text)" }}>
+                Интерактивный ИИ-тренажер жестов
+              </h2>
+              <p style={{ fontSize: "14px", color: "var(--textSecondary)", marginTop: "4px" }}>
+                Обучайтесь в реальном времени. Наш алгоритм сравнит ваши жесты с эталоном с точностью до миллиметра!
+              </p>
+            </div>
+          </div>
+          <p style={{ fontSize: "14px", color: "var(--textSecondary)", lineHeight: 1.6 }}>
+            Включите веб-камеру, повторяйте буквы алфавита (дактиля) и получайте моментальный фидбек: система подскажет, если нужно сжать кулак или выпрямить большой палец.
+          </p>
+          <div>
+            <Link href="/sign-language/practice" className="btn btn-primary" style={{ textDecoration: "none", fontSize: "14px", padding: "12px 28px" }}>
+              🎥 Запустить тренажер
+            </Link>
+          </div>
+        </div>
+
         {/* Levels */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, margin: "40px 0" }}>
           {LEVELS.map(l => (
