@@ -22,6 +22,10 @@ export default function TranscriptPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [subtitlesList, setSubtitlesList] = useState<SubtitleSegment[]>([]);
   const [displayText, setDisplayText] = useState("");
+  
+  // Состояния AI
+  const [aiSummary, setAiSummary] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
 
   // Состояние соединения
   const [isConnected, setIsConnected] = useState(false);
@@ -81,6 +85,8 @@ export default function TranscriptPage() {
         if (payload.isVideoPlaying !== undefined) setIsVideoPlaying(payload.isVideoPlaying);
         if (payload.subtitlesList !== undefined) setSubtitlesList(payload.subtitlesList);
         if (payload.displayText !== undefined) setDisplayText(payload.displayText);
+        if (payload.aiSummary !== undefined) setAiSummary(payload.aiSummary);
+        if (payload.aiResponse !== undefined) setAiResponse(payload.aiResponse);
       } else if (type === "time-update") {
         if (payload.currentTime !== undefined) setCurrentTime(payload.currentTime);
         if (payload.videoSubtitle !== undefined) setVideoSubtitle(payload.videoSubtitle);
@@ -447,142 +453,196 @@ export default function TranscriptPage() {
           </div>
         </section>
 
-        {/* Главная область вывода */}
-        <main
-          style={{
-            background: theme.cardBg,
-            border: `1px solid ${theme.border}`,
-            borderRadius: 24,
-            padding: "32px 24px",
-            minHeight: 400,
-            maxHeight: "calc(100vh - 280px)",
-            overflowY: "auto",
-            boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none",
-            display: "flex",
-            flexDirection: "column"
-          }}
-        >
-          {!isConnected && subtitlesList.length === 0 && history.length === 0 && (
-            <div style={{ margin: "auto", textAlign: "center", maxWidth: 400, padding: "40px 0" }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>📡</div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Ожидание подключения к плееру</h3>
-              <p style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 1.5 }}>
-                Пожалуйста, держите открытой вкладку с видеоплеером или диктовкой (/subtitles) для начала трансляции.
-              </p>
-            </div>
-          )}
+        {/* Двухколоночный грид для транскрипта и AI-аналитики */}
+        <div style={{ display: "grid", gridTemplateColumns: (aiSummary || aiResponse) ? "1fr 320px" : "1fr", gap: 24, alignItems: "start" }}>
+          
+          {/* Главная область вывода */}
+          <main
+            style={{
+              background: theme.cardBg,
+              border: `1px solid ${theme.border}`,
+              borderRadius: 24,
+              padding: "32px 24px",
+              minHeight: 400,
+              maxHeight: "calc(100vh - 280px)",
+              overflowY: "auto",
+              boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            {!isConnected && subtitlesList.length === 0 && history.length === 0 && (
+              <div style={{ margin: "auto", textAlign: "center", maxWidth: 400, padding: "40px 0" }}>
+                <div style={{ fontSize: 40, marginBottom: 16 }}>📡</div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Ожидание подключения к плееру</h3>
+                <p style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 1.5 }}>
+                  Пожалуйста, держите открытой вкладку с видеоплеером или диктовкой (/subtitles) для начала трансляции.
+                </p>
+              </div>
+            )}
 
-          {/* Режим 1: Диктовка речи */}
-          {mode === "speech" && (isConnected || history.length > 0) && (
-            <div
-              style={{
-                fontSize: `${fontSize}px`,
-                lineHeight: lineHeight,
-                fontWeight: 500,
-                textAlign: "left"
-              }}
-            >
-              {history.map((ph, idx) => (
-                <p
-                  key={idx}
-                  style={{
-                    color: themeMode === "contrast" ? "rgba(253, 235, 71, 0.6)" : "rgba(255, 255, 255, 0.4)",
-                    marginBottom: 16
-                  }}
-                  className={themeMode === "light" ? "text-slate-400" : ""}
-                >
-                  {ph}
-                </p>
-              ))}
-              {displayText && (
-                <p style={{ color: theme.accent, fontWeight: 700 }}>
-                  {displayText}
-                  <span
+            {/* Режим 1: Диктовка речи */}
+            {mode === "speech" && (isConnected || history.length > 0) && (
+              <div
+                style={{
+                  fontSize: `${fontSize}px`,
+                  lineHeight: lineHeight,
+                  fontWeight: 500,
+                  textAlign: "left"
+                }}
+              >
+                {history.map((ph, idx) => (
+                  <p
+                    key={idx}
                     style={{
-                      display: "inline-block",
-                      width: 3,
-                      height: fontSize - 4,
-                      background: theme.accent,
-                      marginLeft: 6,
-                      verticalAlign: "middle",
-                      animation: "cursor-blink 0.8s step-end infinite"
+                      color: themeMode === "contrast" ? "rgba(253, 235, 71, 0.6)" : "rgba(255, 255, 255, 0.4)",
+                      marginBottom: 16
                     }}
-                  />
-                </p>
+                    className={themeMode === "light" ? "text-slate-400" : ""}
+                  >
+                    {ph}
+                  </p>
+                ))}
+                {displayText && (
+                  <p style={{ color: theme.accent, fontWeight: 700 }}>
+                    {displayText}
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 3,
+                        height: fontSize - 4,
+                        background: theme.accent,
+                        marginLeft: 6,
+                        verticalAlign: "middle",
+                        animation: "cursor-blink 0.8s step-end infinite"
+                      }}
+                    />
+                  </p>
+                )}
+                {!displayText && history.length === 0 && (
+                  <div style={{ textAlign: "center", color: theme.textSecondary, padding: "60px 0", fontSize: 14 }}>
+                    Ожидание начала речи...
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Режим 2: Таймлайн субтитров видео */}
+            {mode === "video" && (subtitlesList.length > 0) && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {subtitlesList.map((sub, i) => {
+                  const isActive = i === activeSubIndex;
+                  return (
+                    <div
+                      key={i}
+                      id={`sub-line-${i}`}
+                      onClick={() => seekVideo(sub.start)}
+                      style={{
+                        padding: "16px 20px",
+                        borderRadius: 14,
+                        background: isActive ? theme.activeBg : "transparent",
+                        border: isActive ? `1px solid ${theme.accent}` : `1px solid transparent`,
+                        cursor: "pointer",
+                        display: "grid",
+                        gridTemplateColumns: "100px 1fr",
+                        gap: 20,
+                        alignItems: "center",
+                        transition: "all 0.2s ease"
+                      }}
+                      onMouseOver={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = "rgba(148, 163, 184, 0.05)";
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = "transparent";
+                        }
+                      }}
+                    >
+                      {/* Метка времени */}
+                      <span
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: isActive ? theme.accent : theme.textSecondary,
+                          fontFamily: "monospace",
+                          background: isActive ? "rgba(2, 132, 199, 0.08)" : "transparent",
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                          textAlign: "center"
+                        }}
+                      >
+                        {formatTime(sub.start)}
+                      </span>
+                      {/* Текст субтитра */}
+                      <span
+                        style={{
+                          fontSize: `${fontSize - 2}px`,
+                          fontWeight: isActive ? 700 : 500,
+                          lineHeight: 1.4,
+                          color: isActive ? theme.accent : theme.text
+                        }}
+                      >
+                        {sub.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </main>
+
+          {/* Панель AI-Аналитики на странице транскрипта */}
+          {(aiSummary || aiResponse) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* Блок конспекта */}
+              {aiSummary && (
+                <div style={{ 
+                  background: theme.cardBg, 
+                  border: `1px solid ${theme.border}`, 
+                  borderRadius: 24, 
+                  padding: 24,
+                  boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none"
+                }}>
+                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                    📝 AI-Конспект (Тезисы):
+                  </h3>
+                  <div style={{ 
+                    fontSize: 13, 
+                    lineHeight: 1.6, 
+                    whiteSpace: "pre-wrap", 
+                    color: theme.text 
+                  }}>
+                    {aiSummary}
+                  </div>
+                </div>
               )}
-              {!displayText && history.length === 0 && (
-                <div style={{ textAlign: "center", color: theme.textSecondary, padding: "60px 0", fontSize: 14 }}>
-                  Ожидание начала речи...
+
+              {/* Блок ответа на вопросы */}
+              {aiResponse && (
+                <div style={{ 
+                  background: theme.cardBg, 
+                  border: `1px solid ${theme.border}`, 
+                  borderRadius: 24, 
+                  padding: 24,
+                  boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none"
+                }}>
+                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                    💬 AI-Ответ на вопрос:
+                  </h3>
+                  <div style={{ 
+                    fontSize: 13, 
+                    lineHeight: 1.5, 
+                    color: theme.text 
+                  }}>
+                    {aiResponse}
+                  </div>
                 </div>
               )}
             </div>
           )}
-
-          {/* Режим 2: Таймлайн субтитров видео */}
-          {mode === "video" && (subtitlesList.length > 0) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {subtitlesList.map((sub, i) => {
-                const isActive = i === activeSubIndex;
-                return (
-                  <div
-                    key={i}
-                    id={`sub-line-${i}`}
-                    onClick={() => seekVideo(sub.start)}
-                    style={{
-                      padding: "16px 20px",
-                      borderRadius: 14,
-                      background: isActive ? theme.activeBg : "transparent",
-                      border: isActive ? `1px solid ${theme.accent}` : `1px solid transparent`,
-                      cursor: "pointer",
-                      display: "grid",
-                      gridTemplateColumns: "100px 1fr",
-                      gap: 20,
-                      alignItems: "center",
-                      transition: "all 0.2s ease"
-                    }}
-                    onMouseOver={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = "rgba(148, 163, 184, 0.05)";
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = "transparent";
-                      }
-                    }}
-                  >
-                    {/* Метка времени */}
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: isActive ? theme.accent : theme.textSecondary,
-                        fontFamily: "monospace",
-                        background: isActive ? "rgba(2, 132, 199, 0.08)" : "transparent",
-                        padding: "4px 8px",
-                        borderRadius: 6,
-                        textAlign: "center"
-                      }}
-                    >
-                      {formatTime(sub.start)}
-                    </span>
-                    {/* Текст субтитра */}
-                    <span
-                      style={{
-                        fontSize: `${fontSize - 2}px`,
-                        fontWeight: isActive ? 700 : 500,
-                        lineHeight: 1.4,
-                        color: isActive ? theme.accent : theme.text
-                      }}
-                    >
-                      {sub.text}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </main>
+        </div>
 
         {/* Дополнительная справка по сочетаниям клавиш и управлению */}
         <footer style={{ marginTop: 24, textAlign: "center", fontSize: 12, color: theme.textSecondary }}>

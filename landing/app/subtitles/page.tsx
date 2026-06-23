@@ -33,6 +33,13 @@ export default function SubtitlesPage() {
   const recognitionRef = useRef<any>(null);
   const isDemo = inputText.trim() === "" && !isMicActive;
 
+  // Состояния для Gemini AI
+  const [aiSummary, setAiSummary] = useState("");
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [useAiPunctuation, setUseAiPunctuation] = useState(true);
+
   // Настройки дисплея (совпадающие с мобильным клиентом)
   const [fontSize, setFontSize] = useState(24);
   const [textColor, setTextColor] = useState("#22d3ee");
@@ -79,6 +86,88 @@ export default function SubtitlesPage() {
   const displayText = isMicActive
     ? interimText
     : (isDemo ? PHRASES[lang][phraseIdx].slice(0, chars) : inputText);
+
+  // --- ИНТЕГРАЦИЯ GEMINI AI ---
+  const callGemini = async (prompt: string, textContent: string) => {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyBH3qC3cisbCHtH8CTZKmkg1DLDvdEOfEg";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `${prompt}\n\nТекст:\n${textContent}`
+                }
+              ]
+            }
+          ]
+        })
+      });
+      
+      const data = await response.json();
+      const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      return resultText.trim();
+    } catch (error) {
+      console.error("Gemini API Error:", error);
+      return "";
+    }
+  };
+
+  // Метод для автоматической пунктуации фразы
+  const getPunctuationWithGemini = async (rawText: string) => {
+    const prompt = "Ты — AI-редактор. Твоя задача — расставить знаки препинания, исправить заглавные буквы и мелкие опечатки в предложенном тексте распознанной русской, казахской или английской речи. Верни ТОЛЬКО исправленный текст, без каких-либо вводных слов или кавычек.";
+    const cleaned = await callGemini(prompt, rawText);
+    return cleaned || rawText;
+  };
+
+  // Генерация конспекта
+  const generateSummary = async () => {
+    const fullTranscript = [...history, displayText].filter(Boolean).join("\n");
+    if (!fullTranscript.trim()) {
+      alert("История транскрипта пуста. Пожалуйста, наговорите или введите текст сначала.");
+      return;
+    }
+    
+    setIsAiLoading(true);
+    const prompt = "Ты — профессиональный ассистент по доступности. Сделай краткое конспектирование (в виде тезисов и bullet points на русском языке) для предложенного транскрипта. Выдели главные мысли, решения и ключевые факты.";
+    const result = await callGemini(prompt, fullTranscript);
+    if (result) {
+      setAiSummary(result);
+    } else {
+      alert("Не удалось сгенерировать конспект. Проверьте соединение с интернетом или настройки ключа.");
+    }
+    setIsAiLoading(false);
+  };
+
+  // Чат с AI по содержанию
+  const askAiAboutTranscript = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+    
+    const fullTranscript = [...history, displayText].filter(Boolean).join("\n");
+    if (!fullTranscript.trim()) {
+      alert("История пуста. Задавать вопросы пока не по чему.");
+      return;
+    }
+    
+    setIsAiLoading(true);
+    setAiResponse("AI думает...");
+    const prompt = `Пользователь задает вопрос: "${aiQuery}". Ответь на него коротко и содержательно, основываясь исключительно на содержании предложенного транскрипта. Если в тексте нет ответа на этот вопрос, так и скажи.`;
+    const result = await callGemini(prompt, fullTranscript);
+    if (result) {
+      setAiResponse(result);
+    } else {
+      setAiResponse("Ошибка при получении ответа от AI.");
+    }
+    setIsAiLoading(false);
+  };
 
   // --- ЛОГИКА РАБОТЫ МИКРОФОНА (WEB SPEECH API) ---
   const speechSimIntervalRef = useRef<any>(null);
@@ -147,7 +236,24 @@ export default function SubtitlesPage() {
         }
 
         if (final.trim()) {
-          setHistory((prev) => [...prev, final.trim()]);
+          const textToProcess = final.trim();
+          if (useAiPunctuation) {
+            setHistory((prev) => [...prev, textToProcess]);
+            getPunctuationWithGemini(textToProcess).then((punctuatedText) => {
+              if (punctuatedText && punctuatedText !== textToProcess) {
+                setHistory((prev) => {
+                  const updated = [...prev];
+                  const idx = updated.lastIndexOf(textToProcess);
+                  if (idx !== -1) {
+                    updated[idx] = punctuatedText;
+                  }
+                  return updated;
+                });
+              }
+            });
+          } else {
+            setHistory((prev) => [...prev, textToProcess]);
+          }
         }
         setInterimText(interim);
       };
@@ -189,14 +295,14 @@ export default function SubtitlesPage() {
 
   // Реф для хранения последнего актуального состояния (во избежание stale closures)
   const stateRef = useRef({
-    mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText
+    mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse
   });
 
   useEffect(() => {
     stateRef.current = {
-      mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText
+      mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse
     };
-  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText]);
+  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse]);
 
   // Функция для отправки полного состояния
   const sendStateToChannel = () => {
@@ -219,7 +325,9 @@ export default function SubtitlesPage() {
           currentTime: videoElementRef.current?.currentTime || 0,
           isVideoPlaying: s.isVideoPlaying,
           subtitlesList: DEMO_VIDEO_SUBTITLES,
-          displayText: s.displayText
+          displayText: s.displayText,
+          aiSummary: s.aiSummary,
+          aiResponse: s.aiResponse
         },
       });
     }
@@ -257,7 +365,7 @@ export default function SubtitlesPage() {
   // Отправка состояния при любом изменении
   useEffect(() => {
     sendStateToChannel();
-  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText]);
+  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse]);
 
   // --- ИНИЦИАЛИЗАЦИЯ И ОБРАБОТКА ВЕБ-АУДИО ДЛЯ ВИЗУАЛИЗАЦИИ ---
   const initAudioAnalyser = (videoEl: HTMLVideoElement) => {
@@ -672,7 +780,7 @@ export default function SubtitlesPage() {
                     className="focus:border-sky-500" />
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                       <button 
                         onClick={toggleMicrophone}
                         className="btn"
@@ -703,6 +811,16 @@ export default function SubtitlesPage() {
                       >
                         Добавить в историю →
                       </button>
+
+                      <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer", userSelect: "none" }}>
+                        <input 
+                          type="checkbox" 
+                          checked={useAiPunctuation} 
+                          onChange={(e) => setUseAiPunctuation(e.target.checked)}
+                          style={{ accentColor: "var(--accent)" }}
+                        />
+                        <span style={{ fontWeight: 600 }}>AI-Пунктуация 🚀</span>
+                      </label>
                     </div>
 
                     <div style={{ display: "flex", gap: 8 }}>
@@ -712,6 +830,129 @@ export default function SubtitlesPage() {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* ==========================================
+                    ПАНЕЛЬ AI-АССИСТЕНТА (GEMINI)
+                   ========================================== */}
+                <div style={{ 
+                  background: "var(--bgCard)", 
+                  borderRadius: "20px", 
+                  padding: "24px", 
+                  border: "1px solid var(--border)", 
+                  marginTop: 24,
+                  backdropFilter: "blur(16px)"
+                }}>
+                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                    ✨ AI-Ассистент Gemini
+                  </h3>
+                  <p style={{ fontSize: 13, color: "var(--textSecondary)", marginBottom: 16 }}>
+                    Используйте интеллект Gemini для автоматического конспектирования беседы или ответов на вопросы по содержанию.
+                  </p>
+
+                  <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+                    <button 
+                      onClick={generateSummary}
+                      disabled={isAiLoading}
+                      className="btn btn-outline"
+                      style={{ 
+                        padding: "10px 20px", 
+                        fontSize: 12, 
+                        borderRadius: 10,
+                        borderColor: "var(--border)",
+                        background: "transparent",
+                        cursor: isAiLoading ? "not-allowed" : "pointer"
+                      }}
+                    >
+                      {isAiLoading ? "Обработка..." : "📝 Сгенерировать конспект"}
+                    </button>
+                    
+                    <button 
+                      onClick={() => { setAiSummary(""); setAiResponse(""); }}
+                      className="btn btn-outline"
+                      style={{ 
+                        padding: "10px 20px", 
+                        fontSize: 12, 
+                        borderRadius: 10,
+                        borderColor: "rgba(239, 68, 68, 0.2)",
+                        color: "var(--sos)",
+                        background: "transparent"
+                      }}
+                    >
+                      Очистить AI
+                    </button>
+                  </div>
+
+                  {/* Вывод Конспекта */}
+                  {aiSummary && (
+                    <div style={{ 
+                      background: "rgba(34, 211, 238, 0.03)", 
+                      border: "1px solid var(--border)", 
+                      borderRadius: 12, 
+                      padding: 16, 
+                      marginBottom: 20 
+                    }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--accent)" }}>📝 Краткие тезисы (AI-Конспект):</h4>
+                      <div style={{ 
+                        fontSize: 13, 
+                        lineHeight: 1.6, 
+                        whiteSpace: "pre-wrap", 
+                        color: "var(--text)" 
+                      }}>
+                        {aiSummary}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Чат с ассистентом */}
+                  <form onSubmit={askAiAboutTranscript} style={{ display: "flex", gap: 8 }}>
+                    <input 
+                      type="text" 
+                      value={aiQuery} 
+                      onChange={(e) => setAiQuery(e.target.value)}
+                      placeholder="Спросите AI (например: 'О чем шла речь вначале?')..."
+                      disabled={isAiLoading}
+                      style={{ 
+                        flex: 1, 
+                        padding: "12px 16px", 
+                        borderRadius: 10, 
+                        border: "1px solid var(--border)", 
+                        background: "rgba(255,255,255,0.6)", 
+                        color: "var(--text)",
+                        fontSize: 13,
+                        outline: "none"
+                      }}
+                    />
+                    <button 
+                      type="submit"
+                      disabled={isAiLoading || !aiQuery.trim()}
+                      className="btn btn-primary"
+                      style={{ 
+                        padding: "12px 20px", 
+                        fontSize: 12, 
+                        borderRadius: 10,
+                        cursor: isAiLoading ? "not-allowed" : "pointer"
+                      }}
+                    >
+                      Спросить
+                    </button>
+                  </form>
+
+                  {/* Ответ на вопрос */}
+                  {aiResponse && (
+                    <div style={{ 
+                      background: "rgba(15, 23, 42, 0.4)", 
+                      borderLeft: "4px solid var(--accent)", 
+                      borderRadius: "0 10px 10px 0", 
+                      padding: 12, 
+                      marginTop: 12,
+                      fontSize: 13,
+                      lineHeight: 1.5,
+                      color: "var(--text)"
+                    }}>
+                      <strong>Ответ AI:</strong> {aiResponse}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
