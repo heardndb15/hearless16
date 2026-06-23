@@ -34,9 +34,9 @@ export default function SignLanguagePage() {
 
         {/* Banner for Interactive Simulator */}
         <div style={{
-          background: "linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(56, 189, 248, 0.1) 100%)",
+          background: "linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(56, 189, 248, 0.08) 100%)",
           borderRadius: "var(--radius)",
-          border: "1px solid var(--accent)",
+          border: "1px solid var(--border)",
           padding: "32px",
           marginTop: "32px",
           marginBottom: "40px",
@@ -44,13 +44,19 @@ export default function SignLanguagePage() {
           flexDirection: "column",
           gap: "16px",
           position: "relative",
-          overflow: "hidden"
+          overflow: "hidden",
+          backdropFilter: "blur(16px)"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "32px" }}>🤖</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5" />
+              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6" />
+              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8.5" />
+              <path d="M6 14v-1.5a1.5 1.5 0 0 0-3 0V16a5 5 0 0 0 5 5h4a8 8 0 0 0 8-8v-2a1.5 1.5 0 0 0-3 0" />
+            </svg>
             <div>
               <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 700, color: "var(--text)" }}>
-                Интерактивный ИИ-тренажер жестов
+                Интерактивный тренажер жестов
               </h2>
               <p style={{ fontSize: "14px", color: "var(--textSecondary)", marginTop: "4px" }}>
                 Обучайтесь в реальном времени. Наш алгоритм сравнит ваши жесты с эталоном с точностью до миллиметра!

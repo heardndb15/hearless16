@@ -575,26 +575,32 @@ export default function GesturePracticePage() {
       />
 
       <div style={{ padding: "100px 24px 60px", maxWidth: 1100, margin: "0 auto" }}>
-        <Link href="/sign-language" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24, fontWeight: 500 }}>
+        <Link href="/sign-language" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24, fontWeight: 600, transition: "color 0.2s" }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "var(--accent)"}>
           ← Назад к каталогу
         </Link>
         
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16, marginBottom: 32 }}>
           <div>
-            <div className="section-label">ИИ-Практика</div>
+            <div className="section-label">Интерактивная практика</div>
             <h1 className="section-title" style={{ margin: "4px 0 12px" }}>Тренажер Жестового Языка</h1>
-            <p className="section-subtitle" style={{ marginBottom: 32 }}>
-              Включите камеру и повторите предложенный жест. Наш ИИ проверит геометрию вашей руки.
+            <p className="section-subtitle">
+              Включите камеру и повторите предложенный жест. Алгоритм сравнит геометрию вашей руки с эталоном.
             </p>
           </div>
 
-          {/* Developer Tools Toggle */}
+          {/* Кнопка калибровки без эмодзи */}
           <button 
             className="btn btn-outline" 
             onClick={() => setCalibrationMode(!calibrationMode)}
-            style={{ padding: "8px 16px", borderRadius: "var(--radiusSm)", fontSize: 12 }}
+            style={{ padding: "10px 20px", borderRadius: "var(--radiusSm)", fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}
           >
-            ⚙️ {calibrationMode ? "Скрыть инструменты калибровки" : "Режим калибровки"}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span>{calibrationMode ? "Скрыть калибровку" : "Калибровка"}</span>
           </button>
         </div>
 
@@ -603,24 +609,27 @@ export default function GesturePracticePage() {
           {/* ==========================================
               ЛЕВАЯ СТОРОНА: КАМЕРА И ВИЗУАЛИЗАЦИЯ
              ========================================== */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div style={{ 
               background: "var(--bgCard)", 
               borderRadius: "var(--radius)", 
               border: "1px solid var(--border)", 
               padding: 24, 
               position: "relative",
-              overflow: "hidden"
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(2, 132, 199, 0.03)"
             }}>
-              {/* Окно стрима веб-камеры и канваса */}
+              {/* Окно веб-камеры с неоновой границей */}
               <div style={{ 
                 position: "relative", 
                 width: "100%", 
                 aspectRatio: "4/3", 
                 borderRadius: "var(--radiusSm)", 
-                background: "#0f172a", 
+                background: "#090d16", 
                 overflow: "hidden",
-                border: "1px solid var(--border)"
+                border: "1px solid rgba(2, 132, 199, 0.2)",
+                boxShadow: isMatched ? "0 0 20px rgba(34, 197, 94, 0.2)" : "none",
+                transition: "box-shadow 0.3s ease"
               }}>
                 {/* Элемент видео (веб-камера, отзеркаленная для пользователя) */}
                 <video 
@@ -661,7 +670,7 @@ export default function GesturePracticePage() {
                   <div style={{ 
                     position: "absolute", 
                     inset: 0, 
-                    background: "rgba(15, 23, 42, 0.85)", 
+                    background: "rgba(9, 13, 22, 0.9)", 
                     display: "flex", 
                     flexDirection: "column", 
                     alignItems: "center", 
@@ -670,15 +679,15 @@ export default function GesturePracticePage() {
                     zIndex: 20
                   }}>
                     <div style={{ 
-                      width: 50, 
-                      height: 50, 
-                      border: "4px solid rgba(56, 189, 248, 0.2)", 
-                      borderTop: "4px solid var(--accent)", 
+                      width: 44, 
+                      height: 44, 
+                      border: "3px solid rgba(56, 189, 248, 0.15)", 
+                      borderTop: "3px solid var(--accent)", 
                       borderRadius: "50%",
-                      animation: "spin 1s linear infinite"
+                      animation: "spin 0.8s linear infinite"
                     }} />
-                    <span style={{ fontSize: 14, color: "rgba(240, 249, 255, 0.85)", fontFamily: "'Syne', sans-serif" }}>
-                      Запуск MediaPipe Hands...
+                    <span style={{ fontSize: 13, color: "rgba(240, 249, 255, 0.8)", fontFamily: "'Syne', sans-serif", letterSpacing: "0.5px" }}>
+                      Инициализация трекера рук...
                     </span>
                   </div>
                 )}
@@ -688,7 +697,7 @@ export default function GesturePracticePage() {
                   <div style={{ 
                     position: "absolute", 
                     inset: 0, 
-                    background: "rgba(15, 23, 42, 0.95)", 
+                    background: "rgba(9, 13, 22, 0.95)", 
                     display: "flex", 
                     flexDirection: "column", 
                     alignItems: "center", 
@@ -698,9 +707,13 @@ export default function GesturePracticePage() {
                     gap: 16,
                     zIndex: 30
                   }}>
-                    <span style={{ fontSize: 48 }}>⚠️</span>
-                    <h3 style={{ fontSize: 16, fontWeight: 600, color: "#f87171" }}>Не удалось запустить камеру</h3>
-                    <p style={{ fontSize: 13, color: "rgba(240, 249, 255, 0.75)" }}>{cameraError}</p>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <h3 style={{ fontSize: 15, fontWeight: 600, color: "#f87171" }}>Не удалось запустить камеру</h3>
+                    <p style={{ fontSize: 13, color: "rgba(240, 249, 255, 0.7)" }}>{cameraError}</p>
                     <button className="btn btn-primary" onClick={initMediaPipe} style={{ fontSize: 13, padding: "8px 20px" }}>
                       Повторить попытку
                     </button>
@@ -708,10 +721,10 @@ export default function GesturePracticePage() {
                 )}
               </div>
 
-              {/* Индикатор качества распознавания */}
+              {/* Точность распознавания с градиентом */}
               <div style={{ marginTop: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Точность совпадения жеста:</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Точность совпадения:</span>
                   <span style={{ 
                     fontFamily: "'Syne', sans-serif", 
                     fontSize: 18, 
@@ -722,65 +735,108 @@ export default function GesturePracticePage() {
                   </span>
                 </div>
                 
-                {/* Шкала схожести */}
+                {/* Шкала схожести с градиентным заполнением */}
                 <div style={{ width: "100%", height: 10, background: "rgba(2, 132, 199, 0.08)", borderRadius: 5, overflow: "hidden", border: "1px solid var(--border)" }}>
                   <div style={{ 
                     width: `${similarity}%`, 
                     height: "100%", 
-                    background: isMatched ? "var(--success)" : "var(--accent)",
+                    background: isMatched ? "linear-gradient(90deg, #4ade80 0%, #22c55e 100%)" : "linear-gradient(90deg, #38bdf8 0%, #0284c7 100%)",
                     transition: "width 0.15s ease-out, background-color 0.3s ease",
-                    boxShadow: isMatched ? "0 0 10px rgba(34, 197, 94, 0.5)" : "0 0 8px rgba(2, 132, 199, 0.3)"
+                    boxShadow: isMatched ? "0 0 10px rgba(34, 197, 94, 0.4)" : "none"
                   }} />
                 </div>
               </div>
             </div>
 
-            {/* БАННЕР ОБРАТНОЙ СВЯЗИ */}
+            {/* БАННЕР ОБРАТНОЙ СВЯЗИ БЕЗ ЭМОДЗИ */}
             <div style={{ 
-              background: isMatched ? "rgba(34, 197, 94, 0.12)" : "rgba(2, 132, 199, 0.06)", 
+              background: isMatched ? "rgba(34, 197, 94, 0.06)" : "rgba(2, 132, 199, 0.04)", 
               borderRadius: "var(--radius)", 
-              border: isMatched ? "2px solid var(--success)" : "1px solid var(--border)", 
+              border: isMatched ? "1px solid var(--success)" : "1px solid var(--border)", 
               padding: "20px 24px",
-              textAlign: "center",
-              transition: "all 0.3s ease"
+              transition: "all 0.3s ease",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 16
             }}>
               {isMatched ? (
-                <div>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", color: "var(--success)", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
-                    🎉 Отлично! Жест усвоен
-                  </h3>
-                  <p style={{ fontSize: 13, color: "var(--textSecondary)" }}>Ваши пальцы расположены верно, геометрическая погрешность менее 15%.</p>
-                </div>
+                <>
+                  <div style={{ 
+                    background: "rgba(34, 197, 94, 0.15)", 
+                    borderRadius: "50%", 
+                    width: 32, 
+                    height: 32, 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    color: "var(--success)",
+                    flexShrink: 0
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 style={{ fontFamily: "'Syne', sans-serif", color: "var(--success)", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
+                      Жест успешно распознан
+                    </h3>
+                    <p style={{ fontSize: 13, color: "var(--textSecondary)", lineHeight: 1.5 }}>Ваша рука расположена верно, геометрические погрешности не превышают допустимые 15%.</p>
+                  </div>
+                </>
               ) : (
-                <div>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", color: "var(--text)", fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
-                    💡 Подсказка:
-                  </h3>
-                  {hints.length > 0 ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {hints.map((hint, idx) => (
-                        <p key={idx} style={{ fontSize: 13, color: "var(--textSecondary)", fontWeight: 500 }}>
-                          • {hint}
-                        </p>
-                      ))}
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 13, color: "var(--textSecondary)" }}>Покажите руку камере, чтобы запустить сравнение с эталоном.</p>
-                  )}
-                </div>
+                <>
+                  <div style={{ 
+                    background: "rgba(2, 132, 199, 0.1)", 
+                    borderRadius: "50%", 
+                    width: 32, 
+                    height: 32, 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center", 
+                    color: "var(--accent)",
+                    flexShrink: 0
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontFamily: "'Syne', sans-serif", color: "var(--text)", fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
+                      Рекомендации по выполнению:
+                    </h3>
+                    {hints.length > 0 ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {hints.map((hint, idx) => (
+                          <div key={idx} style={{ fontSize: 13, color: "var(--textSecondary)", display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
+                            <span>{hint}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 13, color: "var(--textSecondary)" }}>Поместите руку перед камерой, чтобы запустить проверку.</p>
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
-            {/* Инструменты калибровки (отображаются при клике на шестеренку) */}
+            {/* Панель калибровки без эмодзи */}
             {calibrationMode && (
-              <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid #eab308", padding: 20 }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: "#eab308", marginBottom: 12 }}>⚙️ Панель калибровки жестов</h3>
-                <p style={{ fontSize: 12, color: "var(--textSecondary)", marginBottom: 14 }}>
-                  Примите необходимую позу руки перед камерой и нажмите кнопку. Алгоритм выведет 14 нормализованных признаков.
+              <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid rgba(234, 179, 8, 0.3)", padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                  </svg>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: "#eab308" }}>Панель калибровки жестов</h3>
+                </div>
+                <p style={{ fontSize: 12, color: "var(--textSecondary)", marginBottom: 14, lineHeight: 1.5 }}>
+                  Покажите нужную конфигурацию руки камере и нажмите кнопку ниже, чтобы зафиксировать 14-мерный вектор признаков.
                 </p>
                 <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                   <button className="btn btn-primary" onClick={handleCalibrate} style={{ fontSize: 12, padding: "8px 16px", background: "#eab308", border: "none" }}>
-                    📸 Записать эталон
+                    Записать эталон
                   </button>
                   {calibratedFeatures && (
                     <button className="btn btn-outline" onClick={() => setCalibratedFeatures(null)} style={{ fontSize: 12, padding: "8px 16px" }}>
@@ -790,13 +846,14 @@ export default function GesturePracticePage() {
                 </div>
                 {calibratedFeatures && (
                   <pre style={{ 
-                    background: "#0f172a", 
+                    background: "#0a0d16", 
                     color: "#38bdf8", 
                     padding: 12, 
                     borderRadius: "var(--radiusSm)", 
                     fontSize: 10, 
                     overflowX: "auto",
-                    maxHeight: 180
+                    maxHeight: 180,
+                    border: "1px solid rgba(234, 179, 8, 0.15)"
                   }}>
                     {calibratedFeatures}
                   </pre>
@@ -812,12 +869,12 @@ export default function GesturePracticePage() {
             
             {/* Карточка выбора жеста */}
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 28 }}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
-                Выберите жест для тренировки:
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
+                Выберите жест для практики:
               </h3>
               
-              {/* Сетка переключения */}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
+              {/* Сетка переключателей (кнопки-таблетки) */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
                 {Object.keys(GESTURE_DEFS).map((key) => {
                   const g = GESTURE_DEFS[key];
                   const isActive = activeGesture === key;
@@ -826,35 +883,57 @@ export default function GesturePracticePage() {
                       key={key}
                       onClick={() => handleGestureChange(key)}
                       style={{
-                        padding: "12px 18px",
-                        borderRadius: "var(--radiusSm)",
-                        background: isActive ? "var(--accent)" : "rgba(2, 132, 199, 0.05)",
+                        padding: "10px 16px",
+                        borderRadius: 30,
+                        background: isActive ? "var(--accent)" : "rgba(2, 132, 199, 0.04)",
                         border: "1px solid",
                         borderColor: isActive ? "var(--accent)" : "var(--border)",
                         color: isActive ? "#ffffff" : "var(--text)",
                         fontFamily: "'Syne', sans-serif",
                         fontWeight: 600,
-                        fontSize: 14,
+                        fontSize: 13,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        gap: 8,
+                        gap: 6,
                         transition: "all 0.2s ease"
                       }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) e.currentTarget.style.borderColor = "var(--accent)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) e.currentTarget.style.borderColor = "var(--border)";
+                      }}
                     >
-                      <span style={{ fontSize: 18 }}>{g.emoji}</span>
+                      <span style={{ fontSize: 16 }}>{g.emoji}</span>
                       <span>{g.name.split(" ")[1]}</span>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Блок эталона */}
+              {/* Карточка-инструкция эталона */}
               {activeGesture && GESTURE_DEFS[activeGesture] && (
-                <div style={{ display: "flex", gap: 20, alignItems: "center", padding: "16px 20px", background: "rgba(2, 132, 199, 0.03)", borderRadius: "var(--radiusSm)", border: "1px solid var(--border)" }}>
+                <div style={{ 
+                  display: "flex", 
+                  gap: 20, 
+                  alignItems: "center", 
+                  padding: "20px", 
+                  background: "rgba(2, 132, 199, 0.02)", 
+                  borderRadius: "var(--radiusSm)", 
+                  border: "1px solid var(--border)" 
+                }}>
                   
-                  {/* Векторный рендер эталонного скелета (SVG) */}
-                  <div style={{ width: 100, height: 100, background: "#0f172a", borderRadius: 8, border: "1px solid var(--border)", position: "relative", flexShrink: 0 }}>
+                  {/* Векторный рендер эталона в темной рамке */}
+                  <div style={{ 
+                    width: 90, 
+                    height: 90, 
+                    background: "#090d16", 
+                    borderRadius: 12, 
+                    border: "1px solid var(--border)", 
+                    position: "relative", 
+                    flexShrink: 0 
+                  }}>
                     <svg viewBox="0 0 100 100" style={{ width: "100%", height: "100%" }}>
                       {/* Отрисовка костей */}
                       {CONNECTIONS.map(([from, to], idx) => {
@@ -867,7 +946,7 @@ export default function GesturePracticePage() {
                             y1={pt1.y}
                             x2={pt2.x}
                             y2={pt2.y}
-                            stroke="rgba(56, 189, 248, 0.6)"
+                            stroke="rgba(56, 189, 248, 0.5)"
                             strokeWidth="2.5"
                             strokeLinecap="round"
                           />
@@ -886,15 +965,15 @@ export default function GesturePracticePage() {
                         />
                       ))}
                     </svg>
-                    <span style={{ position: "absolute", bottom: 4, right: 6, fontSize: 10, color: "rgba(240, 249, 255, 0.6)" }}>Эталон</span>
+                    <span style={{ position: "absolute", bottom: 4, right: 6, fontSize: 8, color: "rgba(240, 249, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Эталон</span>
                   </div>
 
-                  {/* Описание жеста */}
+                  {/* Описание */}
                   <div>
-                    <h4 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)" }}>
+                    <h4 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)" }}>
                       {GESTURE_DEFS[activeGesture].name}
                     </h4>
-                    <p style={{ fontSize: 12, color: "var(--textSecondary)", lineHeight: 1.5, marginTop: 6 }}>
+                    <p style={{ fontSize: 12, color: "var(--textSecondary)", lineHeight: 1.5, marginTop: 4 }}>
                       {GESTURE_DEFS[activeGesture].description}
                     </p>
                   </div>
@@ -902,20 +981,20 @@ export default function GesturePracticePage() {
               )}
             </div>
 
-            {/* Карточка отслеживания пальцев в реальном времени */}
+            {/* Карточка состояния пальцев */}
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 28 }}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
-                Статус пальцев (Детектор):
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
+                Детектор суставов (Реальное время):
               </h3>
               
-              {/* Чек-лист распознавания пальцев */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Список пальцев */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {[
-                  { key: "thumb", label: "Большой палец (Thumb)", desc: "Отведен / выпрямлен" },
-                  { key: "index", label: "Указательный палец (Index)", desc: "Выпрямлен прямо" },
-                  { key: "middle", label: "Средний палец (Middle)", desc: "Выпрямлен прямо" },
-                  { key: "ring", label: "Безымянный палец (Ring)", desc: "Выпрямлен прямо" },
-                  { key: "pinky", label: "Мизинец (Pinky)", desc: "Выпрямлен прямо" },
+                  { key: "thumb", label: "Большой палец (Thumb)", desc: "Отведен или выпрямлен" },
+                  { key: "index", label: "Указательный палец (Index)", desc: "Вытянут прямо" },
+                  { key: "middle", label: "Средний палец (Middle)", desc: "Вытянут прямо" },
+                  { key: "ring", label: "Безымянный палец (Ring)", desc: "Вытянут прямо" },
+                  { key: "pinky", label: "Мизинец (Pinky)", desc: "Вытянут прямо" },
                 ].map((item) => {
                   const isActive = fingerStates[item.key];
                   return (
@@ -925,10 +1004,12 @@ export default function GesturePracticePage() {
                         display: "flex", 
                         alignItems: "center", 
                         justifyContent: "space-between",
-                        padding: "12px 16px",
-                        background: "rgba(2, 132, 199, 0.02)",
+                        padding: "10px 16px",
+                        background: isActive ? "rgba(34, 197, 94, 0.03)" : "rgba(2, 132, 199, 0.01)",
                         borderRadius: "var(--radiusSm)",
-                        border: "1px solid var(--border)"
+                        border: "1px solid",
+                        borderColor: isActive ? "rgba(34, 197, 94, 0.2)" : "var(--border)",
+                        transition: "all 0.25s ease"
                       }}
                     >
                       <div>
@@ -936,14 +1017,16 @@ export default function GesturePracticePage() {
                         <div style={{ fontSize: 11, color: "var(--textSecondary)" }}>{item.desc}</div>
                       </div>
                       
-                      {/* Статус-бейдж */}
+                      {/* Светодиодный бейдж статуса */}
                       <span style={{ 
-                        padding: "4px 10px", 
+                        padding: "4px 12px", 
                         borderRadius: 20, 
                         fontSize: 10, 
                         fontWeight: 700, 
-                        color: "#ffffff",
-                        background: isActive ? "var(--success)" : "var(--accent)"
+                        letterSpacing: "0.5px",
+                        color: isActive ? "#166534" : "#0369a1",
+                        background: isActive ? "rgba(34, 197, 94, 0.12)" : "rgba(2, 132, 199, 0.08)",
+                        transition: "all 0.25s ease"
                       }}>
                         {isActive ? "ВЫПРЯМЛЕН" : "СОГНУТ"}
                       </span>
@@ -955,25 +1038,30 @@ export default function GesturePracticePage() {
 
             {/* Карточка объяснения математики */}
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 28 }}>
-              <details>
-                <summary style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", cursor: "pointer", outline: "none" }}>
-                  📐 Как ИИ сравнивает координаты? (Математика)
+              <details style={{ width: "100%" }}>
+                <summary style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", cursor: "pointer", outline: "none", display: "flex", alignItems: "center", gap: 8 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  <span>Математическая модель сравнения жестов</span>
                 </summary>
                 <div style={{ fontSize: 12, color: "var(--textSecondary)", lineHeight: 1.6, marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
                   <p>
-                    Для сравнения руки пользователя с идеалом мы считываем 21 точку суставов от <strong>MediaPipe Hands</strong>. Но сырые координаты меняются, если придвинуть руку ближе к камере или сдвинуть ее в угол. Поэтому алгоритм нормализует данные:
+                    Для оценки жеста мы считываем 21 пространственный ориентир руки. Чтобы отслеживание не зависело от расстояния и положения руки в кадре, применяется алгоритм нормализации:
                   </p>
                   <p>
-                    1. <strong>Инвариантность сдвига:</strong> Координаты запястья (точка 0) вычитаются из всех остальных точек, перемещая руку в начало локальной системы координат <code>(0,0,0)</code>.
+                    1. <strong>Центрирование:</strong> Координаты запястья (ориентир 0) вычитаются из координат остальных точек, перемещая руку в начало локальной системы координат <code>(0,0,0)</code>.
                   </p>
                   <p>
-                    2. <strong>Инвариантность масштаба:</strong> Все векторы делятся на размер ладони (расстояние от запястья 0 до сустава 9). Теперь размер руки на экране не влияет на точность.
+                    2. <strong>Масштабирование:</strong> Все координаты делятся на расстояние между запястьем (0) и основанием среднего пальца (9). Это делает замеры независимыми от приближения руки к камере.
                   </p>
                   <p>
-                    3. <strong>Инвариантность поворота:</strong> Мы строим 14-мерный вектор относительных расстояний между ключевыми суставами (кончики пальцев к пястным костям и между кончиками). Это позволяет вращать руку в плоскости без потери распознавания.
+                    3. <strong>Инвариантность вращения:</strong> Вместо сырых декартовых осей сравниваются 14 относительных геометрических параметров (сгибы пальцев, расстояния до запястья и расхождения кончиков пальцев).
                   </p>
                   <p>
-                    4. <strong>Сравнение:</strong> Вычисляется взвешенное Евклидово расстояние между вектором пользователя и эталоном. Результат конвертируется в проценты совпадения.
+                    4. <strong>Расчет совпадения:</strong> Вычисляется взвешенная среднеквадратичная ошибка (RMSE) между нормализованными признаками пользователя и эталона. Ошибка переводится в процентное сходство.
                   </p>
                 </div>
               </details>
