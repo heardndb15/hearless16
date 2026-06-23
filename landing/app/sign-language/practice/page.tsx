@@ -513,14 +513,49 @@ export default function GesturePracticePage() {
     console.log("Калибровочные данные для жеста:", formatted);
   };
 
-  // Очистка камеры при размонтировании компонента
+  // Очистка веб-камеры и детектора при размонтировании
   useEffect(() => {
+    // При монтировании проверяем, не загружены ли скрипты уже в глобальный контекст (для переходов без перезагрузки)
+    if (typeof window !== "undefined") {
+      const hasCamera = !!(window as any).Camera;
+      const hasHands = !!(window as any).Hands;
+      if (hasCamera && hasHands) {
+        setScriptsLoaded({ camera: true, hands: true });
+        setIsModelLoading(true);
+        const timer = setTimeout(() => {
+          initMediaPipe();
+        }, 500);
+        
+        return () => {
+          clearTimeout(timer);
+          // Полное освобождение камеры
+          if (cameraInstanceRef.current) {
+            cameraInstanceRef.current.stop();
+          }
+          if (handsInstanceRef.current) {
+            handsInstanceRef.current.close();
+          }
+          if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
+          }
+        };
+      }
+    }
+
     return () => {
+      // Полное освобождение камеры при обычном выходе
       if (cameraInstanceRef.current) {
         cameraInstanceRef.current.stop();
       }
       if (handsInstanceRef.current) {
         handsInstanceRef.current.close();
+      }
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
       }
     };
   }, []);
@@ -587,37 +622,23 @@ export default function GesturePracticePage() {
                 overflow: "hidden",
                 border: "1px solid var(--border)"
               }}>
-                {/* Элемент видео (скрытый, используется как источник для детекции) */}
+                {/* Элемент видео (веб-камера, отзеркаленная для пользователя) */}
                 <video 
                   ref={videoRef}
-                  style={{ display: "none" }}
+                  style={{ 
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transform: "scaleX(-1)",
+                    display: isCameraActive ? "block" : "none"
+                  }}
                   width="640"
                   height="480"
                   playsInline
                   muted
+                  autoPlay
                 />
-
-                {/* Основное видео с камеры для пользователя (отзеркаленное для естественности) */}
-                {isCameraActive && (
-                  <video
-                    ref={(el) => {
-                      if (el && videoRef.current) {
-                        el.srcObject = videoRef.current.srcObject;
-                        el.play().catch(e => console.log("Video preview play error: ", e));
-                      }
-                    }}
-                    style={{ 
-                      position: "absolute",
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      transform: "scaleX(-1)"
-                    }}
-                    playsInline
-                    muted
-                    autoPlay
-                  />
-                )}
 
                 {/* Canvas для рисования скелета (также отзеркален поверх видео) */}
                 <canvas 
@@ -964,11 +985,11 @@ export default function GesturePracticePage() {
       </div>
 
       {/* Анимационные CSS стили */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-      `}</style>
+      `}} />
     </div>
   );
 }
