@@ -56,6 +56,8 @@ export default function SubtitlesPage() {
 
   // Состояния для плавающего окна (Picture-in-Picture)
   const [isPipActive, setIsPipActive] = useState(false);
+  const [activePipText, setActivePipText] = useState("");
+  const lastSubUpdateTimeRef = useRef<number>(Date.now());
 
   // Референсы для видео и веб-аудио
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
@@ -194,6 +196,25 @@ export default function SubtitlesPage() {
     isMicActiveRef.current = isMicActive;
   }, [isMicActive]);
 
+  const handleLangChange = (newLang: string) => {
+    setLang(newLang);
+    setPhraseIdx(0);
+    setChars(0);
+    
+    if (isMicActiveRef.current) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsMicActive(false);
+      isMicActiveRef.current = false;
+      setInterimText("");
+      
+      setTimeout(() => {
+        toggleMicrophone();
+      }, 400);
+    }
+  };
+
   const toggleMicrophone = () => {
     if (typeof window === "undefined") return;
 
@@ -316,6 +337,48 @@ export default function SubtitlesPage() {
       }
     };
   }, []);
+
+  // Эффект для формирования текста субтитров для PiP-окна с тайм-аутом очистки в 8 секунд
+  useEffect(() => {
+    let text = "";
+    if (mode === "speech") {
+      if (isMicActive) {
+        const lastPhrase = history[history.length - 1] || "";
+        const cleanInterim = (interimText && interimText !== "Слушаю вас...") ? interimText : "";
+        if (cleanInterim) {
+          text = lastPhrase ? `${lastPhrase}\n${cleanInterim}` : cleanInterim;
+        } else {
+          text = lastPhrase;
+        }
+      } else {
+        text = displayText;
+      }
+    } else {
+      text = videoSubtitle;
+    }
+
+    setActivePipText(text);
+
+    if (text && text !== "Слушаю вас..." && text !== "Ожидание начала диктовки...") {
+      lastSubUpdateTimeRef.current = Date.now();
+      const timer = setTimeout(() => {
+        setActivePipText("");
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [displayText, interimText, videoSubtitle, history, isMicActive, mode]);
+
+  // Эффект для синхронизации субтитров плеера с вводом микрофона при включенной записи в режиме видео
+  useEffect(() => {
+    if (mode === "video" && isMicActive) {
+      const lastPhrase = history[history.length - 1] || "";
+      const cleanInterim = (interimText && interimText !== "Слушаю вас...") ? interimText : "";
+      const text = cleanInterim
+        ? (lastPhrase ? `${lastPhrase}\n${cleanInterim}` : cleanInterim)
+        : lastPhrase;
+      setVideoSubtitle(text);
+    }
+  }, [history, interimText, isMicActive, mode]);
 
   // --- BROADCAST CHANNEL СИНХРОНИЗАЦИЯ ---
   const channelRef = useRef<BroadcastChannel | null>(null);
@@ -465,11 +528,25 @@ export default function SubtitlesPage() {
     if (!video) return;
     const time = video.currentTime;
 
+    // Если микрофон активен, субтитры генерируются микрофоном, а не файлом субтитров
+    if (isMicActive) {
+      if (channelRef.current) {
+        channelRef.current.postMessage({
+          type: "time-update",
+          payload: {
+            currentTime: time,
+            videoSubtitle: videoSubtitle,
+          }
+        });
+      }
+      return;
+    }
+
     // Ищем соответствующий блок субтитров для демо-видео
-    const activeSub = DEMO_VIDEO_SUBTITLES.find(
-      sub => time >= sub.start && time <= sub.end
-    );
-    const subtitleText = activeSub ? activeSub.text : "";
+    const isDemoVideo = videoSrc === "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
+    const subtitleText = isDemoVideo 
+      ? (DEMO_VIDEO_SUBTITLES.find(sub => time >= sub.start && time <= sub.end)?.text || "")
+      : "";
     setVideoSubtitle(subtitleText);
 
     // Отправляем время и активный субтитр в канал
@@ -505,24 +582,27 @@ export default function SubtitlesPage() {
 
   // --- ЛОГИКА ПЛАВАЮЩЕГО ОКНА (PICTURE IN PICTURE) ---
   
-  // Автоперенос слов для рисования на Canvas
+  // Автоперенос слов для рисования на Canvas (с поддержкой \n и автопереноса длинных строк)
   const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
-    const words = text.split(" ");
-    let line = "";
-    const lines = [];
+    const manualLines = text.split("\n");
+    const lines: string[] = [];
 
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + " ";
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        lines.push(line);
-        line = words[n] + " ";
-      } else {
-        line = testLine;
+    manualLines.forEach((mLine) => {
+      const words = mLine.split(" ");
+      let line = "";
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + " ";
+        } else {
+          line = testLine;
+        }
       }
-    }
-    lines.push(line);
+      lines.push(line);
+    });
 
     const totalHeight = lines.length * lineHeight;
     let startY = y - totalHeight / 2 + lineHeight / 2;
@@ -545,18 +625,18 @@ export default function SubtitlesPage() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Добавляем красивую полупрозрачную рамку для эстетики
-    ctx.strokeStyle = "rgba(34, 132, 199, 0.3)";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+    ctx.strokeStyle = "rgba(34, 211, 238, 0.3)";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
 
     // Отрисовка текста субтитров
     ctx.fillStyle = textColor;
-    ctx.font = "bold 20px sans-serif";
+    ctx.font = "bold 32px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const text = mode === "speech" ? displayText : videoSubtitle;
-    wrapText(ctx, text || "Ожидание звукового потока...", canvas.width / 2, canvas.height / 2, canvas.width - 40, 28);
+    const text = activePipText || (isMicActive ? "Слушаю вас..." : "Ожидание звукового потока...");
+    wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, 42);
   };
 
   // Переключение состояния Picture-in-Picture
@@ -597,7 +677,7 @@ export default function SubtitlesPage() {
     if (isPipActive) {
       drawPipSubtitles();
     }
-  }, [displayText, videoSubtitle, textColor, isPipActive, mode]);
+  }, [activePipText, textColor, isPipActive, mode, isMicActive]);
 
   // Очистка анимации при размонтировании
   useEffect(() => {
@@ -615,7 +695,7 @@ export default function SubtitlesPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       {/* Скрытые элементы для реализации PiP хака через Canvas */}
-      <canvas ref={pipCanvasRef} width="400" height="180" style={{ display: "none" }} />
+      <canvas ref={pipCanvasRef} width="800" height="240" style={{ display: "none" }} />
       <video ref={pipVideoRef} style={{ display: "none" }} playsInline muted />
 
       {/* Стили звуковой волны */}
@@ -1070,18 +1150,39 @@ export default function SubtitlesPage() {
                       </div>
                     </div>
 
-                    {/* Выбор демо-видео */}
-                    <button 
-                      className="btn btn-primary" 
-                      onClick={() => {
-                        setVideoSrc("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
-                        setVideoSubtitle("");
-                        setAudioSourceConnected(false);
-                      }}
-                      style={{ padding: "8px 16px", fontSize: 11, borderRadius: 8 }}
-                    >
-                      Сбросить к демо-видео
-                    </button>
+                    {/* Выбор действий в видео-режиме */}
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                      <button 
+                        onClick={toggleMicrophone}
+                        className="btn"
+                        style={{ 
+                          padding: "8px 16px", 
+                          fontSize: 11, 
+                          borderRadius: 8,
+                          background: isMicActive ? "var(--sos)" : "var(--gradient)",
+                          color: "white",
+                          boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "none",
+                          animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
+                          cursor: "pointer",
+                          border: "none",
+                          fontWeight: 600
+                        }}
+                      >
+                        {isMicActive ? "🛑 Выключить авто-субтитры" : "🎙️ Включить авто-субтитры (микрофон)"}
+                      </button>
+
+                      <button 
+                        className="btn btn-outline" 
+                        onClick={() => {
+                          setVideoSrc("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
+                          setVideoSubtitle("");
+                          setAudioSourceConnected(false);
+                        }}
+                        style={{ padding: "8px 16px", fontSize: 11, borderRadius: 8, borderColor: "var(--border)", color: "var(--text)", background: "transparent", cursor: "pointer" }}
+                      >
+                        Сбросить к демо-видео
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1146,20 +1247,18 @@ export default function SubtitlesPage() {
               Настройки субтитров
             </h3>
 
-            {/* Выбор языка (только для диктовки) */}
-            {mode === "speech" && (
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Язык источника</label>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {["ҚАЗ", "РУС", "ENG"].map(l => (
-                    <button key={l} onClick={() => { setLang(l); setPhraseIdx(0); setChars(0); }}
-                      style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
-                      {l}
-                    </button>
-                  ))}
-                </div>
+            {/* Выбор языка источника */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Язык источника</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                {["ҚАЗ", "РУС", "ENG"].map(l => (
+                  <button key={l} onClick={() => handleLangChange(l)}
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    {l}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Выбор движка распознавания (только для видео) */}
             {mode === "video" && (
