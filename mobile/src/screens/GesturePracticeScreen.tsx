@@ -21,6 +21,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrende
 type RecognitionResult = {
   gesture: string;
   confidence: number;
+  error?: "no_hand_detected" | "invalid_image";
   components: {
     hand_shape: number;
     position: number;
@@ -40,7 +41,9 @@ export default function GesturePracticeScreen() {
   const [countdownIdx, setCountdownIdx] = useState(0);
   const [result, setResult] = useState<RecognitionResult | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [totalFrames, setTotalFrames] = useState(0);
+  const frameCountRef = useRef(0);
+  const [displayFrames, setDisplayFrames] = useState(0);
+  const maxConfidenceRef = useRef(0);
   const cameraRef = useRef<CameraView>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashAnim = useRef(new Animated.Value(0)).current;
@@ -51,7 +54,9 @@ export default function GesturePracticeScreen() {
     setPhase("countdown");
     setCountdownIdx(0);
     setResult(null);
-    setTotalFrames(0);
+    frameCountRef.current = 0;
+    setDisplayFrames(0);
+    maxConfidenceRef.current = 0;
 
     const timer = setInterval(() => {
       setCountdownIdx((prev) => {
@@ -90,12 +95,23 @@ export default function GesturePracticeScreen() {
           target_gesture: gestureName,
         });
 
+        frameCountRef.current += 1;
+        // Update display counter every 5 frames to avoid re-render churn
+        if (frameCountRef.current % 5 === 0) {
+          setDisplayFrames(frameCountRef.current);
+        }
+
+        if (response.data.error === "no_hand_detected") {
+          // Show feedback without stopping practice
+          setResult({ ...response.data, confidence: 0 });
+          return;
+        }
+
         setResult(response.data);
-        const currentFrames = totalFrames + 1;
-        setTotalFrames(currentFrames);
+        maxConfidenceRef.current = Math.max(maxConfidenceRef.current, response.data.confidence ?? 0);
 
         if (response.data.confidence >= 80) {
-          handleSuccess(response.data.confidence, currentFrames);
+          handleSuccess(response.data.confidence, frameCountRef.current);
         }
       } catch {}
     }, 300);
@@ -103,9 +119,10 @@ export default function GesturePracticeScreen() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [phase, gestureName, totalFrames]);
+  }, [phase, gestureName]); // totalFrames removed from deps
 
   async function handleSuccess(confidence: number, frames: number) {
+    const bestAccuracy = Math.max(confidence, maxConfidenceRef.current);
     if (intervalRef.current) clearInterval(intervalRef.current);
     setPhase("result");
     setShowConfetti(true);
@@ -134,7 +151,7 @@ export default function GesturePracticeScreen() {
           learned: true,
           accuracy: confidence,
           attempts: frames,
-          best_accuracy: confidence,
+          best_accuracy: bestAccuracy,   // now tracks actual best across all frames
         }, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -149,10 +166,6 @@ export default function GesturePracticeScreen() {
   }
 
   function handleTryAgain() {
-    setPhase("countdown");
-    setCountdownIdx(0);
-    setResult(null);
-    setTotalFrames(0);
     startCountdown();
   }
 
@@ -216,7 +229,7 @@ export default function GesturePracticeScreen() {
                 <Text style={styles.targetLabel}>Цель:</Text>
                 <Text style={styles.targetGesture}>{gestureName}</Text>
               </View>
-              <Text style={styles.framesText}>Кадров: {totalFrames}</Text>
+              <Text style={styles.framesText}>Кадров: {displayFrames}</Text>
             </View>
           )}
         </View>
@@ -224,32 +237,47 @@ export default function GesturePracticeScreen() {
 
       {phase === "result" && result && (
         <View style={styles.resultSection}>
-          <Text style={styles.resultTitle}>
-            {isMatch ? "Жест распознан!" : "Попробуйте ещё раз"}
-          </Text>
-
-          <View style={styles.resultCard}>
-            <View style={styles.mainResult}>
-              <Text style={styles.resultGesture}>{result.gesture}</Text>
-              <View
-                style={[
-                  styles.confidenceBadge,
-                  { backgroundColor: isMatch ? "#22c55e" : Colors.sos },
-                ]}
-              >
-                <Text style={styles.confidenceText}>
-                  {result.confidence}%
+          {result.error === "no_hand_detected" ? (
+            <>
+              <Text style={[styles.resultTitle, { color: Colors.textSecondary }]}>
+                Рука не обнаружена
+              </Text>
+              <View style={styles.resultCard}>
+                <Text style={{ textAlign: "center", color: Colors.textSecondary, fontSize: 14 }}>
+                  Убедитесь, что рука видна в кадре и освещение достаточное
                 </Text>
               </View>
-            </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.resultTitle}>
+                {isMatch ? "Жест распознан!" : "Попробуйте ещё раз"}
+              </Text>
 
-            <Text style={styles.componentsTitle}>Разбивка по компонентам</Text>
-            <View style={styles.componentsRow}>
-              <ComponentBar label="Форма руки" value={result.components.hand_shape} />
-              <ComponentBar label="Позиция" value={result.components.position} />
-              <ComponentBar label="Движение" value={result.components.movement} />
-            </View>
-          </View>
+              <View style={styles.resultCard}>
+                <View style={styles.mainResult}>
+                  <Text style={styles.resultGesture}>{result.gesture}</Text>
+                  <View
+                    style={[
+                      styles.confidenceBadge,
+                      { backgroundColor: isMatch ? "#22c55e" : Colors.sos },
+                    ]}
+                  >
+                    <Text style={styles.confidenceText}>
+                      {result.confidence}%
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.componentsTitle}>Разбивка по компонентам</Text>
+                <View style={styles.componentsRow}>
+                  <ComponentBar label="Форма руки" value={result.components.hand_shape} />
+                  <ComponentBar label="Позиция" value={result.components.position} />
+                  <ComponentBar label="Движение" value={result.components.movement} />
+                </View>
+              </View>
+            </>
+          )}
 
           <View style={styles.actions}>
             <TouchableOpacity style={styles.tryAgainBtn} onPress={handleTryAgain}>
