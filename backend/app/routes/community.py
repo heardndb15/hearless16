@@ -150,8 +150,12 @@ async def toggle_like(post_id: str, current_user: dict = Depends(get_current_use
         db.table("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id).execute()
         liked = False
     else:
-        db.table("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
-        liked = True
+        try:
+            db.table("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
+            liked = True
+        except Exception:
+            # Unique constraint violation — already liked by concurrent request
+            liked = True
 
     post_res = db.table("posts").select("likes_count").eq("id", post_id).single().execute()
     likes_count = (post_res.data or {}).get("likes_count", 0)
@@ -241,7 +245,10 @@ async def upload_image(
     path = f"{current_user['id']}/{uuid.uuid4()}.{ext}"
 
     db = get_supabase()
-    db.storage.from_("community-media").upload(path, content, {"content-type": file.content_type})
+    try:
+        db.storage.from_("community-media").upload(path, content, {"content-type": file.content_type})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Не удалось загрузить файл: {str(e)}")
 
     image_url = f"{SUPABASE_URL}/storage/v1/object/public/community-media/{path}"
     return {"image_url": image_url}
