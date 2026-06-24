@@ -165,7 +165,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
         if (wsRef.current) {
           sendChunk(wsRef.current);
         }
-      }, 3000);
+      }, 1500);
     } catch (err: any) {
       setError(err?.message || "Не удалось запустить запись. Проверьте настройки микрофона.");
       setIsRecording(false);
