@@ -10,11 +10,12 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import axios from "axios";
-import { Colors, Spacing, FontSize } from "../constants/theme";
+import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import type { Gesture, RootStackParamList } from "../../../shared/types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
@@ -60,6 +61,7 @@ export default function GestureDictionaryScreen() {
   }, [navigation]);
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -94,7 +96,7 @@ export default function GestureDictionaryScreen() {
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 40 }} />
+        <ActivityIndicator size="large" color={Colors.white} style={{ marginTop: 40 }} />
       ) : (
         <FlatList
           data={filtered}
@@ -160,11 +162,12 @@ export default function GestureDictionaryScreen() {
         </View>
       </Modal>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -174,46 +177,44 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backBtn: { padding: 4 },
-  backBtnText: { fontSize: FontSize.body, color: Colors.accent, fontWeight: "600" },
-  title: { fontSize: FontSize.title, fontWeight: "bold", color: Colors.heading },
+  backBtnText: { fontSize: FontSize.body, color: "#ffffff", fontWeight: "600" },
+  title: { fontSize: FontSize.title, fontWeight: "bold", color: "#ffffff" },
   search: {
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
-    backgroundColor: Colors.white,
+    backgroundColor: "rgba(255, 255, 255, 0.72)",
     borderRadius: 12,
     paddingHorizontal: Spacing.md,
     paddingVertical: 10,
     fontSize: FontSize.body,
     color: Colors.heading,
-    borderWidth: 1,
-    borderColor: "rgba(33,69,89,0.1)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.6)",
   },
   chipsRow: { paddingHorizontal: Spacing.md, gap: 8, paddingBottom: Spacing.sm },
   chip: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 14,
-    backgroundColor: Colors.white,
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderWidth: 1,
-    borderColor: "rgba(33,69,89,0.12)",
+    borderColor: "rgba(255,255,255,0.4)",
   },
-  chipActive: { backgroundColor: Colors.accent, borderColor: Colors.accent },
-  chipText: { fontSize: 12, color: Colors.textPrimary, fontWeight: "600" },
+  chipActive: { backgroundColor: "#0277BD", borderColor: "#0277BD" },
+  chipText: { fontSize: 12, color: "#ffffff", fontWeight: "600" },
   chipTextActive: { color: Colors.white },
   grid: { paddingHorizontal: Spacing.md, paddingBottom: 32, gap: 12 },
   card: {
     flex: 1,
-    backgroundColor: Colors.white,
+    ...GlassCard,
     borderRadius: 16,
     padding: Spacing.md,
     alignItems: "center",
     margin: 4,
-    borderWidth: 1,
-    borderColor: "rgba(33,69,89,0.07)",
   },
   cardGif: { width: 100, height: 100, borderRadius: 10, marginBottom: 8 },
   cardGifPlaceholder: {
-    backgroundColor: "rgba(33,69,89,0.06)",
+    backgroundColor: "rgba(2,136,209,0.1)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -227,9 +228,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalSheet: {
-    backgroundColor: Colors.white,
+    ...GlassCard,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     padding: 28,
     alignItems: "center",
     paddingBottom: 48,
@@ -240,7 +243,7 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: "row", gap: 12, width: "100%" },
   practiceBtn: {
     flex: 1,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
@@ -248,7 +251,7 @@ const styles = StyleSheet.create({
   practiceBtnText: { color: Colors.white, fontWeight: "700", fontSize: FontSize.subtitle },
   closeBtn: {
     flex: 1,
-    backgroundColor: "rgba(33,69,89,0.07)",
+    backgroundColor: "rgba(13,71,161,0.1)",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",

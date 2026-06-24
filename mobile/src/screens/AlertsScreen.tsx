@@ -9,8 +9,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
-import { Colors, Spacing, FontSize } from "../constants/theme";
+import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import SilentSOS from "../components/SilentSOS";
 import { supabase } from "../services/supabase";
 import axios from "axios";
@@ -111,6 +112,7 @@ export default function AlertsScreen() {
 
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Алерты</Text>
@@ -134,8 +136,8 @@ export default function AlertsScreen() {
             <Switch
               value={alert.enabled}
               onValueChange={() => toggleAlert(alert.key)}
-              trackColor={{ false: Colors.border, true: Colors.accent }}
-              thumbColor={alert.enabled ? Colors.button : Colors.textSecondary}
+              trackColor={{ false: "rgba(255,255,255,0.3)", true: "#0288D1" }}
+              thumbColor={alert.enabled ? Colors.button : Colors.white}
             />
           </View>
         ))}
@@ -150,7 +152,7 @@ export default function AlertsScreen() {
       <View style={styles.historySection}>
         <View style={styles.historyHeader}>
           <Text style={styles.sectionTitle}>История оповещений</Text>
-          {loading && <ActivityIndicator size="small" color={Colors.accent} />}
+          {loading && <ActivityIndicator size="small" color={Colors.white} />}
         </View>
         <FlatList
           data={history}
@@ -176,13 +178,13 @@ export default function AlertsScreen() {
         />
       </View>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
     paddingHorizontal: Spacing.md,
   },
   header: {
@@ -192,20 +194,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSize.heading,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
   },
   subtitle: {
     fontSize: FontSize.body,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.8)",
     marginTop: Spacing.xs,
   },
   loginBanner: {
-    backgroundColor: Colors.white,
-    padding: Spacing.md,
+    ...GlassCard,
     borderRadius: 14,
+    padding: Spacing.md,
     marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
   loginBannerText: {
     color: Colors.accent,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   alertsSection: {
-    backgroundColor: Colors.card,
+    ...GlassCard,
     borderRadius: 16,
     padding: Spacing.md,
     marginBottom: Spacing.md,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSize.title,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#ffffff",
     marginBottom: Spacing.sm,
   },
   alertRow: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.background,
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   alertIcon: {
     fontSize: 24,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   alertLabel: {
     flex: 1,
     fontSize: FontSize.body,
-    color: Colors.textPrimary,
+    color: Colors.heading,
   },
 
   historySection: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   historyItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.card,
+    ...GlassCard,
     borderRadius: 12,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   historyType: {
     fontSize: FontSize.body,
     fontWeight: "600",
-    color: Colors.textPrimary,
+    color: Colors.heading,
   },
   historyTime: {
     fontSize: FontSize.caption,

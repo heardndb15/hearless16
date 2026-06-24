@@ -8,9 +8,10 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Colors, Spacing, FontSize } from "../constants/theme";
+import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import type { RootStackParamList } from "../../../shared/types";
 import GestureHero from "../components/GestureHero";
 import GestureCard from "../components/GestureCard";
@@ -161,6 +162,7 @@ export default function GesturesScreen() {
   const dailyDone = Math.min(DAILY_GOAL, learned);
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.header, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
@@ -257,22 +259,20 @@ export default function GesturesScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   loginBanner: {
-    backgroundColor: Colors.white,
-    padding: Spacing.md,
+    ...GlassCard,
     borderRadius: 14,
+    padding: Spacing.md,
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
   loginBannerText: {
     color: Colors.accent,
@@ -288,26 +288,21 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSize.heading,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
   },
   subtitle: {
     fontSize: FontSize.body,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.8)",
     marginTop: Spacing.xs,
   },
   dailyGoal: {
+    ...GlassCard,
+    borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.white,
-    borderRadius: 14,
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.md,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
   },
   dailyGoalTitle: {
     fontSize: FontSize.subtitle,
@@ -345,17 +340,17 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 16,
-    backgroundColor: Colors.white,
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: "rgba(255,255,255,0.4)",
   },
   categoryPillActive: {
-    backgroundColor: Colors.accent,
-    borderColor: Colors.accent,
+    backgroundColor: "#0277BD",
+    borderColor: "#0277BD",
   },
   categoryPillText: {
     fontSize: FontSize.body,
-    color: Colors.textPrimary,
+    color: "#ffffff",
   },
   categoryPillTextActive: {
     color: Colors.white,
@@ -375,7 +370,7 @@ const styles = StyleSheet.create({
   pathTitle: {
     fontSize: FontSize.title,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#ffffff",
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
   },
@@ -383,13 +378,15 @@ const styles = StyleSheet.create({
 
 const gestDictStyles = StyleSheet.create({
   dictBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
   },
   dictBtnText: {
-    color: Colors.white,
+    color: "#ffffff",
     fontWeight: "700",
     fontSize: 12,
   },

@@ -24,8 +24,8 @@ export default function App() {
               animation: "slide_from_bottom",
               headerShown: true,
               headerTitle: "Практика жеста",
-              headerTintColor: "#214559",
-              headerStyle: { backgroundColor: "#f3f8fc" },
+              headerTintColor: "#ffffff",
+              headerStyle: { backgroundColor: "#0277BD" },
             }}
           />
           <Stack.Screen

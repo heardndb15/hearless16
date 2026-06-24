@@ -29,14 +29,20 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.accent,
-        tabBarInactiveTintColor: Colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopColor: Colors.border,
+          backgroundColor: 'rgba(255, 255, 255, 0.88)',
+          borderTopColor: 'rgba(255,255,255,0.5)',
+          borderTopWidth: 1.5,
           paddingBottom: 4,
           height: 60,
+          shadowColor: '#0288D1',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 12,
+          elevation: 10,
         },
+        tabBarActiveTintColor: '#0277BD',
+        tabBarInactiveTintColor: '#1E6FA8',
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",

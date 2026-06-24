@@ -11,10 +11,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "../services/supabase";
 import axios from "axios";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
-import { Colors, Spacing } from "../constants/theme";
+import { Colors, Spacing, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import { StatusBar } from "expo-status-bar";
 
 const { width } = Dimensions.get("window");
@@ -216,21 +217,18 @@ export default function SubtitlesScreen() {
 
   const getBgStyle = (opacity: number) => {
     if (opacity === 0) {
-      return {
-        backgroundColor: "transparent",
-        borderWidth: 0,
-        shadowOpacity: 0,
-        elevation: 0,
-      };
+      return { backgroundColor: 'transparent', borderWidth: 0 };
     }
+    const alpha = opacity < 0.5 ? 0.5 : opacity;
     return {
-      backgroundColor: `rgba(15, 23, 42, ${opacity})`, // Slate dark display
-      borderColor: "rgba(255, 255, 255, 0.08)",
-      borderWidth: 1,
+      backgroundColor: `rgba(255, 255, 255, ${alpha})`,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.7)',
     };
   };
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTextContainer}>
@@ -241,7 +239,7 @@ export default function SubtitlesScreen() {
           style={[styles.settingsToggle, settingsVisible && styles.settingsToggleActive]}
           onPress={() => setSettingsVisible(!settingsVisible)}
         >
-          <Text style={{ fontSize: 18, color: settingsVisible ? Colors.white : Colors.heading }}>⚙️</Text>
+          <Text style={{ fontSize: 18, color: Colors.white }}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
@@ -389,9 +387,7 @@ export default function SubtitlesScreen() {
                         ))
                       : rollingLines.map((line, i) => {
                           const isLast = i === rollingLines.length - 1;
-                          const fadedColor = bgOpacity === 0
-                            ? "rgba(33, 69, 89, 0.25)"
-                            : "rgba(255, 255, 255, 0.25)";
+                          const fadedColor = "rgba(13,71,161,0.35)";
                           return (
                             <Text
                               key={`${line}-${i}`}
@@ -410,7 +406,9 @@ export default function SubtitlesScreen() {
               </TouchableOpacity>
             ) : (
               <View style={styles.placeholderCard}>
-                <Text style={styles.placeholderIcon}>{error ? "⚠️" : "🎙️"}</Text>
+                <View style={styles.placeholderIconWrap}>
+                  <Text style={{ fontSize: 28 }}>{error ? "⚠️" : "🎙️"}</Text>
+                </View>
                 <Text style={[styles.placeholderText, error ? { color: Colors.sos } : null]}>
                   {error
                     ? error
@@ -460,7 +458,9 @@ export default function SubtitlesScreen() {
             <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 40 }} />
           ) : history.length === 0 ? (
             <View style={styles.placeholderCard}>
-              <Text style={styles.placeholderIcon}>📋</Text>
+              <View style={styles.placeholderIconWrap}>
+                <Text style={{ fontSize: 28 }}>📋</Text>
+              </View>
               <Text style={styles.placeholderText}>История пуста. Запишите первый разговор!</Text>
             </View>
           ) : (
@@ -470,11 +470,13 @@ export default function SubtitlesScreen() {
               contentContainerStyle={{ padding: 16, gap: 12 }}
               renderItem={({ item }) => (
                 <View style={styles.historyCard}>
-                  <Text style={styles.historyDate}>
-                    {new Date(item.created_at).toLocaleDateString("ru-RU", {
-                      day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
-                    })}
-                  </Text>
+                  <View style={styles.historyDateBadge}>
+                    <Text style={styles.historyDate}>
+                      {new Date(item.created_at).toLocaleDateString("ru-RU", {
+                        day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
                   <Text style={styles.historyText} numberOfLines={4}>{item.text}</Text>
                 </View>
               )}
@@ -513,13 +515,13 @@ export default function SubtitlesScreen() {
         </TouchableOpacity>
       )}
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
     paddingHorizontal: Spacing.md,
   },
   header: {
@@ -536,15 +538,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
   },
   subtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.8)",
     marginTop: 2,
   },
   settingsToggle: {
-    backgroundColor: "rgba(33, 69, 89, 0.06)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -558,8 +560,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
-    backgroundColor: "rgba(33, 69, 89, 0.06)",
-    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 14,
     padding: 4,
   },
   tabBtn: {
@@ -569,28 +571,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tabBtnActive: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
   },
   tabBtnText: {
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.8)",
   },
   tabBtnTextActive: {
-    color: Colors.white,
+    color: "#ffffff",
   },
   settingsPanel: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderWidth: 1,
-    borderColor: "rgba(33, 69, 89, 0.1)",
+    ...GlassCard,
     borderRadius: 24,
     padding: Spacing.md,
     marginBottom: Spacing.md,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
   },
   settingsPanelTitle: {
     fontSize: 14,
@@ -616,7 +611,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   optionBtn: {
-    backgroundColor: "rgba(33, 69, 89, 0.05)",
+    backgroundColor: "rgba(13,71,161,0.1)",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -626,7 +621,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: Colors.heading,
     fontWeight: "bold",
   },
   optionTextActive: {
@@ -654,28 +649,26 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   placeholderCard: {
-    backgroundColor: Colors.white,
+    ...GlassCard,
     borderRadius: 24,
     padding: Spacing.xl,
     minHeight: 240,
     justifyContent: "center",
     alignItems: "center",
     width: width - Spacing.md * 2,
-    borderWidth: 1,
-    borderColor: "rgba(33, 69, 89, 0.08)",
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.02,
-    shadowRadius: 10,
-    elevation: 1,
   },
-  placeholderIcon: {
-    fontSize: 40,
+  placeholderIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "rgba(2,136,209,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: Spacing.md,
   },
   placeholderText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: Colors.heading,
     textAlign: "center",
     lineHeight: 22,
     maxWidth: 240,
@@ -693,19 +686,19 @@ const styles = StyleSheet.create({
   },
   pulseRing: {
     position: "absolute",
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: Colors.sos,
   },
   recordButton: {
-    backgroundColor: Colors.button,
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    backgroundColor: "#0277BD",
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: Colors.button,
+    shadowColor: "#0277BD",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -721,21 +714,26 @@ const styles = StyleSheet.create({
   },
   recordLabel: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.85)",
     marginTop: Spacing.xs,
     fontWeight: "500",
   },
   historyCard: {
-    backgroundColor: Colors.white,
+    ...GlassCard,
     borderRadius: 16,
     padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: "rgba(33, 69, 89, 0.08)",
+  },
+  historyDateBadge: {
+    backgroundColor: "rgba(2,136,209,0.15)",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    alignSelf: "flex-start",
+    marginBottom: 6,
   },
   historyDate: {
     fontSize: 11,
-    color: Colors.textSecondary,
-    marginBottom: 6,
+    color: "#0277BD",
     fontWeight: "600",
   },
   historyText: {
