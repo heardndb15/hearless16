@@ -24,6 +24,7 @@ export interface StreamChunk {
 
 export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const [isRecording, setIsRecording] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [streamText, setStreamText] = useState("");
   const [streamSegments, setStreamSegments] = useState<SpeakerSegment[]>([]);
   const [chunks, setChunks] = useState<StreamChunk[]>([]);
@@ -87,7 +88,8 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
       } catch {}
     };
     ws.onerror = () => {
-      setError("WebSocket connection error");
+      setIsConnecting(false);
+      setError("Ошибка подключения к серверу. Проверьте интернет-соединение.");
     };
     ws.onclose = () => {
       if (wsRef.current === ws) {
@@ -152,19 +154,30 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
 
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token || "";
+      setIsConnecting(true);
       const ws = connectWs(token);
-      await new Promise<void>((resolve) => {
+      // Wait for WS to open with a 30s timeout (handles Render cold starts)
+      const connected = await new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 30000);
         const check = () => {
           if (ws.readyState === WebSocket.OPEN) {
-            resolve();
-          } else if (ws.readyState === WebSocket.CLOSED) {
-            resolve();
+            clearTimeout(timeout);
+            resolve(true);
+          } else if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+            clearTimeout(timeout);
+            resolve(false);
           } else {
             setTimeout(check, 50);
           }
         };
         check();
       });
+      setIsConnecting(false);
+      if (!connected) {
+        setError("Не удалось подключиться к серверу. Попробуйте ещё раз.");
+        setIsRecording(false);
+        return;
+      }
 
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
@@ -244,6 +257,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
 
   return {
     isRecording,
+    isConnecting,
     streamText,
     streamSegments,
     chunks,

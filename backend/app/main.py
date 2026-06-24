@@ -36,32 +36,29 @@ app.include_router(study.router)
 async def websocket_transcribe(websocket: WebSocket, token: str | None = None, lang: str = "ru", format: str = "webm"):
     await websocket.accept()
     
-    if not token:
-        await websocket.send_json({
-            "type": "error",
-            "message": "Требуется токен авторизации для подключения к транскрипции."
-        })
-        await websocket.close()
-        return
-
-    from app.database import get_supabase
-    db = get_supabase()
-    try:
-        user_res = db.auth.get_user(token)
-        if not user_res or not getattr(user_res, "user", None):
+    is_authenticated = False
+    if token:
+        from app.database import get_supabase
+        db = get_supabase()
+        try:
+            user_res = db.auth.get_user(token)
+            if user_res and getattr(user_res, "user", None):
+                is_authenticated = True
+            else:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": "Неверный или просроченный токен авторизации."
+                })
+                await websocket.close()
+                return
+        except Exception as e:
             await websocket.send_json({
                 "type": "error",
-                "message": "Неверный или просроченный токен авторизации."
+                "message": f"Ошибка авторизации: {str(e)}"
             })
             await websocket.close()
             return
-    except Exception as e:
-        await websocket.send_json({
-            "type": "error",
-            "message": f"Ошибка авторизации: {str(e)}"
-        })
-        await websocket.close()
-        return
+    # Guest mode: no token → transcription allowed but auto-save skipped on backend
 
     # Check if a transcription model or API key is available
     from app.services.whisper_service import get_local_whisper
@@ -162,7 +159,14 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                         # Распознаем на первом чанке или при накоплении 12KB новых данных (~1.5-2 сек)
                         if last_transcribed_len == 0 or len(session_bytes) - last_transcribed_len >= 12000:
                             try:
-                                text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
+                                text = await asyncio.wait_for(
+                                    asyncio.to_thread(transcribe_audio, session_bytes, language=lang),
+                                    timeout=15.0
+                                )
+                            except asyncio.TimeoutError:
+                                text = ""
+                                import sys
+                                print("Transcription timed out (webm stream)", file=sys.stderr)
                             except Exception as e:
                                 import sys
                                 print(f"Error in ws stream transcribe: {e}", file=sys.stderr)
@@ -182,18 +186,25 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                         try:
                             if running_merged == b"":
                                 merged_bytes = audio_bytes
-                                text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
+                                text = await asyncio.wait_for(
+                                    asyncio.to_thread(transcribe_audio, merged_bytes, language=lang),
+                                    timeout=15.0
+                                )
                                 # Only commit after successful transcription
                                 running_merged = audio_bytes
                             else:
-                                merged_bytes = await asyncio.to_thread(
-                                    merge_audio_chunks, [running_merged, audio_bytes], ext
+                                merged_bytes = await asyncio.wait_for(
+                                    asyncio.to_thread(merge_audio_chunks, [running_merged, audio_bytes], ext),
+                                    timeout=10.0
                                 )
                                 if merged_bytes:
                                     running_merged = merged_bytes
                                 else:
                                     raise Exception("merge returned empty")
-                                text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
+                                text = await asyncio.wait_for(
+                                    asyncio.to_thread(transcribe_audio, merged_bytes, language=lang),
+                                    timeout=15.0
+                                )
                             if text:
                                 current_full_text = text.strip()
                         except Exception as e:
@@ -216,7 +227,10 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                 if format == "pcm":
                     if len(pcm_buffer) > 0:
                         from app.services.whisper_service import transcribe_pcm, merge_transcripts
-                        last_text = await asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang)
+                        last_text = await asyncio.wait_for(
+                            asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang),
+                            timeout=15.0
+                        )
                         current_full_text = merge_transcripts(finalized_text, last_text)
                     await websocket.send_json({
                         "type": "final",
@@ -227,8 +241,11 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                     if is_stream:
                         if len(session_bytes) > 0:
                             try:
-                                text = await asyncio.to_thread(transcribe_audio, session_bytes, language=lang)
-                            except Exception as e:
+                                text = await asyncio.wait_for(
+                                    asyncio.to_thread(transcribe_audio, session_bytes, language=lang),
+                                    timeout=15.0
+                                )
+                            except (asyncio.TimeoutError, Exception) as e:
                                 import sys
                                 print(f"Error in ws stop transcribe: {e}", file=sys.stderr)
                                 text = ""

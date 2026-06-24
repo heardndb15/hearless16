@@ -83,6 +83,7 @@ function AnimatedLine({
 export default function SubtitlesScreen() {
   const {
     isRecording,
+    isConnecting,
     streamText,
     streamSegments,
     chunks,
@@ -412,6 +413,8 @@ export default function SubtitlesScreen() {
                 <Text style={[styles.placeholderText, error ? { color: Colors.sos } : null]}>
                   {error
                     ? error
+                    : isConnecting
+                    ? "Подключение к серверу..."
                     : isRecording
                     ? "Слушаю вашу речь..."
                     : "Нажмите кнопку микрофона ниже и говорите"}
@@ -437,16 +440,22 @@ export default function SubtitlesScreen() {
                 style={[
                   styles.recordButton,
                   isRecording && styles.recordingActive,
+                  isConnecting && { opacity: 0.6 },
                 ]}
                 onPress={handleRecord}
+                disabled={isConnecting}
               >
                 <Text style={styles.recordButtonIcon}>
-                  {isRecording ? "⏹" : "🎤"}
+                  {isConnecting ? "⏳" : isRecording ? "⏹" : "🎤"}
                 </Text>
               </TouchableOpacity>
             </View>
             <Text style={styles.recordLabel}>
-              {isRecording ? "Идет прослушивание..." : "Нажмите, чтобы говорить"}
+              {isConnecting
+                ? "Подключение..."
+                : isRecording
+                ? "Идет прослушивание..."
+                : "Нажмите, чтобы говорить"}
             </Text>
           </View>
         </>
