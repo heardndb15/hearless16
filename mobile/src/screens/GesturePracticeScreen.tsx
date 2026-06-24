@@ -224,13 +224,20 @@ export default function GesturePracticeScreen() {
           )}
 
           {phase === "practice" && (
-            <View style={styles.practiceOverlay}>
-              <View style={styles.targetBadge}>
-                <Text style={styles.targetLabel}>Цель:</Text>
-                <Text style={styles.targetGesture}>{gestureName}</Text>
+            <>
+              <View style={styles.practiceOverlay}>
+                <View style={styles.targetBadge}>
+                  <Text style={styles.targetLabel}>Цель:</Text>
+                  <Text style={styles.targetGesture}>{gestureName}</Text>
+                </View>
+                <Text style={styles.framesText}>Кадров: {displayFrames}</Text>
               </View>
-              <Text style={styles.framesText}>Кадров: {displayFrames}</Text>
-            </View>
+              {result?.error === "no_hand_detected" && (
+                <View style={styles.noHandHint}>
+                  <Text style={styles.noHandHintText}>Рука не обнаружена</Text>
+                </View>
+              )}
+            </>
           )}
         </View>
       </View>
@@ -417,6 +424,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     overflow: "hidden",
+  },
+  noHandHint: {
+    position: "absolute",
+    bottom: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: "rgba(239,68,68,0.75)",
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  noHandHintText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
   },
   flashOverlay: {
     ...StyleSheet.absoluteFillObject,
