@@ -7,11 +7,19 @@ import {
   StyleSheet,
   SafeAreaView,
   Dimensions,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../services/supabase";
+import axios from "axios";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
 import { Colors, Spacing } from "../constants/theme";
 
 const { width } = Dimensions.get("window");
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
+const SETTINGS_KEY = "hearless:subtitle_settings";
 
 function AnimatedLine({
   text,
@@ -79,11 +87,62 @@ export default function SubtitlesScreen() {
     stopStreaming,
   } = useStreamingRecording();
 
-  const [fontSize, setFontSize] = useState(28); // 18, 22, 28, 36
-  const [textColor, setTextColor] = useState("#22d3ee"); // White, Yellow, Cyan, Green
-  const [bgOpacity, setBgOpacity] = useState(0.85); // 0.85, 0.5, 0
+  // Display settings — loaded from AsyncStorage
+  const [fontSize, setFontSize] = useState(28);
+  const [textColor, setTextColor] = useState("#22d3ee");
+  const [bgOpacity, setBgOpacity] = useState(0.85);
   const [alignment, setAlignment] = useState<"center" | "left">("center");
+  const settingsLoadedRef = useRef(false);
+
+  // Load settings on mount
+  useEffect(() => {
+    AsyncStorage.getItem(SETTINGS_KEY).then((raw) => {
+      if (!raw) return;
+      try {
+        const s = JSON.parse(raw);
+        if (s.fontSize) setFontSize(s.fontSize);
+        if (s.textColor) setTextColor(s.textColor);
+        if (typeof s.bgOpacity === "number") setBgOpacity(s.bgOpacity);
+        if (s.alignment) setAlignment(s.alignment);
+      } catch {}
+      settingsLoadedRef.current = true;
+    });
+  }, []);
+
+  // Save settings whenever they change (after initial load)
+  useEffect(() => {
+    if (!settingsLoadedRef.current) return;
+    AsyncStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({ fontSize, textColor, bgOpacity, alignment })
+    ).catch(() => {});
+  }, [fontSize, textColor, bgOpacity, alignment]);
+
   const [settingsVisible, setSettingsVisible] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<"live" | "history">("live");
+  const [history, setHistory] = useState<Array<{ id: string; text: string; created_at: string }>>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "history") return;
+    setHistoryLoading(true);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) {
+        setHistoryLoading(false);
+        return;
+      }
+      axios
+        .get(`${API_URL}/subtitles/${session.user.id}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        })
+        .then((res) => {
+          setHistory(res.data || []);
+        })
+        .catch(() => setHistory([]))
+        .finally(() => setHistoryLoading(false));
+    });
+  }, [activeTab]);
 
   const [showPanel, setShowPanel] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -179,153 +238,201 @@ export default function SubtitlesScreen() {
         </TouchableOpacity>
       </View>
 
-      {showPanel && (
-        <Animated.View style={[styles.settingsPanel, { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) }] }]}>
-          <Text style={styles.settingsPanelTitle}>Настройки отображения</Text>
-          
-          {/* Font Size */}
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Размер текста</Text>
-            <View style={styles.settingOptions}>
-              {[18, 22, 28, 36].map((sz) => (
-                <TouchableOpacity
-                  key={sz}
-                  style={[styles.optionBtn, fontSize === sz && styles.optionBtnActive]}
-                  onPress={() => setFontSize(sz)}
-                >
-                  <Text style={[styles.optionText, fontSize === sz && styles.optionTextActive]}>{sz}px</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Text Color */}
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Цвет текста</Text>
-            <View style={styles.settingOptions}>
-              {[
-                { code: "#ffffff", name: "Бел" },
-                { code: "#fdeb47", name: "Желт" },
-                { code: "#22d3ee", name: "Циан" },
-                { code: "#4ade80", name: "Зел" }
-              ].map((c) => (
-                <TouchableOpacity
-                  key={c.code}
-                  style={[styles.optionBtn, textColor === c.code && styles.optionBtnActive]}
-                  onPress={() => setTextColor(c.code)}
-                >
-                  <Text style={[styles.optionText, textColor === c.code && styles.optionTextActive]}>{c.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Background Opacity */}
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Задний фон</Text>
-            <View style={styles.settingOptions}>
-              {[
-                { opacity: 0.85, label: "Темн" },
-                { opacity: 0.5, label: "Полупр" },
-                { opacity: 0, label: "Без фона" }
-              ].map((bg) => (
-                <TouchableOpacity
-                  key={bg.opacity}
-                  style={[styles.optionBtn, bgOpacity === bg.opacity && styles.optionBtnActive]}
-                  onPress={() => setBgOpacity(bg.opacity)}
-                >
-                  <Text style={[styles.optionText, bgOpacity === bg.opacity && styles.optionTextActive]}>{bg.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Alignment */}
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Выравнивание</Text>
-            <View style={styles.settingOptions}>
-              {[
-                { key: "center", label: "Центр" },
-                { key: "left", label: "Лево" }
-              ].map((align) => (
-                <TouchableOpacity
-                  key={align.key}
-                  style={[styles.optionBtn, alignment === align.key && styles.optionBtnActive]}
-                  onPress={() => setAlignment(align.key as any)}
-                >
-                  <Text style={[styles.optionText, alignment === align.key && styles.optionTextActive]}>{align.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </Animated.View>
-      )}
-
-      <View style={styles.subtitleArea}>
-        {hasContent ? (
-          <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
-            <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
-              {rollingLines.map((line, i) => {
-                const isLast = i === rollingLines.length - 1;
-                const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
-                return (
-                  <Text
-                    key={`${line}-${i}`}
-                    style={{
-                      fontSize,
-                      color: isLast ? textColor : fadedColor,
-                      fontWeight: isLast ? "bold" : "500",
-                    }}
-                  >
-                    {line}{" "}
-                  </Text>
-                );
-              })}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.placeholderCard}>
-            <Text style={styles.placeholderIcon}>{error ? "⚠️" : "🎙️"}</Text>
-            <Text style={[styles.placeholderText, error ? { color: Colors.sos } : null]}>
-              {error
-                ? error
-                : isRecording
-                ? "Слушаю вашу речь..."
-                : "Нажмите кнопку микрофона ниже и говорите"}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.controlsContainer}>
-        <View style={styles.buttonContainer}>
-          {isRecording && (
-            <Animated.View
-              style={[
-                styles.pulseRing,
-                {
-                  transform: [{ scale: ringScale }],
-                  opacity: ringOpacity,
-                },
-              ]}
-            />
-          )}
+      {/* Tab switcher */}
+      <View style={styles.tabRow}>
+        {(["live", "history"] as const).map((tab) => (
           <TouchableOpacity
-            style={[
-              styles.recordButton,
-              isRecording && styles.recordingActive,
-            ]}
-            onPress={handleRecord}
+            key={tab}
+            style={[styles.tabBtn, activeTab === tab && styles.tabBtnActive]}
+            onPress={() => setActiveTab(tab)}
           >
-            <Text style={styles.recordButtonIcon}>
-              {isRecording ? "⏹" : "🎤"}
+            <Text style={[styles.tabBtnText, activeTab === tab && styles.tabBtnTextActive]}>
+              {tab === "live" ? "В реальном времени" : "История"}
             </Text>
           </TouchableOpacity>
-        </View>
-        <Text style={styles.recordLabel}>
-          {isRecording ? "Идет прослушивание..." : "Нажмите, чтобы говорить"}
-        </Text>
+        ))}
       </View>
+
+      {activeTab === "live" && (
+        <>
+          {showPanel && (
+            <Animated.View style={[styles.settingsPanel, { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) }] }]}>
+              <Text style={styles.settingsPanelTitle}>Настройки отображения</Text>
+
+              {/* Font Size */}
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Размер текста</Text>
+                <View style={styles.settingOptions}>
+                  {[18, 22, 28, 36].map((sz) => (
+                    <TouchableOpacity
+                      key={sz}
+                      style={[styles.optionBtn, fontSize === sz && styles.optionBtnActive]}
+                      onPress={() => setFontSize(sz)}
+                    >
+                      <Text style={[styles.optionText, fontSize === sz && styles.optionTextActive]}>{sz}px</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Text Color */}
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Цвет текста</Text>
+                <View style={styles.settingOptions}>
+                  {[
+                    { code: "#ffffff", name: "Бел" },
+                    { code: "#fdeb47", name: "Желт" },
+                    { code: "#22d3ee", name: "Циан" },
+                    { code: "#4ade80", name: "Зел" }
+                  ].map((c) => (
+                    <TouchableOpacity
+                      key={c.code}
+                      style={[styles.optionBtn, textColor === c.code && styles.optionBtnActive]}
+                      onPress={() => setTextColor(c.code)}
+                    >
+                      <Text style={[styles.optionText, textColor === c.code && styles.optionTextActive]}>{c.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Background Opacity */}
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Задний фон</Text>
+                <View style={styles.settingOptions}>
+                  {[
+                    { opacity: 0.85, label: "Темн" },
+                    { opacity: 0.5, label: "Полупр" },
+                    { opacity: 0, label: "Без фона" }
+                  ].map((bg) => (
+                    <TouchableOpacity
+                      key={bg.opacity}
+                      style={[styles.optionBtn, bgOpacity === bg.opacity && styles.optionBtnActive]}
+                      onPress={() => setBgOpacity(bg.opacity)}
+                    >
+                      <Text style={[styles.optionText, bgOpacity === bg.opacity && styles.optionTextActive]}>{bg.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Alignment */}
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Выравнивание</Text>
+                <View style={styles.settingOptions}>
+                  {[
+                    { key: "center", label: "Центр" },
+                    { key: "left", label: "Лево" }
+                  ].map((align) => (
+                    <TouchableOpacity
+                      key={align.key}
+                      style={[styles.optionBtn, alignment === align.key && styles.optionBtnActive]}
+                      onPress={() => setAlignment(align.key as any)}
+                    >
+                      <Text style={[styles.optionText, alignment === align.key && styles.optionTextActive]}>{align.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </Animated.View>
+          )}
+
+          <View style={styles.subtitleArea}>
+            {hasContent ? (
+              <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
+                <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
+                  {rollingLines.map((line, i) => {
+                    const isLast = i === rollingLines.length - 1;
+                    const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
+                    return (
+                      <Text
+                        key={`${line}-${i}`}
+                        style={{
+                          fontSize,
+                          color: isLast ? textColor : fadedColor,
+                          fontWeight: isLast ? "bold" : "500",
+                        }}
+                      >
+                        {line}{" "}
+                      </Text>
+                    );
+                  })}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.placeholderCard}>
+                <Text style={styles.placeholderIcon}>{error ? "⚠️" : "🎙️"}</Text>
+                <Text style={[styles.placeholderText, error ? { color: Colors.sos } : null]}>
+                  {error
+                    ? error
+                    : isRecording
+                    ? "Слушаю вашу речь..."
+                    : "Нажмите кнопку микрофона ниже и говорите"}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.controlsContainer}>
+            <View style={styles.buttonContainer}>
+              {isRecording && (
+                <Animated.View
+                  style={[
+                    styles.pulseRing,
+                    {
+                      transform: [{ scale: ringScale }],
+                      opacity: ringOpacity,
+                    },
+                  ]}
+                />
+              )}
+              <TouchableOpacity
+                style={[
+                  styles.recordButton,
+                  isRecording && styles.recordingActive,
+                ]}
+                onPress={handleRecord}
+              >
+                <Text style={styles.recordButtonIcon}>
+                  {isRecording ? "⏹" : "🎤"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.recordLabel}>
+              {isRecording ? "Идет прослушивание..." : "Нажмите, чтобы говорить"}
+            </Text>
+          </View>
+        </>
+      )}
+
+      {activeTab === "history" && (
+        <View style={{ flex: 1 }}>
+          {historyLoading ? (
+            <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 40 }} />
+          ) : history.length === 0 ? (
+            <View style={styles.placeholderCard}>
+              <Text style={styles.placeholderIcon}>📋</Text>
+              <Text style={styles.placeholderText}>История пуста. Запишите первый разговор!</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={history}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: 16, gap: 12 }}
+              renderItem={({ item }) => (
+                <View style={styles.historyCard}>
+                  <Text style={styles.historyDate}>
+                    {new Date(item.created_at).toLocaleDateString("ru-RU", {
+                      day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+                    })}
+                  </Text>
+                  <Text style={styles.historyText} numberOfLines={4}>{item.text}</Text>
+                </View>
+              )}
+            />
+          )}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -367,6 +474,31 @@ const styles = StyleSheet.create({
   },
   settingsToggleActive: {
     backgroundColor: Colors.accent,
+  },
+  tabRow: {
+    flexDirection: "row",
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+    backgroundColor: "rgba(33, 69, 89, 0.06)",
+    borderRadius: 12,
+    padding: 4,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  tabBtnActive: {
+    backgroundColor: Colors.accent,
+  },
+  tabBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.textSecondary,
+  },
+  tabBtnTextActive: {
+    color: Colors.white,
   },
   settingsPanel: {
     backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -513,5 +645,23 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
     fontWeight: "500",
+  },
+  historyCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: "rgba(33, 69, 89, 0.08)",
+  },
+  historyDate: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginBottom: 6,
+    fontWeight: "600",
+  },
+  historyText: {
+    fontSize: 14,
+    color: Colors.heading,
+    lineHeight: 20,
   },
 });
