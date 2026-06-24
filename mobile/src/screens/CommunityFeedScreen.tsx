@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import axios from "axios";
 import { supabase } from "../services/supabase";
@@ -26,6 +26,7 @@ function timeAgo(dateStr: string): string {
 }
 
 function initials(name: string): string {
+  if (!name || !name.trim()) return "??";
   const parts = name.trim().split(" ");
   return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
 }
@@ -131,10 +132,23 @@ export default function CommunityFeedScreen() {
     }
   }, [token]);
 
+  // Refetch when the screen comes into focus (e.g. after creating a post)
+  useFocusEffect(
+    useCallback(() => {
+      setPosts([]);
+      setOffset(0);
+      fetchPosts(sort, 0, false);
+    }, [sort, fetchPosts])
+  );
+
+  // Re-fetch when sort changes (skip the very first render — useFocusEffect handles that)
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setPosts([]);
     setOffset(0);
     fetchPosts(sort, 0, false);
-  }, [sort, token]);
+  }, [sort]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

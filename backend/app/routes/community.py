@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional, Literal
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
 from pydantic import BaseModel
 from app.database import get_supabase
 from app.dependencies import get_current_user
@@ -64,20 +64,20 @@ def _format_post(row: dict, liked_post_ids: set) -> dict:
 @router.get("/posts")
 async def list_posts(
     sort: Literal["new", "popular"] = "new",
-    limit: int = 20,
-    offset: int = 0,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     current_user: Optional[dict] = Depends(get_optional_user),
 ):
     db = get_supabase()
-    order_col = "created_at" if sort == "new" else "likes_count"
-
-    response = (
+    query = (
         db.table("posts")
         .select("id, text, image_url, likes_count, comments_count, created_at, user_id, users(id, name)")
-        .order(order_col, desc=True)
-        .range(offset, offset + limit - 1)
-        .execute()
     )
+    if sort == "popular":
+        query = query.order("likes_count", desc=True).order("created_at", desc=True)
+    else:
+        query = query.order("created_at", desc=True)
+    response = query.range(offset, offset + limit - 1).execute()
     posts = response.data or []
 
     liked_set: set = set()
@@ -90,7 +90,7 @@ async def list_posts(
             .in_("post_id", post_ids)
             .execute()
         )
-        liked_set = {l["post_id"] for l in (likes_res.data or [])}
+        liked_set = {row["post_id"] for row in (likes_res.data or [])}
 
     return [_format_post(p, liked_set) for p in posts]
 
@@ -199,6 +199,9 @@ async def create_comment(
     if not data.text.strip():
         raise HTTPException(status_code=422, detail="Комментарий не может быть пустым")
     db = get_supabase()
+    post_check = db.table("posts").select("id").eq("id", post_id).single().execute()
+    if not post_check.data:
+        raise HTTPException(status_code=404, detail="Post not found")
     row = db.table("post_comments").insert({
         "post_id": post_id,
         "user_id": current_user["id"],

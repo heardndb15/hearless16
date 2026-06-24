@@ -33,6 +33,7 @@ function timeAgo(dateStr: string): string {
 }
 
 function initials(name: string): string {
+  if (!name || !name.trim()) return "??";
   const parts = name.trim().split(" ");
   return parts.length >= 2
     ? (parts[0][0] + parts[1][0]).toUpperCase()
