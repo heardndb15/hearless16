@@ -17,12 +17,12 @@ export default function FeaturesSection() {
     <section id="features">
       <div className="container">
         <div style={{ marginBottom: 56 }}>
-          <div className="section-label">Возможности</div>
-          <h2 className="section-title">
+          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Возможности</div>
+          <h2 className="section-title" style={{ color: "#ffffff" }}>
             Всё, что нужно для{" "}
-            <span className="gradient-text">доступного мира</span>
+            <span style={{ background: "linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>доступного мира</span>
           </h2>
-          <p className="section-subtitle">
+          <p className="section-subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
             Семь ключевых функций, которые превращают твой смартфон в мост между
             миром звуков и тишины. Нажми на карточку, чтобы узнать больше.
           </p>
@@ -35,10 +35,13 @@ export default function FeaturesSection() {
               href={feat.href}
               style={{
                 gridColumn: feat.span === "wide" ? "1 / -1" : undefined,
-                background: "var(--bgCard)",
+                background: "rgba(255,255,255,0.72)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid var(--border)",
+                border: "1.5px solid rgba(255,255,255,0.6)",
+                boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
                 transition: "all 0.3s ease",
                 textDecoration: "none",
                 position: "relative",
@@ -46,22 +49,22 @@ export default function FeaturesSection() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = feat.color;
-                e.currentTarget.style.background = "var(--bgCardHover)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.85)";
                 e.currentTarget.style.transform = "translateY(-4px)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.background = "var(--bgCard)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.72)";
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: feat.color + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 18 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(2,136,209,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 18 }}>
                 {feat.icon}
               </div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 600, color: "var(--text)", marginBottom: 10 }}>
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 600, color: "#0D47A1", marginBottom: 10 }}>
                 {feat.title}
               </h3>
-              <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7 }}>
+              <p style={{ fontSize: 14, color: "#1E6FA8", lineHeight: 1.7 }}>
                 {feat.desc}
               </p>
             </Link>

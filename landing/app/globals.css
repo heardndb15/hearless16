@@ -6,35 +6,31 @@
 
 
 :root {
-  /* Новые переменные (Светлая тема с светло-голубыми акцентами) */
-  --bg: #f0f9ff;
-  --bgCard: rgba(224, 242, 254, 0.6);
-  --bgCardHover: rgba(186, 230, 253, 0.8);
-  --accent: #0284c7;
-  --accentGlow: rgba(2, 132, 199, 0.15);
-  --purple: #38bdf8;
-  --purpleGlow: rgba(56, 189, 248, 0.15);
-  --text: #0369a1;
-  --textSecondary: #0e7490;
-  --textMuted: #0284c7;
-  --border: rgba(186, 230, 253, 0.6);
+  --bg: #E3F2FD;
+  --bgCard: rgba(255, 255, 255, 0.72);
+  --bgCardHover: rgba(255, 255, 255, 0.85);
+  --accent: #0288D1;
+  --accentGlow: rgba(2, 136, 209, 0.2);
+  --purple: #42A5F5;
+  --purpleGlow: rgba(66, 165, 245, 0.2);
+  --text: #0D47A1;
+  --textSecondary: #1E6FA8;
+  --textMuted: #1565C0;
+  --border: rgba(255, 255, 255, 0.6);
   --sos: #EF4444;
-  /* Совместимость со старыми страницами */
   --background: var(--bg);
-  --white: rgba(240, 249, 255, 0.85);
-  --card: rgba(224, 242, 254, 0.75);
-  --heading: var(--text);
-  --button: var(--accent);
-  --dark: rgba(14, 116, 144, 0.95);
+  --white: rgba(255, 255, 255, 0.72);
+  --card: rgba(255, 255, 255, 0.72);
+  --heading: #0D47A1;
+  --button: #0277BD;
+  --dark: #0D47A1;
   --success: #22C55E;
-  --gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  --gradient: linear-gradient(135deg, #42A5F5 0%, #0277BD 100%);
   --radius: 16px;
   --radiusSm: 10px;
-
-  /* Дополнительные переменные для светлой темы */
-  --headerBg: rgba(224, 242, 254, 0.4);
-  --shadow: 0 16px 48px rgba(2, 132, 199, 0.05);
-  --shadowPhone: 0 24px 80px rgba(2, 132, 199, 0.15), 0 0 40px var(--accentGlow);
+  --headerBg: rgba(255, 255, 255, 0.15);
+  --shadow: 0 16px 48px rgba(2, 136, 209, 0.12);
+  --shadowPhone: 0 24px 80px rgba(2, 136, 209, 0.25), 0 0 40px rgba(2,136,209,0.2);
 }
 
 * {
@@ -49,13 +45,9 @@ html {
 
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #f0f9ff;
-  background-image: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+  background: linear-gradient(180deg, #1565C0 0%, #42A5F5 45%, #E3F2FD 100%);
   background-attachment: fixed;
-  color: var(--text);
+  color: #0D47A1;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -76,14 +68,12 @@ section {
 
 [style*="background: var(--bgCard)"],
 [style*="background: var(--white)"],
-[style*="background: \"var(--bgCard)\""],
-[style*="background: var(--bgCardHover)"],
+[style*="background: var(--card)"],
 div[style*="background: rgb(255, 255, 255)"],
-div[style*="background: white"] {
+div[style*="background: white"],
+div[style*="background: rgba(255"] {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.04) !important;
 }
 
 /* Hero pulsing rings */
@@ -231,4 +221,20 @@ div[style*="background: white"] {
 
 @media (max-width: 768px) {
   section { padding: 60px 0; }
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 20px rgba(2, 136, 209, 0.18);
+}
+
+.glass-card-dark {
+  background: rgba(21, 101, 192, 0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(2, 136, 209, 0.18);
 }

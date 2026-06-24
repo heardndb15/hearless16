@@ -26,14 +26,14 @@ export default function LanguageSection() {
   ];
 
   return (
-    <section id="languages" style={{ background: "var(--bgCard)" }}>
+    <section id="languages">
       <div className="container">
         <div style={{ marginBottom: 48 }}>
-          <div className="section-label">Языки</div>
-          <h2 className="section-title">
-            Три языка. Один <span className="gradient-text">голос</span>.
+          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Языки</div>
+          <h2 className="section-title" style={{ color: "#ffffff" }}>
+            Три языка. Один <span style={{ background: "linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>голос</span>.
           </h2>
-          <p className="section-subtitle">
+          <p className="section-subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
             Hearless говорит на казахском, русском и английском. Автоопределение
             языка и перевод в реальном времени.
           </p>
@@ -50,10 +50,13 @@ export default function LanguageSection() {
             <div
               key={l.code}
               style={{
-                background: "var(--bg)",
+                background: "rgba(255,255,255,0.72)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid var(--border)",
+                border: "1.5px solid rgba(255,255,255,0.6)",
+                boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -76,7 +79,7 @@ export default function LanguageSection() {
                   fontFamily: "'Syne', sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
-                  color: "var(--text)",
+                  color: "#0D47A1",
                   marginBottom: 12,
                 }}
               >
@@ -85,7 +88,7 @@ export default function LanguageSection() {
               <p
                 style={{
                   fontSize: 14,
-                  color: "var(--textSecondary)",
+                  color: "#1E6FA8",
                   lineHeight: 1.7,
                   marginBottom: 24,
                 }}
@@ -104,12 +107,12 @@ export default function LanguageSection() {
                     fontFamily: "'Syne', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
-                    color: "var(--text)",
+                    color: "#0D47A1",
                   }}
                 >
                   {l.stat}
                 </span>
-                <span style={{ fontSize: 13, color: "var(--textMuted)" }}>
+                <span style={{ fontSize: 13, color: "#1565C0" }}>
                   {l.statLabel}
                 </span>
               </div>

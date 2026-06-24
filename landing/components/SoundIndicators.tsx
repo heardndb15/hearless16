@@ -18,11 +18,11 @@ export default function SoundIndicators() {
     <section id="sounds">
       <div className="container">
         <div style={{ marginBottom: 48 }}>
-          <div className="section-label">Звуковой AI</div>
-          <h2 className="section-title">
-            Умная система <span className="gradient-text">оповещений</span>
+          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Звуковой AI</div>
+          <h2 className="section-title" style={{ color: "#ffffff" }}>
+            Умная система <span style={{ background: "linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>оповещений</span>
           </h2>
-          <p className="section-subtitle">
+          <p className="section-subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
             Hearless распознаёт важные звуки вокруг и уведомляет тебя вибрацией и
             вспышкой. Наведи курсор на звук — увидишь индикатор.
           </p>
@@ -41,13 +41,16 @@ export default function SoundIndicators() {
               onMouseEnter={() => setActiveIdx(i)}
               onMouseLeave={() => setActiveIdx(null)}
               style={{
-                background: "var(--bgCard)",
+                background: "rgba(255,255,255,0.72)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
                 borderRadius: "var(--radius)",
                 padding: "24px 20px",
                 border:
                   activeIdx === i
-                    ? "1px solid var(--accent)"
-                    : "1px solid var(--border)",
+                    ? "1.5px solid var(--accent)"
+                    : "1.5px solid rgba(255,255,255,0.6)",
+                boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
                 transition: "all 0.3s ease",
                 cursor: "default",
                 position: "relative",
@@ -89,7 +92,7 @@ export default function SoundIndicators() {
                 style={{
                   fontSize: 14,
                   fontWeight: 600,
-                  color: "var(--text)",
+                  color: "#0D47A1",
                 }}
               >
                 {s.label}

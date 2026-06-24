@@ -50,14 +50,14 @@ export default function Hero() {
         }}
       >
         <div>
-          <div className="section-label">AI-платформа</div>
+          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>AI-платформа</div>
           <h1
             style={{
               fontFamily: "'Syne', sans-serif",
               fontWeight: 800,
               fontSize: "clamp(40px, 6vw, 68px)",
               lineHeight: 1.08,
-              color: "var(--text)",
+              color: "#ffffff",
               marginBottom: 24,
             }}
           >
@@ -68,7 +68,7 @@ export default function Hero() {
           <p
             style={{
               fontSize: 17,
-              color: "var(--textSecondary)",
+              color: "rgba(255,255,255,0.85)",
               lineHeight: 1.7,
               maxWidth: 480,
               marginBottom: 36,
@@ -79,11 +79,11 @@ export default function Hero() {
             жестовому языку с помощью ИИ.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <a href="/register" className="btn btn-primary" style={{ fontSize: 15, padding: "16px 36px" }}>
+            <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0277BD", color: "#ffffff", border: "none", transition: "all 0.3s ease" }}>
               Начать бесплатно
               <span style={{ fontSize: 18 }}>→</span>
             </a>
-            <a href="/features" className="btn btn-outline" style={{ fontSize: 15, padding: "16px 36px" }}>
+            <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "rgba(255,255,255,0.2)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.5)", transition: "all 0.3s ease" }}>
               Как это работает
             </a>
           </div>
@@ -94,7 +94,7 @@ export default function Hero() {
               gap: 32,
               marginTop: 48,
               paddingTop: 32,
-              borderTop: "1px solid var(--border)",
+              borderTop: "1px solid rgba(255,255,255,0.3)",
             }}
           >
             {[
@@ -108,12 +108,12 @@ export default function Hero() {
                     fontFamily: "'Syne', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
-                    color: "var(--accent)",
+                    color: "#ffffff",
                   }}
                 >
                   {s.value}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--textMuted)" }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>{s.label}</div>
               </div>
             ))}
           </div>

@@ -52,14 +52,14 @@ export default function SubtitleDemo() {
     : inputText;
 
   return (
-    <section id="subtitles" style={{ background: "var(--bgCard)" }}>
+    <section id="subtitles">
       <div className="container" style={{ maxWidth: 720 }}>
         <div style={{ marginBottom: 40 }}>
-          <div className="section-label">Субтитры</div>
-          <h2 className="section-title">
-            Живые <span className="gradient-text">AI-субтитры</span>
+          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Субтитры</div>
+          <h2 className="section-title" style={{ color: "#ffffff" }}>
+            Живые <span style={{ background: "linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>AI-субтитры</span>
           </h2>
-          <p className="section-subtitle">
+          <p className="section-subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
             Введи текст или смотри демо. Так работают субтитры в реальном времени.
           </p>
         </div>
@@ -101,10 +101,13 @@ export default function SubtitleDemo() {
         {/* Subtitle display */}
         <div
           style={{
-            background: "var(--bg)",
+            background: "rgba(255,255,255,0.72)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             borderRadius: "var(--radius)",
             padding: "28px 24px",
-            border: "1px solid var(--border)",
+            border: "1.5px solid rgba(255,255,255,0.6)",
+            boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
             minHeight: 100,
             marginBottom: 20,
           }}
@@ -153,8 +156,8 @@ export default function SubtitleDemo() {
             width: "100%",
             padding: "14px 18px",
             borderRadius: "var(--radiusSm)",
-            border: "1px solid var(--border)",
-            background: "var(--bg)",
+            border: "1.5px solid rgba(255,255,255,0.6)",
+            background: "rgba(255,255,255,0.5)",
             color: "var(--text)",
             fontSize: 15,
             fontFamily: "'DM Sans', sans-serif",
@@ -227,10 +230,12 @@ export default function SubtitleDemo() {
                   style={{
                     padding: "12px 16px",
                     borderRadius: "var(--radiusSm)",
-                    background: "var(--bg)",
-                    border: "1px solid var(--border)",
+                    background: "rgba(255,255,255,0.72)",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
+                    border: "1.5px solid rgba(255,255,255,0.6)",
                     fontSize: 14,
-                    color: "var(--textSecondary)",
+                    color: "#1E6FA8",
                   }}
                 >
                   {h}

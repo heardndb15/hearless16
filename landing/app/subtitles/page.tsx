@@ -693,7 +693,7 @@ export default function SubtitlesPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh" }}>
       {/* Скрытые элементы для реализации PiP хака через Canvas */}
       <canvas ref={pipCanvasRef} width="800" height="240" style={{ display: "none" }} />
       <video ref={pipVideoRef} style={{ display: "none" }} playsInline muted />
@@ -736,19 +736,21 @@ export default function SubtitlesPage() {
         <Link href="/" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 24, fontWeight: 600, transition: "color 0.2s" }}>
           ← На главную
         </Link>
-        <div className="section-label">Доступность медиа</div>
-        <h1 className="section-title">AI-субтитры в реальном времени</h1>
-        <p className="section-subtitle" style={{ maxWidth: 650, marginBottom: 40 }}>
+        <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Доступность медиа</div>
+        <h1 className="section-title" style={{ color: "#ffffff" }}>AI-субтитры в реальном времени</h1>
+        <p className="section-subtitle" style={{ maxWidth: 650, marginBottom: 40, color: "rgba(255,255,255,0.8)" }}>
           Транскрибируйте устную речь или смотрите видеоролики с мгновенной генерацией высококонтрастных субтитров.
         </p>
 
         {/* Переключатель режимов */}
         <div style={{ 
-          display: "inline-flex", 
-          background: "var(--bgCard)", 
-          borderRadius: 30, 
-          padding: 4, 
-          border: "1px solid var(--border)",
+          display: "inline-flex",
+          background: "rgba(255,255,255,0.72)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderRadius: 30,
+          padding: 4,
+          border: "1.5px solid rgba(255,255,255,0.6)",
           marginBottom: 32
         }}>
           <button 
@@ -881,7 +883,7 @@ export default function SubtitlesPage() {
                   </div>
                 </div>
 
-                <div style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", backdropFilter: "blur(16px)" }}>
+                <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "20px", padding: "24px", border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 20px rgba(2,136,209,0.18)" }}>
                   <textarea value={inputText} onChange={e => setInputText(e.target.value)} placeholder="Введите текст, чтобы сымитировать речь на лету..." rows={2}
                     style={{ width: "100%", padding: "16px 20px", borderRadius: "14px", border: "1px solid var(--border)", background: "rgba(255,255,255,0.6)", color: "var(--text)", fontSize: 15, fontFamily: "'DM Sans', sans-serif", resize: "none", outline: "none", marginBottom: 16, transition: "border 0.2s" }}
                     className="focus:border-sky-500" />
@@ -942,13 +944,15 @@ export default function SubtitlesPage() {
                 {/* ==========================================
                     ПАНЕЛЬ AI-АССИСТЕНТА (GEMINI)
                    ========================================== */}
-                <div style={{ 
-                  background: "var(--bgCard)", 
-                  borderRadius: "20px", 
-                  padding: "24px", 
-                  border: "1px solid var(--border)", 
+                <div style={{
+                  background: "rgba(255,255,255,0.72)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  borderRadius: "20px",
+                  padding: "24px",
+                  border: "1.5px solid rgba(255,255,255,0.6)",
+                  boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
                   marginTop: 24,
-                  backdropFilter: "blur(16px)"
                 }}>
                   <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
                     ✨ AI-Ассистент Gemini
@@ -1123,7 +1127,7 @@ export default function SubtitlesPage() {
                 </div>
 
                 {/* Панель управления видео-режимом */}
-                <div style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", backdropFilter: "blur(16px)" }}>
+                <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "20px", padding: "24px", border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 20px rgba(2,136,209,0.18)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
                     <div>
                       <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Загрузите свое видео</h3>
@@ -1242,8 +1246,8 @@ export default function SubtitlesPage() {
           {/* ==========================================
               ПРАВЫЙ БЛОК: НАСТРОЙКИ СТИЛЕЙ
              ========================================== */}
-          <div style={{ background: "var(--bgCard)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border)", backdropFilter: "blur(16px)" }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>
+          <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "24px", padding: "24px", border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 20px rgba(2,136,209,0.18)" }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "#0D47A1", marginBottom: 20 }}>
               Настройки субтитров
             </h3>
 
@@ -1377,10 +1381,10 @@ export default function SubtitlesPage() {
         {/* История сессии диктовки */}
         {mode === "speech" && history.length > 0 && (
           <div style={{ marginTop: 40 }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>История сессии</h3>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "#ffffff", marginBottom: 16 }}>История сессии</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {history.map((h, i) => (
-                <div key={i} style={{ padding: "16px 20px", borderRadius: "14px", background: "var(--bgCard)", border: "1px solid var(--border)", fontSize: 14, color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={i} style={{ padding: "16px 20px", borderRadius: "14px", background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1.5px solid rgba(255,255,255,0.6)", fontSize: 14, color: "#0D47A1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span>{h}</span>
                   <span style={{ fontSize: 11, color: "var(--textSecondary)" }}>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
@@ -1397,9 +1401,9 @@ export default function SubtitlesPage() {
             { title: "Гибкая адаптация под глаза", desc: "Меняйте контрастность, размер шрифта и цветовые палитры субтитров прямо во время просмотра фильма." },
             { title: "Прямой коннект к FastAPI", desc: "Переключитесь в режим API для интеграции с вашим Whisper WebSocket сервером." },
           ].map(d => (
-            <div key={d.title} style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "28px 24px", border: "1px solid var(--border)", transition: "transform 0.2s" }} className="hover:-translate-y-1">
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 750, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
-              <p style={{ fontSize: 13, color: "var(--textSecondary)", lineHeight: 1.6 }}>{d.desc}</p>
+            <div key={d.title} style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "20px", padding: "28px 24px", border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 20px rgba(2,136,209,0.18)", transition: "transform 0.2s" }} className="hover:-translate-y-1">
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 750, color: "#0D47A1", marginBottom: 8 }}>{d.title}</h3>
+              <p style={{ fontSize: 13, color: "#1E6FA8", lineHeight: 1.6 }}>{d.desc}</p>
             </div>
           ))}
         </div>

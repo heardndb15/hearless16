@@ -21,22 +21,25 @@ const LEVELS = [
 
 export default function SignLanguagePage() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh" }}>
       <div style={{ padding: "120px 24px 60px", maxWidth: 960, margin: "0 auto" }}>
         <Link href="/" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24 }}>
           ← На главную
         </Link>
-        <div className="section-label">Функция</div>
-        <h1 className="section-title">Изучение жестового языка</h1>
-        <p className="section-subtitle" style={{ maxWidth: 600 }}>
+        <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Функция</div>
+        <h1 className="section-title" style={{ color: "#ffffff" }}>Изучение жестового языка</h1>
+        <p className="section-subtitle" style={{ maxWidth: 600, color: "rgba(255,255,255,0.8)" }}>
           Казахский жестовый язык. Алфавит, цифры, базовые слова. Три уровня сложности: начальный, средний, продвинутый.
         </p>
 
         {/* Banner for Interactive Simulator */}
         <div style={{
-          background: "linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(56, 189, 248, 0.08) 100%)",
+          background: "rgba(255,255,255,0.72)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           borderRadius: "var(--radius)",
-          border: "1px solid var(--border)",
+          border: "1.5px solid rgba(255,255,255,0.6)",
+          boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
           padding: "32px",
           marginTop: "32px",
           marginBottom: "40px",
@@ -44,8 +47,7 @@ export default function SignLanguagePage() {
           flexDirection: "column",
           gap: "16px",
           position: "relative",
-          overflow: "hidden",
-          backdropFilter: "blur(16px)"
+          overflow: "hidden"
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -55,7 +57,7 @@ export default function SignLanguagePage() {
               <path d="M6 14v-1.5a1.5 1.5 0 0 0-3 0V16a5 5 0 0 0 5 5h4a8 8 0 0 0 8-8v-2a1.5 1.5 0 0 0-3 0" />
             </svg>
             <div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 700, color: "var(--text)" }}>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 700, color: "#0D47A1" }}>
                 Интерактивный тренажер жестов
               </h2>
               <p style={{ fontSize: "14px", color: "var(--textSecondary)", marginTop: "4px" }}>
@@ -76,26 +78,26 @@ export default function SignLanguagePage() {
         {/* Levels */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, margin: "40px 0" }}>
           {LEVELS.map(l => (
-            <div key={l.name} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", textAlign: "center" }}>
+            <div key={l.name} style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 20px rgba(2,136,209,0.18)", textAlign: "center" }}>
               <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 700, color: l.color }}>{l.count}</div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", margin: "8px 0 4px" }}>{l.name}</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "#0D47A1", margin: "8px 0 4px" }}>{l.name}</div>
               <div style={{ fontSize: 13, color: "var(--textMuted)" }}>{l.desc}</div>
             </div>
           ))}
         </div>
 
         {/* Lessons */}
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 20 }}>Каталог уроков</h2>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 600, color: "#ffffff", marginBottom: 20 }}>Каталог уроков</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
           {LESSONS.map(lesson => (
-            <div key={lesson.title} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", transition: "all 0.3s ease", cursor: "default" }}
+            <div key={lesson.title} style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1.5px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 20px rgba(2,136,209,0.18)", transition: "all 0.3s ease", cursor: "default" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(0)"; }}>
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; e.currentTarget.style.transform = "translateY(0)"; }}>
               <div style={{ fontSize: 32, marginBottom: 14 }}>{lesson.icon}</div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{lesson.title}</h3>
-              <p style={{ fontSize: 13, color: "var(--textSecondary)", lineHeight: 1.6, marginBottom: 14 }}>{lesson.desc}</p>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--textMuted)" }}>
-                <span style={{ padding: "3px 8px", borderRadius: 4, background: "var(--bg)", border: "1px solid var(--border)" }}>{lesson.level}</span>
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 600, color: "#0D47A1", marginBottom: 8 }}>{lesson.title}</h3>
+              <p style={{ fontSize: 13, color: "#1E6FA8", lineHeight: 1.6, marginBottom: 14 }}>{lesson.desc}</p>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#1565C0" }}>
+                <span style={{ padding: "3px 8px", borderRadius: 4, background: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.5)" }}>{lesson.level}</span>
                 <span>{lesson.lessons}</span>
               </div>
             </div>

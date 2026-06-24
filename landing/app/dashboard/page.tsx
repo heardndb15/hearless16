@@ -409,7 +409,7 @@ export default function SubtitlesDashboard() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-slate-400">
+      <div className="py-20 text-center" style={{ color: "rgba(255,255,255,0.7)" }}>
         <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         Загрузка ИИ-Субтитров...
       </div>
@@ -473,8 +473,8 @@ export default function SubtitlesDashboard() {
 
       {/* Screen Header */}
       <div className="flex flex-col gap-1 text-left">
-        <h2 className="font-syne font-extrabold text-3xl text-slate-800 tracking-tight">AI Субтитры</h2>
-        <p className="text-slate-500 text-sm max-w-2xl font-medium">
+        <h2 className="font-syne font-extrabold text-3xl tracking-tight" style={{ color: "#ffffff" }}>AI Субтитры</h2>
+        <p className="text-sm max-w-2xl font-medium" style={{ color: "rgba(255,255,255,0.8)" }}>
           Высокоточная расшифровка речи с автоподключением локального распознавания при отсутствии интернета.
         </p>
       </div>
@@ -817,7 +817,7 @@ export default function SubtitlesDashboard() {
         {historyOpen && (
           <div className="lg:col-span-4 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
             <div className="flex justify-between items-center">
-              <h3 className="font-syne font-extrabold text-base text-slate-800">История диалогов</h3>
+              <h3 className="font-syne font-extrabold text-base" style={{ color: "#0D47A1" }}>История диалогов</h3>
               {history.length > 0 && (
                 <button
                   onClick={handleClearHistory}
