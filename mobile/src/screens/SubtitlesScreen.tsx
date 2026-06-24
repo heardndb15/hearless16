@@ -21,6 +21,7 @@ const { width } = Dimensions.get("window");
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 const SETTINGS_KEY = "hearless:subtitle_settings";
+const SPEAKER_COLORS = ["#22d3ee", "#fdeb47", "#4ade80", "#f472b6"] as const;
 
 function AnimatedLine({
   text,
@@ -82,6 +83,7 @@ export default function SubtitlesScreen() {
   const {
     isRecording,
     streamText,
+    streamSegments,
     chunks,
     error,
     startStreaming,
@@ -93,6 +95,7 @@ export default function SubtitlesScreen() {
   const [textColor, setTextColor] = useState("#22d3ee");
   const [bgOpacity, setBgOpacity] = useState(0.85);
   const [alignment, setAlignment] = useState<"center" | "left">("center");
+  const [speakerMode, setSpeakerMode] = useState(false);
   const settingsLoadedRef = useRef(false);
 
   // Load settings on mount
@@ -337,6 +340,27 @@ export default function SubtitlesScreen() {
                   ))}
                 </View>
               </View>
+
+              {/* Speaker colors toggle */}
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Разные говорящие</Text>
+                <View style={styles.settingOptions}>
+                  {[
+                    { key: "off", label: "Выкл" },
+                    { key: "on",  label: "Вкл"  },
+                  ].map((opt) => (
+                    <TouchableOpacity
+                      key={opt.key}
+                      style={[styles.optionBtn, (speakerMode ? "on" : "off") === opt.key && styles.optionBtnActive]}
+                      onPress={() => setSpeakerMode(opt.key === "on")}
+                    >
+                      <Text style={[styles.optionText, (speakerMode ? "on" : "off") === opt.key && styles.optionTextActive]}>
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
             </Animated.View>
           )}
 
@@ -349,22 +373,37 @@ export default function SubtitlesScreen() {
               >
                 <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
                   <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
-                    {rollingLines.map((line, i) => {
-                      const isLast = i === rollingLines.length - 1;
-                      const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
-                      return (
-                        <Text
-                          key={`${line}-${i}`}
-                          style={{
-                            fontSize,
-                            color: isLast ? textColor : fadedColor,
-                            fontWeight: isLast ? "bold" : "500",
-                          }}
-                        >
-                          {line}{" "}
-                        </Text>
-                      );
-                    })}
+                    {speakerMode && streamSegments.length > 0
+                      ? streamSegments.map((seg, i) => (
+                          <Text
+                            key={`seg-${i}`}
+                            style={{
+                              fontSize,
+                              color: SPEAKER_COLORS[seg.speaker % 4],
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {seg.text}{" "}
+                          </Text>
+                        ))
+                      : rollingLines.map((line, i) => {
+                          const isLast = i === rollingLines.length - 1;
+                          const fadedColor = bgOpacity === 0
+                            ? "rgba(33, 69, 89, 0.25)"
+                            : "rgba(255, 255, 255, 0.25)";
+                          return (
+                            <Text
+                              key={`${line}-${i}`}
+                              style={{
+                                fontSize,
+                                color: isLast ? textColor : fadedColor,
+                                fontWeight: isLast ? "bold" : "500",
+                              }}
+                            >
+                              {line}{" "}
+                            </Text>
+                          );
+                        })}
                   </Text>
                 </View>
               </TouchableOpacity>

@@ -8,15 +8,24 @@ const DEFAULT_API_URL = "https://hearless16-1.onrender.com";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
 const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || API_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws/transcribe";
 
+export interface SpeakerSegment {
+  text: string;
+  speaker: number;
+  start: number;
+  end: number;
+}
+
 export interface StreamChunk {
   text: string;
   full_text: string;
   is_final: boolean;
+  segments?: SpeakerSegment[];
 }
 
 export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const [isRecording, setIsRecording] = useState(false);
   const [streamText, setStreamText] = useState("");
+  const [streamSegments, setStreamSegments] = useState<SpeakerSegment[]>([]);
   const [chunks, setChunks] = useState<StreamChunk[]>([]);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -49,9 +58,11 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
             text: data.text || "",
             full_text: data.full_text || "",
             is_final: data.type === "final",
+            segments: data.segments ?? [],
           };
           setChunks((prev) => [...prev, chunk]);
           setStreamText(data.full_text || "");
+          setStreamSegments(chunk.segments ?? []);
 
           if (!options?.skipAutoSave && data.type === "final" && data.full_text?.trim()) {
             supabase.auth.getSession().then(({ data: { session } }) => {
@@ -234,6 +245,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   return {
     isRecording,
     streamText,
+    streamSegments,
     chunks,
     error,
     startStreaming,

@@ -206,6 +206,61 @@ def merge_transcripts(old_text: str, new_text: str) -> str:
 
 
 
+SILENCE_GAP_THRESHOLD = 0.5  # seconds gap = potential speaker change
+
+
+def transcribe_with_diarization(
+    audio_bytes: bytes,
+    language: str = "ru",
+    session_state: dict | None = None,
+) -> dict:
+    """
+    Transcribes audio and assigns speaker IDs using silence-gap heuristic.
+
+    session_state is a mutable dict {"current_speaker": int, "last_end": float}
+    shared across multiple calls in a WebSocket session to maintain continuity.
+    Pass None to start fresh.
+    """
+    if session_state is None:
+        session_state = {"current_speaker": 0, "last_end": 0.0}
+
+    model = get_local_whisper()
+    if model is None:
+        text = transcribe_openai(audio_bytes, language)
+        speaker = session_state["current_speaker"]
+        return {
+            "text": text,
+            "segments": [{"text": text, "speaker": speaker, "start": 0.0, "end": 0.0}],
+        }
+
+    audio = audio_bytes_to_float(audio_bytes)
+    if len(audio) == 0:
+        return {"text": "", "segments": []}
+
+    raw_segs, _ = model.transcribe(audio, beam_size=1, language=language)
+    seg_list = list(raw_segs)
+
+    if not seg_list:
+        return {"text": "", "segments": []}
+
+    result_segments = []
+    for seg in seg_list:
+        gap = seg.start - session_state["last_end"]
+        if gap > SILENCE_GAP_THRESHOLD and session_state["last_end"] > 0:
+            session_state["current_speaker"] = (session_state["current_speaker"] + 1) % 4
+        session_state["last_end"] = seg.end
+
+        result_segments.append({
+            "text": seg.text.strip(),
+            "speaker": session_state["current_speaker"],
+            "start": round(seg.start, 2),
+            "end": round(seg.end, 2),
+        })
+
+    full_text = " ".join(s["text"] for s in result_segments)
+    return {"text": full_text, "segments": result_segments}
+
+
 def merge_audio_chunks(chunks: list[bytes], format: str = "m4a") -> bytes:
     from pydub import AudioSegment
     import io

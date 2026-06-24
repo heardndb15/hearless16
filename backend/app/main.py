@@ -88,7 +88,9 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     pcm_buffer = bytearray()
     finalized_text = ""
     interim_text = ""
+    interim_segments: list = []
     chunk_counter = 0
+    diarize_state: dict = {"current_speaker": 0, "last_end": 0.0}
 
     try:
         while True:
@@ -109,36 +111,37 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                     
                     # Transcribe every 2 chunks (~400-600ms of audio) to balance latency and CPU
                     if chunk_counter % 2 == 0:
-                        from app.services.whisper_service import transcribe_pcm
-                        
+                        from app.services.whisper_service import transcribe_with_diarization, pcm_to_wav_bytes
+                        wav_bytes = pcm_to_wav_bytes(bytes(pcm_buffer))
+
                         # If buffer exceeds 8 seconds, we commit the stable part and slide the window
                         # 8 seconds at 16kHz 16-bit mono PCM is 16000 * 2 * 8 = 256000 bytes
                         if len(pcm_buffer) >= 256000:
-                            # Transcribe the whole buffer
-                            full_window_text = await asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang)
-                            
+                            diarize_result = await asyncio.to_thread(
+                                transcribe_with_diarization, wav_bytes, lang, diarize_state
+                            )
                             # Slide window: keep the last 2 seconds (16000 * 2 * 2 = 64000 bytes) for context overlap
                             pcm_buffer = pcm_buffer[-64000:]
-                            
-                            # Merge transcripts
                             from app.services.whisper_service import merge_transcripts
-                            finalized_text = merge_transcripts(finalized_text, full_window_text)
+                            finalized_text = merge_transcripts(finalized_text, diarize_result["text"])
                             interim_text = ""
+                            interim_segments = []
                         else:
-                            # Transcribe current buffer as interim results
-                            interim_text = await asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang)
-                        
+                            diarize_result = await asyncio.to_thread(
+                                transcribe_with_diarization, wav_bytes, lang, diarize_state
+                            )
+                            interim_text = diarize_result["text"]
+                            interim_segments = diarize_result["segments"]
+
                         current_full_text = finalized_text
                         if interim_text:
-                            if current_full_text:
-                                current_full_text += " " + interim_text
-                            else:
-                                current_full_text = interim_text
-                                
+                            current_full_text = (current_full_text + " " + interim_text).strip()
+
                         await websocket.send_json({
                             "type": "text",
                             "text": current_full_text,
                             "full_text": current_full_text,
+                            "segments": interim_segments if interim_text else [],
                         })
                 else:
                     # При первом чанке определяем формат
