@@ -108,6 +108,7 @@ export default function SubtitlesScreen() {
         if (s.textColor) setTextColor(s.textColor);
         if (typeof s.bgOpacity === "number") setBgOpacity(s.bgOpacity);
         if (s.alignment) setAlignment(s.alignment);
+        if (s.speakerMode !== undefined) setSpeakerMode(s.speakerMode);
       } catch {}
       settingsLoadedRef.current = true;
     });
@@ -118,9 +119,9 @@ export default function SubtitlesScreen() {
     if (!settingsLoadedRef.current) return;
     AsyncStorage.setItem(
       SETTINGS_KEY,
-      JSON.stringify({ fontSize, textColor, bgOpacity, alignment })
+      JSON.stringify({ fontSize, textColor, bgOpacity, alignment, speakerMode })
     ).catch(() => {});
-  }, [fontSize, textColor, bgOpacity, alignment]);
+  }, [fontSize, textColor, bgOpacity, alignment, speakerMode]);
 
   const [fullScreen, setFullScreen] = useState(false);
 

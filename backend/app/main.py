@@ -91,6 +91,7 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     interim_segments: list = []
     chunk_counter = 0
     diarize_state: dict = {"current_speaker": 0, "last_end": 0.0}
+    diarize_lock: asyncio.Lock = asyncio.Lock()
 
     try:
         while True:
@@ -117,9 +118,10 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                         # If buffer exceeds 8 seconds, we commit the stable part and slide the window
                         # 8 seconds at 16kHz 16-bit mono PCM is 16000 * 2 * 8 = 256000 bytes
                         if len(pcm_buffer) >= 256000:
-                            diarize_result = await asyncio.to_thread(
-                                transcribe_with_diarization, wav_bytes, lang, diarize_state
-                            )
+                            async with diarize_lock:
+                                diarize_result = await asyncio.to_thread(
+                                    transcribe_with_diarization, wav_bytes, lang, diarize_state
+                                )
                             # Slide window: keep the last 2 seconds (16000 * 2 * 2 = 64000 bytes) for context overlap
                             pcm_buffer = pcm_buffer[-64000:]
                             from app.services.whisper_service import merge_transcripts
@@ -127,9 +129,10 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                             interim_text = ""
                             interim_segments = []
                         else:
-                            diarize_result = await asyncio.to_thread(
-                                transcribe_with_diarization, wav_bytes, lang, diarize_state
-                            )
+                            async with diarize_lock:
+                                diarize_result = await asyncio.to_thread(
+                                    transcribe_with_diarization, wav_bytes, lang, diarize_state
+                                )
                             interim_text = diarize_result["text"]
                             interim_segments = diarize_result["segments"]
 
@@ -178,8 +181,10 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                         ext = detect_audio_format(audio_bytes)
                         try:
                             if running_merged == b"":
-                                running_merged = audio_bytes
                                 merged_bytes = audio_bytes
+                                text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
+                                # Only commit after successful transcription
+                                running_merged = audio_bytes
                             else:
                                 merged_bytes = await asyncio.to_thread(
                                     merge_audio_chunks, [running_merged, audio_bytes], ext
@@ -188,8 +193,7 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                                     running_merged = merged_bytes
                                 else:
                                     raise Exception("merge returned empty")
-
-                            text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
+                                text = await asyncio.to_thread(transcribe_audio, merged_bytes, language=lang)
                             if text:
                                 current_full_text = text.strip()
                         except Exception as e:
