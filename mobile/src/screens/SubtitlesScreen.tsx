@@ -15,6 +15,7 @@ import { supabase } from "../services/supabase";
 import axios from "axios";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
 import { Colors, Spacing } from "../constants/theme";
+import { StatusBar } from "expo-status-bar";
 
 const { width } = Dimensions.get("window");
 
@@ -117,6 +118,8 @@ export default function SubtitlesScreen() {
       JSON.stringify({ fontSize, textColor, bgOpacity, alignment })
     ).catch(() => {});
   }, [fontSize, textColor, bgOpacity, alignment]);
+
+  const [fullScreen, setFullScreen] = useState(false);
 
   const [settingsVisible, setSettingsVisible] = useState(false);
 
@@ -339,26 +342,32 @@ export default function SubtitlesScreen() {
 
           <View style={styles.subtitleArea}>
             {hasContent ? (
-              <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
-                <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
-                  {rollingLines.map((line, i) => {
-                    const isLast = i === rollingLines.length - 1;
-                    const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
-                    return (
-                      <Text
-                        key={`${line}-${i}`}
-                        style={{
-                          fontSize,
-                          color: isLast ? textColor : fadedColor,
-                          fontWeight: isLast ? "bold" : "500",
-                        }}
-                      >
-                        {line}{" "}
-                      </Text>
-                    );
-                  })}
-                </Text>
-              </View>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => setFullScreen(true)}
+                style={{ width: "100%" }}
+              >
+                <View style={[styles.subtitleCard, getBgStyle(bgOpacity)]}>
+                  <Text style={{ textAlign: alignment, lineHeight: fontSize * 1.5 }}>
+                    {rollingLines.map((line, i) => {
+                      const isLast = i === rollingLines.length - 1;
+                      const fadedColor = bgOpacity === 0 ? "rgba(33, 69, 89, 0.25)" : "rgba(255, 255, 255, 0.25)";
+                      return (
+                        <Text
+                          key={`${line}-${i}`}
+                          style={{
+                            fontSize,
+                            color: isLast ? textColor : fadedColor,
+                            fontWeight: isLast ? "bold" : "500",
+                          }}
+                        >
+                          {line}{" "}
+                        </Text>
+                      );
+                    })}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             ) : (
               <View style={styles.placeholderCard}>
                 <Text style={styles.placeholderIcon}>{error ? "⚠️" : "🎙️"}</Text>
@@ -432,6 +441,36 @@ export default function SubtitlesScreen() {
             />
           )}
         </View>
+      )}
+
+      {fullScreen && (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setFullScreen(false)}
+          style={styles.fullScreenOverlay}
+        >
+          <StatusBar hidden />
+          <View style={styles.fullScreenContent}>
+            <Text style={{ textAlign: "center", lineHeight: fontSize * 1.6 }}>
+              {rollingLines.map((line, i) => {
+                const isLast = i === rollingLines.length - 1;
+                return (
+                  <Text
+                    key={`fs-${line}-${i}`}
+                    style={{
+                      fontSize: fontSize + 8,
+                      color: isLast ? textColor : "rgba(255,255,255,0.3)",
+                      fontWeight: isLast ? "bold" : "400",
+                    }}
+                  >
+                    {line}{" "}
+                  </Text>
+                );
+              })}
+            </Text>
+            <Text style={styles.fullScreenHint}>Нажмите, чтобы выйти</Text>
+          </View>
+        </TouchableOpacity>
       )}
     </SafeAreaView>
   );
@@ -663,5 +702,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.heading,
     lineHeight: 20,
+  },
+  fullScreenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#000",
+    zIndex: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+  },
+  fullScreenContent: {
+    alignItems: "center",
+  },
+  fullScreenHint: {
+    position: "absolute",
+    bottom: -60,
+    fontSize: 12,
+    color: "rgba(255,255,255,0.3)",
+    marginTop: 24,
   },
 });
