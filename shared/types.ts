@@ -20,6 +20,7 @@ export interface Gesture {
   name: string;
   category: string;
   image_url: string;
+  gif_url?: string | null;
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
@@ -71,5 +72,6 @@ export type RootTabParamList = {
 export type RootStackParamList = {
   Tabs: undefined;
   GesturePractice: { gestureId: string; gestureName: string };
+  GestureDictionary: undefined;
 };
 

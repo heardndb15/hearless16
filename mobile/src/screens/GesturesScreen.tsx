@@ -163,9 +163,17 @@ export default function GesturesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Жестовый язык</Text>
-          <Text style={styles.subtitle}>Казахский жестовый язык (КЖЯ)</Text>
+        <View style={[styles.header, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+          <View style={{ alignItems: "center", flex: 1 }}>
+            <Text style={styles.title}>Жестовый язык</Text>
+            <Text style={styles.subtitle}>Казахский жестовый язык (КЖЯ)</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("GestureDictionary")}
+            style={gestDictStyles.dictBtn}
+          >
+            <Text style={gestDictStyles.dictBtnText}>📖 Словарь</Text>
+          </TouchableOpacity>
         </View>
 
         {!isLoggedIn && (
@@ -370,5 +378,19 @@ const styles = StyleSheet.create({
     color: Colors.heading,
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
+  },
+});
+
+const gestDictStyles = StyleSheet.create({
+  dictBtn: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  dictBtnText: {
+    color: Colors.white,
+    fontWeight: "700",
+    fontSize: 12,
   },
 });
