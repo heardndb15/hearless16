@@ -2,7 +2,7 @@ import json
 import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users, subtitles, gestures, alerts, transcribe, sos, study
+from app.routes import users, subtitles, gestures, alerts, transcribe, sos, study, community
 from app.services.whisper_service import transcribe_audio
 
 app = FastAPI(
@@ -30,6 +30,7 @@ app.include_router(alerts.router)
 app.include_router(transcribe.router)
 app.include_router(sos.router)
 app.include_router(study.router)
+app.include_router(community.router, prefix="/community")
 
 
 @app.websocket("/ws/transcribe")
