@@ -686,7 +686,7 @@ export default function GesturePracticePage() {
                       borderRadius: "50%",
                       animation: "spin 0.8s linear infinite"
                     }} />
-                    <span style={{ fontSize: 13, color: "rgba(240, 249, 255, 0.8)", fontFamily: "'Syne', sans-serif", letterSpacing: "0.5px" }}>
+                    <span style={{ fontSize: 13, color: "rgba(240, 249, 255, 0.8)", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "0.5px" }}>
                       Инициализация трекера рук...
                     </span>
                   </div>
@@ -726,7 +726,7 @@ export default function GesturePracticePage() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Точность совпадения:</span>
                   <span style={{ 
-                    fontFamily: "'Syne', sans-serif", 
+                    fontFamily: "'Plus Jakarta Sans', sans-serif", 
                     fontSize: 18, 
                     fontWeight: 700, 
                     color: isMatched ? "var(--success)" : "var(--accent)"
@@ -777,7 +777,7 @@ export default function GesturePracticePage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 style={{ fontFamily: "'Syne', sans-serif", color: "var(--success)", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
+                    <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "var(--success)", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
                       Жест успешно распознан
                     </h3>
                     <p style={{ fontSize: 13, color: "var(--textSecondary)", lineHeight: 1.5 }}>Ваша рука расположена верно, геометрические погрешности не превышают допустимые 15%.</p>
@@ -802,7 +802,7 @@ export default function GesturePracticePage() {
                     </svg>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ fontFamily: "'Syne', sans-serif", color: "var(--text)", fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
+                    <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "var(--text)", fontSize: 14, fontWeight: 600, marginBottom: 6 }}>
                       Рекомендации по выполнению:
                     </h3>
                     {hints.length > 0 ? (
@@ -869,7 +869,7 @@ export default function GesturePracticePage() {
             
             {/* Карточка выбора жеста */}
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 28 }}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
                 Выберите жест для практики:
               </h3>
               
@@ -889,7 +889,7 @@ export default function GesturePracticePage() {
                         border: "1px solid",
                         borderColor: isActive ? "var(--accent)" : "var(--border)",
                         color: isActive ? "#ffffff" : "var(--text)",
-                        fontFamily: "'Syne', sans-serif",
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
                         fontWeight: 600,
                         fontSize: 13,
                         cursor: "pointer",
@@ -970,7 +970,7 @@ export default function GesturePracticePage() {
 
                   {/* Описание */}
                   <div>
-                    <h4 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)" }}>
+                    <h4 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)" }}>
                       {GESTURE_DEFS[activeGesture].name}
                     </h4>
                     <p style={{ fontSize: 12, color: "var(--textSecondary)", lineHeight: 1.5, marginTop: 4 }}>
@@ -983,7 +983,7 @@ export default function GesturePracticePage() {
 
             {/* Карточка состояния пальцев */}
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 28 }}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>
                 Детектор суставов (Реальное время):
               </h3>
               
@@ -1039,7 +1039,7 @@ export default function GesturePracticePage() {
             {/* Карточка объяснения математики */}
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 28 }}>
               <details style={{ width: "100%" }}>
-                <summary style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", cursor: "pointer", outline: "none", display: "flex", alignItems: "center", gap: 8 }}>
+                <summary style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", cursor: "pointer", outline: "none", display: "flex", alignItems: "center", gap: 8 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="16" x2="12" y2="12" />

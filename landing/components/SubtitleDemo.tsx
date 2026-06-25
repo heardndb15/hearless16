@@ -86,7 +86,7 @@ export default function SubtitleDemo() {
                 border: lang === l ? "none" : "1.5px solid #BAE6FD",
                 background: lang === l ? "#0EA5E9" : "white",
                 color: lang === l ? "white" : "#075985",
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontWeight: 600,
                 fontSize: 13,
                 cursor: "pointer",
@@ -158,7 +158,7 @@ export default function SubtitleDemo() {
             background: "#F0F9FF",
             color: "var(--text)",
             fontSize: 15,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             resize: "none",
             outline: "none",
             marginBottom: 20,
@@ -212,7 +212,7 @@ export default function SubtitleDemo() {
           <div style={{ marginTop: 28 }}>
             <h4
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontSize: 14,
                 fontWeight: 600,
                 color: "var(--textSecondary)",

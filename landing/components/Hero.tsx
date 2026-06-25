@@ -53,7 +53,7 @@ export default function Hero() {
           <div className="section-label">AI-платформа</div>
           <h1
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
               fontSize: "clamp(40px, 6vw, 68px)",
               lineHeight: 1.08,
@@ -79,11 +79,11 @@ export default function Hero() {
             жестовому языку с помощью ИИ.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}>
+            <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}>
               Начать бесплатно
               <span style={{ fontSize: 18 }}>→</span>
             </a>
-            <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>
+            <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>
               Как это работает
             </a>
           </div>
@@ -105,7 +105,7 @@ export default function Hero() {
               <div key={s.label}>
                 <div
                   style={{
-                    fontFamily: "'Syne', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
                     color: "#0C4A6E",

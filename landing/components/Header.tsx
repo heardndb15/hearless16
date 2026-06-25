@@ -68,7 +68,7 @@ export default function Header() {
           </div>
           <span
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 22,
               fontWeight: 700,
               color: "#0C4A6E",
@@ -93,7 +93,7 @@ export default function Header() {
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 padding: 0,
                 transition: "color 0.2s",
                 display: "flex",
@@ -157,8 +157,8 @@ export default function Header() {
             onMouseLeave={e => e.currentTarget.style.color = "#075985"}>
             Блог
           </Link>
-          <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>Войти</Link>
-          <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff", border: "none", transition: "all 0.3s ease" }}>Регистрация</Link>
+          <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>Войти</Link>
+          <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff", border: "none", transition: "all 0.3s ease" }}>Регистрация</Link>
         </nav>
       </div>
     </header>

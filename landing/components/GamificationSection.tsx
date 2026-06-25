@@ -57,7 +57,7 @@ export default function GamificationSection() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 24,
                   fontWeight: 700,
                   color: "white",
@@ -68,7 +68,7 @@ export default function GamificationSection() {
               <div>
                 <div
                   style={{
-                    fontFamily: "'Syne', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 18,
                     fontWeight: 600,
                     color: "#0C4A6E",
@@ -151,7 +151,7 @@ export default function GamificationSection() {
                 >
                   <div
                     style={{
-                      fontFamily: "'Syne', sans-serif",
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
                       fontSize: 24,
                       fontWeight: 700,
                       color: "var(--accent)",
@@ -185,7 +185,7 @@ export default function GamificationSection() {
               >
                 <span
                   style={{
-                    fontFamily: "'Syne', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 13,
                     fontWeight: 600,
                     color: "#0C4A6E",
@@ -253,7 +253,7 @@ export default function GamificationSection() {
                 <div style={{ fontSize: 36, marginBottom: 10 }}>{a.icon}</div>
                 <div
                   style={{
-                    fontFamily: "'Syne', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 14,
                     fontWeight: 600,
                     color: "#0C4A6E",
@@ -278,7 +278,7 @@ export default function GamificationSection() {
             >
               <div
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 16,
                   fontWeight: 600,
                   color: "white",

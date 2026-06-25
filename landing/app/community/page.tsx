@@ -78,13 +78,11 @@ function PostCard({
   return (
     <div style={{
       background: "var(--bgCard)",
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)",
-      border: "1.5px solid rgba(255,255,255,0.7)",
+      border: "1px solid var(--border)",
       borderRadius: 20,
       padding: "20px 24px",
       marginBottom: 16,
-      boxShadow: "0 4px 20px rgba(2,136,209,0.08)",
+      boxShadow: "var(--shadow)",
       transition: "box-shadow 0.2s",
     }}>
       {/* Author row */}
@@ -519,7 +517,7 @@ export default function CommunityPage() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "#0C4A6E", fontFamily: "'Syne', sans-serif" }}>
+            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "#0C4A6E", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Community
             </h1>
             <p style={{ margin: "4px 0 0", fontSize: 14, color: "#075985" }}>
@@ -583,8 +581,8 @@ export default function CommunityPage() {
           </div>
         ) : posts.length === 0 ? (
           <div style={{
-            background: "var(--bgCard)", backdropFilter: "blur(16px)",
-            border: "1.5px solid rgba(255,255,255,0.7)", borderRadius: 20,
+            background: "var(--bgCard)",
+            border: "1px solid var(--border)", borderRadius: 20,
             padding: "48px 32px", textAlign: "center",
           }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>

@@ -236,7 +236,7 @@ export default function TranscriptPage() {
         backgroundColor: theme.bg,
         color: theme.text,
         transition: "all 0.3s ease",
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
         padding: "40px 24px"
       }}
     >
@@ -256,7 +256,7 @@ export default function TranscriptPage() {
           <div>
             <h1
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontSize: 24,
                 fontWeight: 800,
                 color: theme.accent,
@@ -605,7 +605,7 @@ export default function TranscriptPage() {
                   padding: 24,
                   boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none"
                 }}>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
                     📝 AI-Конспект (Тезисы):
                   </h3>
                   <div style={{ 
@@ -628,7 +628,7 @@ export default function TranscriptPage() {
                   padding: 24,
                   boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none"
                 }}>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
                     💬 AI-Ответ на вопрос:
                   </h3>
                   <div style={{ 

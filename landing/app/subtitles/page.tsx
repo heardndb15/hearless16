@@ -1122,7 +1122,7 @@ export default function SubtitlesPage() {
                 </div>
 
                 {/* РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёРґРµРѕ-СЂРµР¶РёРјРѕРј */}
-                <div style={{ background: "var(--bgCard)", backdropFilter: "blur(8px)", WebkitbackdropFilter: "blur(8px)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+                <div style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
                     <div>
                       <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Р—Р°РіСЂСѓР·РёС‚Рµ СЃРІРѕРµ РІРёРґРµРѕ</h3>
@@ -1241,7 +1241,7 @@ export default function SubtitlesPage() {
           {/* ==========================================
               РџР РђР’Р«Р™ Р‘Р›РћРљ: РќРђРЎРўР РћР™РљР РЎРўРР›Р•Р™
              ========================================== */}
-          <div style={{ background: "var(--bgCard)", backdropFilter: "blur(8px)", WebkitbackdropFilter: "blur(8px)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+          <div style={{ background: "var(--bgCard)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
             <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>
               РќР°СЃС‚СЂРѕР№РєРё СЃСѓР±С‚РёС‚СЂРѕРІ
             </h3>

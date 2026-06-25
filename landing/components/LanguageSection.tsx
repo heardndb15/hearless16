@@ -63,7 +63,7 @@ export default function LanguageSection() {
               <div
                 style={{
                   display: "inline-block",
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 12,
                   fontWeight: 700,
                   color: "#0369A1",
@@ -78,7 +78,7 @@ export default function LanguageSection() {
               </div>
               <h3
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
                   color: "#0C4A6E",
@@ -106,7 +106,7 @@ export default function LanguageSection() {
               >
                 <span
                   style={{
-                    fontFamily: "'Syne', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
                     color: "#0EA5E9",

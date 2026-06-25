@@ -47,14 +47,14 @@ export default function CTASection() {
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="/register"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}
           >
             Создать аккаунт
             <span style={{ fontSize: 18 }}>→</span>
           </a>
           <a
             href="/features"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}
           >
             Все возможности
           </a>

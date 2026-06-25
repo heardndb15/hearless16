@@ -76,7 +76,7 @@ export default function SignLanguagePage() {
         {/* Levels */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, margin: "40px 0" }}>
           {LEVELS.map(l => (
-            <div key={l.name} style={{ background: "var(--bgCard)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", textAlign: "center" }}>
+            <div key={l.name} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", textAlign: "center" }}>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 36, fontWeight: 700, color: l.color }}>{l.count}</div>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", margin: "8px 0 4px" }}>{l.name}</div>
               <div style={{ fontSize: 13, color: "var(--textMuted)" }}>{l.desc}</div>
@@ -88,7 +88,7 @@ export default function SignLanguagePage() {
         <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 20 }}>Каталог уроков</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
           {LESSONS.map(lesson => (
-            <div key={lesson.title} style={{ background: "var(--bgCard)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", transition: "all 0.3s ease", cursor: "default" }}
+            <div key={lesson.title} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", transition: "all 0.3s ease", cursor: "default" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; e.currentTarget.style.transform = "translateY(0)"; }}>
               <div style={{ fontSize: 32, marginBottom: 14 }}>{lesson.icon}</div>

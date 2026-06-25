@@ -50,7 +50,7 @@ export default function Footer() {
               </div>
               <span
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 20,
                   fontWeight: 700,
                   color: "#0C4A6E",
@@ -102,7 +102,7 @@ export default function Footer() {
             <div key={col.title}>
               <h4
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 13,
                   fontWeight: 600,
                   color: "#0C4A6E",
