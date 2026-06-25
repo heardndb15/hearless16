@@ -6,17 +6,30 @@ from app.limiter import limiter
 
 router = APIRouter(prefix="/transcribe", tags=["transcribe"])
 
+# Map display labels (sent by frontend) or ISO codes to Whisper-compatible codes
+_LANG_NORM: dict[str, str] = {
+    "ru": "ru", "kk": "kk", "en": "en",
+    "ENG": "en",
+    # Whisper also accepts full names
+    "russian": "ru", "kazakh": "kk", "english": "en",
+}
+
+
+def _normalize_lang(lang: str) -> str:
+    return _LANG_NORM.get(lang, "ru")
+
 
 @router.post("/")
 @limiter.limit("10/minute")
 async def transcribe_audio_route(
     request: Request,
     file: UploadFile = File(...),
+    language: str = Form(default="ru"),
     current_user: dict = Depends(get_current_user),
 ):
     from app.services.whisper_service import transcribe_audio
     contents = await file.read()
-    text = await asyncio.to_thread(transcribe_audio, contents, "ru")
+    text = await asyncio.to_thread(transcribe_audio, contents, _normalize_lang(language))
     return {"text": text}
 
 
@@ -34,7 +47,7 @@ async def diarize_audio_route(
     contents = await file.read()
     session_state = {"current_speaker": last_speaker, "last_end": last_end}
     result = await asyncio.to_thread(
-        transcribe_with_diarization, contents, language, session_state
+        transcribe_with_diarization, contents, _normalize_lang(language), session_state
     )
     return {
         "text": result["text"],

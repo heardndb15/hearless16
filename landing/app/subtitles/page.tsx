@@ -123,6 +123,10 @@ export default function SubtitlesPage() {
   // New: auto-save state
   const [sessionSaved, setSessionSaved] = useState(false);
 
+  // Map display lang labels to ISO codes for backend API
+  const toLangCode = (l: string): string =>
+    l === "ENG" ? "en" : l.startsWith("T") || l.startsWith("Т") || l.startsWith("Ч") ? "kk" : "ru";
+
   // New: speaker diarization
   const [useDiarization, setUseDiarization] = useState(false);
   const useDiarizationRef = useRef(false);
@@ -263,7 +267,7 @@ export default function SubtitlesPage() {
       await fetch(`${API_URL}/subtitles/`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ text: historyArr.join("\n"), language: lang }),
+        body: JSON.stringify({ text: historyArr.join("\n"), language: toLangCode(lang) }),
       });
       setSessionSaved(true);
     } catch {}
@@ -309,6 +313,7 @@ export default function SubtitlesPage() {
               }
             }
           } else {
+            fd.append("language", toLangCode(lang));
             const res = await fetch(`${API_URL}/transcribe/`, {
               method: "POST",
               headers: { Authorization: `Bearer ${token}` },
@@ -421,6 +426,7 @@ export default function SubtitlesPage() {
       }
       setIsMicActive(false);
       setInterimText("");
+      saveSession(history);
       return;
     }
 
