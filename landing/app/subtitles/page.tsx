@@ -72,6 +72,10 @@ const DEMO_VIDEO_SUBTITLES = [
   { start: 18, end: 21, text: "Enjoy your favorite web content on the big screen." }
 ];
 
+const SPEAKER_COLORS = ["#0EA5E9", "#10B981", "#F59E0B", "#8B5CF6"];
+const SPEAKER_BG = ["rgba(14,165,233,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
+const SPEAKER_LABELS = ["Говорящий 1", "Говорящий 2", "Говорящий 3", "Говорящий 4"];
+
 export default function SubtitlesPage() {
   const [mode, setMode] = useState<"speech" | "video">("speech"); // "speech" (РґРёРєС‚РѕРІРєР°) РёР»Рё "video" (РІРёРґРµРѕ)
   const [lang, setLang] = useState("Р РЈРЎ");
@@ -118,6 +122,14 @@ export default function SubtitlesPage() {
 
   // New: auto-save state
   const [sessionSaved, setSessionSaved] = useState(false);
+
+  // New: speaker diarization
+  const [useDiarization, setUseDiarization] = useState(false);
+  const useDiarizationRef = useRef(false);
+  useEffect(() => { useDiarizationRef.current = useDiarization; }, [useDiarization]);
+  interface SpeakerSegment { text: string; speaker: number; }
+  const [speakerSegments, setSpeakerSegments] = useState<SpeakerSegment[]>([]);
+  const diarizationStateRef = useRef({ current_speaker: 0, last_end: 0.0 });
 
   //РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ РїР»Р°РІР°СЋС‰РµРіРѕ РѕРєРЅР° (Picture-in-Picture)
   const [isPipActive, setIsPipActive] = useState(false);
@@ -275,14 +287,36 @@ export default function SubtitlesPage() {
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
-          const res = await fetch(`${API_URL}/transcribe/`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: fd,
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.text?.trim()) setHistory(prev => [...prev, data.text.trim()]);
+          if (useDiarizationRef.current) {
+            fd.append("last_speaker", String(diarizationStateRef.current.current_speaker));
+            fd.append("last_end", String(diarizationStateRef.current.last_end));
+            fd.append("language", lang);
+            const res = await fetch(`${API_URL}/transcribe/diarize`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+              body: fd,
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.segments?.length) {
+                setSpeakerSegments(prev => [...prev, ...data.segments]);
+                setHistory(prev => [...prev, data.text?.trim()].filter(Boolean) as string[]);
+                diarizationStateRef.current = {
+                  current_speaker: data.next_speaker ?? 0,
+                  last_end: data.next_end ?? 0,
+                };
+              }
+            }
+          } else {
+            const res = await fetch(`${API_URL}/transcribe/`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+              body: fd,
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.text?.trim()) setHistory(prev => [...prev, data.text.trim()]);
+            }
           }
         } catch {}
         if (isMicActiveRef.current) setWhisperStatus("recording");
@@ -316,6 +350,7 @@ export default function SubtitlesPage() {
     setIsMicActive(false);
     setWhisperStatus("idle");
     setInterimText("");
+    diarizationStateRef.current = { current_speaker: 0, last_end: 0.0 };
     saveSession(history);
   };
 
@@ -578,7 +613,9 @@ export default function SubtitlesPage() {
           subtitlesList: userSubtitles.length > 0 ? userSubtitles : DEMO_VIDEO_SUBTITLES,
           displayText: s.displayText,
           aiSummary: s.aiSummary,
-          aiResponse: s.aiResponse
+          aiResponse: s.aiResponse,
+          speakerSegments,
+          useDiarization,
         },
       });
     }
@@ -981,6 +1018,36 @@ export default function SubtitlesPage() {
                     </div>
                   </div>
 
+                  {/* Speaker diarization view */}
+                  {useDiarization && speakerSegments.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 260, overflowY: "auto" }}>
+                      {speakerSegments.map((seg, idx) => {
+                        const si = seg.speaker % 4;
+                        const isEven = seg.speaker % 2 === 0;
+                        return (
+                          <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10, flexDirection: isEven ? "row" : "row-reverse" }}>
+                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: SPEAKER_COLORS[si], display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                              S{seg.speaker + 1}
+                            </div>
+                            <div style={{ maxWidth: "72%" }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: SPEAKER_COLORS[si], marginBottom: 3, textAlign: isEven ? "left" : "right" }}>
+                                {SPEAKER_LABELS[si]}
+                              </div>
+                              <div style={{ background: SPEAKER_BG[si], border: `1px solid ${SPEAKER_COLORS[si]}33`, borderRadius: isEven ? "4px 16px 16px 16px" : "16px 4px 16px 16px", padding: "8px 14px", fontSize: `${Math.max(14, fontSize - 4)}px`, lineHeight: 1.5, color: "var(--text)", fontWeight: 500 }}>
+                                {seg.text}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {isMicActive && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 44 }}>
+                          <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 14 }}>{interimText || "Слушаю..."}</span>
+                          <span style={{ display: "inline-block", width: 3, height: 18, background: "var(--accent)", animation: "cursor-blink 0.8s step-end infinite" }} />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
                   <div style={{
                     fontSize: `${fontSize}px`,
                     fontWeight: 600,
@@ -997,7 +1064,7 @@ export default function SubtitlesPage() {
                           </span>
                         ))}
                         <span style={{ color: "var(--accent)", fontWeight: 800 }}>
-                          {interimText || "РЎР»СѓС€Р°СЋ РІР°СЃ..."}
+                          {interimText || "Слушаю вас..."}
                         </span>
                       </>
                     ) : isDemo ? (
@@ -1029,6 +1096,7 @@ export default function SubtitlesPage() {
                     )}
                     <span style={{ display: "inline-block", width: 3, height: fontSize - 4, background: "var(--accent)", marginLeft: 6, verticalAlign: "middle", animation: "cursor-blink 0.8s step-end infinite" }} />
                   </div>
+                  )}
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
                     <span style={{ fontSize: 11, color: "var(--textMuted)" }}>
@@ -1102,6 +1170,14 @@ export default function SubtitlesPage() {
                         style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(14,165,233,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer" }}>
                         {useWhisper ? "→ Web Speech" : "→ Whisper"}
                       </button>
+                      {useWhisper && (
+                        <button
+                          onClick={() => { if (!isMicActive) { setUseDiarization(v => !v); if (useDiarization) setSpeakerSegments([]); } }}
+                          disabled={isMicActive}
+                          style={{ padding: "4px 10px", borderRadius: 16, border: `1px solid ${useDiarization ? SPEAKER_COLORS[0] : "var(--border)"}`, background: useDiarization ? "rgba(14,165,233,0.12)" : "transparent", color: useDiarization ? SPEAKER_COLORS[0] : "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                          👥 {useDiarization ? "Спикеры вкл" : "Спикеры"}
+                        </button>
+                      )}
                       {sessionSaved && <span style={{ padding: "4px 10px", borderRadius: 16, background: "rgba(34,197,94,0.1)", color: "#22c55e", fontSize: 11, fontWeight: 600 }}>✓ Сохранено</span>}
                     </div>
                   </div>
