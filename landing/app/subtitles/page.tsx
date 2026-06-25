@@ -2,6 +2,57 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { createClient } from "../../lib/supabase";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
+
+interface SubtitleSegment { start: number; end: number; text: string; }
+
+function parseSRT(content: string): SubtitleSegment[] {
+  const blocks = content.trim().split(/\n\s*\n/);
+  const result: SubtitleSegment[] = [];
+  for (const block of blocks) {
+    const lines = block.trim().split("\n");
+    if (lines.length < 3) continue;
+    const timeLine = lines[1];
+    const timeMatch = timeLine.match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/);
+    if (!timeMatch) continue;
+    const toSec = (h: string, m: string, s: string, ms: string) =>
+      parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s) + parseInt(ms) / 1000;
+    const start = toSec(timeMatch[1], timeMatch[2], timeMatch[3], timeMatch[4]);
+    const end = toSec(timeMatch[5], timeMatch[6], timeMatch[7], timeMatch[8]);
+    const text = lines.slice(2).join(" ").replace(/<[^>]+>/g, "").trim();
+    if (text) result.push({ start, end, text });
+  }
+  return result;
+}
+
+function parseVTT(content: string): SubtitleSegment[] {
+  const lines = content.replace(/^WEBVTT[^\n]*\n/, "").trim().split("\n");
+  const result: SubtitleSegment[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const timeLine = lines[i];
+    const timeMatch = timeLine.match(/(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})\.(\d{3})/);
+    if (timeMatch) {
+      const toSec = (h: string, m: string, s: string, ms: string) =>
+        parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s) + parseInt(ms) / 1000;
+      const start = toSec(timeMatch[1], timeMatch[2], timeMatch[3], timeMatch[4]);
+      const end = toSec(timeMatch[5], timeMatch[6], timeMatch[7], timeMatch[8]);
+      i++;
+      const textLines: string[] = [];
+      while (i < lines.length && lines[i].trim() !== "") {
+        textLines.push(lines[i].replace(/<[^>]+>/g, "").trim());
+        i++;
+      }
+      const text = textLines.join(" ");
+      if (text) result.push({ start, end, text });
+    } else {
+      i++;
+    }
+  }
+  return result;
+}
 
 // 1. Р”РµРјРѕ-С„СЂР°Р·С‹ РґР»СЏ СЂРµР¶РёРјР° РґРёРєС‚РѕРІРєРё
 const PHRASES: Record<string, string[]> = {
@@ -54,7 +105,21 @@ export default function SubtitlesPage() {
   const [audioSourceConnected, setAudioSourceConnected] = useState(false);
   const [frequencyData, setFrequencyData] = useState<number[]>([10, 15, 8, 12, 6]);
 
-  // РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ РїР»Р°РІР°СЋС‰РµРіРѕ РѕРєРЅР° (Picture-in-Picture)
+  // New: user-uploaded SRT subtitles for video mode
+  const [userSubtitles, setUserSubtitles] = useState<SubtitleSegment[]>([]);
+
+  // New: Whisper backend mode
+  const [useWhisper, setUseWhisper] = useState(false);
+  const [whisperStatus, setWhisperStatus] = useState<"idle" | "recording" | "processing">("idle");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const whisperIntervalRef = useRef<any>(null);
+  const [token, setToken] = useState("");
+
+  // New: auto-save state
+  const [sessionSaved, setSessionSaved] = useState(false);
+
+  //РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ РїР»Р°РІР°СЋС‰РµРіРѕ РѕРєРЅР° (Picture-in-Picture)
   const [isPipActive, setIsPipActive] = useState(false);
   const [activePipText, setActivePipText] = useState("");
   const lastSubUpdateTimeRef = useRef<number>(Date.now());
@@ -172,6 +237,102 @@ export default function SubtitlesPage() {
   };
 
   // --- Р›РћР“РРљРђ Р РђР‘РћРўР« РњРРљР РћР¤РћРќРђ (WEB SPEECH API) ---
+  // Load auth token for backend Whisper
+  useEffect(() => {
+    createClient().auth.getSession().then(({ data: { session } }) => {
+      setToken(session?.access_token ?? "");
+    });
+  }, []);
+
+  const saveSession = async (historyArr: string[]) => {
+    if (!token || historyArr.length === 0 || sessionSaved) return;
+    try {
+      await fetch(`${API_URL}/subtitles/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: historyArr.join("\n"), language: lang }),
+      });
+      setSessionSaved(true);
+    } catch {}
+  };
+
+  const startWhisperRecording = async () => {
+    if (!token) { alert("Войдите в аккаунт для Whisper AI"); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setWhisperStatus("recording");
+      setIsMicActive(true);
+      isMicActiveRef.current = true;
+      setInterimText("Слушаю (Whisper AI)...");
+      audioChunksRef.current = [];
+
+      const sendChunk = async () => {
+        const chunks = [...audioChunksRef.current];
+        audioChunksRef.current = [];
+        if (chunks.length === 0) return;
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setWhisperStatus("processing");
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, "audio.webm");
+          const res = await fetch(`${API_URL}/transcribe/`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.text?.trim()) setHistory(prev => [...prev, data.text.trim()]);
+          }
+        } catch {}
+        if (isMicActiveRef.current) setWhisperStatus("recording");
+        setInterimText(isMicActiveRef.current ? "Слушаю (Whisper AI)..." : "");
+      };
+
+      const startRecorder = () => {
+        const mr = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+        mr.start();
+        mediaRecorderRef.current = mr;
+      };
+
+      startRecorder();
+      whisperIntervalRef.current = setInterval(async () => {
+        if (!isMicActiveRef.current) { clearInterval(whisperIntervalRef.current); stream.getTracks().forEach(t => t.stop()); return; }
+        if (mediaRecorderRef.current?.state === "recording") {
+          mediaRecorderRef.current.stop();
+          await new Promise<void>(r => { mediaRecorderRef.current!.onstop = () => r(); });
+          await sendChunk();
+          if (isMicActiveRef.current) startRecorder();
+        }
+      }, 6000);
+    } catch { setIsMicActive(false); isMicActiveRef.current = false; setWhisperStatus("idle"); alert("Нет доступа к микрофону"); }
+  };
+
+  const stopWhisperRecording = () => {
+    clearInterval(whisperIntervalRef.current);
+    isMicActiveRef.current = false;
+    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    setIsMicActive(false);
+    setWhisperStatus("idle");
+    setInterimText("");
+    saveSession(history);
+  };
+
+  const handleSubtitleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const content = ev.target?.result as string;
+      const parsed = file.name.endsWith(".vtt") ? parseVTT(content) : parseSRT(content);
+      setUserSubtitles(parsed);
+      setVideoSubtitle("");
+    };
+    reader.readAsText(file, "utf-8");
+    e.target.value = "";
+  };
+
   const speechSimIntervalRef = useRef<any>(null);
   const runSpeechAudioSimulation = () => {
     if (speechSimIntervalRef.current) clearInterval(speechSimIntervalRef.current);
@@ -414,7 +575,7 @@ export default function SubtitlesPage() {
           videoSubtitle: s.videoSubtitle,
           currentTime: videoElementRef.current?.currentTime || 0,
           isVideoPlaying: s.isVideoPlaying,
-          subtitlesList: DEMO_VIDEO_SUBTITLES,
+          subtitlesList: userSubtitles.length > 0 ? userSubtitles : DEMO_VIDEO_SUBTITLES,
           displayText: s.displayText,
           aiSummary: s.aiSummary,
           aiResponse: s.aiResponse
@@ -544,9 +705,8 @@ export default function SubtitlesPage() {
 
     // РС‰РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ Р±Р»РѕРє СЃСѓР±С‚РёС‚СЂРѕРІ РґР»СЏ РґРµРјРѕ-РІРёРґРµРѕ
     const isDemoVideo = videoSrc === "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
-    const subtitleText = isDemoVideo 
-      ? (DEMO_VIDEO_SUBTITLES.find(sub => time >= sub.start && time <= sub.end)?.text || "")
-      : "";
+    const subtitleSource = userSubtitles.length > 0 ? userSubtitles : (isDemoVideo ? DEMO_VIDEO_SUBTITLES : []);
+    const subtitleText = subtitleSource.find(sub => time >= sub.start && time <= sub.end)?.text || "";
     setVideoSubtitle(subtitleText);
 
     // РћС‚РїСЂР°РІР»СЏРµРј РІСЂРµРјСЏ Рё Р°РєС‚РёРІРЅС‹Р№ СЃСѓР±С‚РёС‚СЂ РІ РєР°РЅР°Р»
@@ -887,20 +1047,24 @@ export default function SubtitlesPage() {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                      <button 
-                        onClick={toggleMicrophone}
+                      <button
+                        onClick={() => useWhisper ? (isMicActive ? stopWhisperRecording() : startWhisperRecording()) : toggleMicrophone()}
                         className="btn"
-                        style={{ 
-                          padding: "12px 24px", 
-                          fontSize: 13, 
+                        style={{
+                          padding: "12px 24px",
+                          fontSize: 13,
                           borderRadius: 50,
                           background: isMicActive ? "var(--sos)" : "var(--gradient)",
                           color: "white",
                           boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
-                          animation: isMicActive ? "mic-pulse 1.5s infinite" : "none"
+                          animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
+                          border: "none",
+                          cursor: "pointer",
                         }}
                       >
-                        {isMicActive ? "рџ›‘ Р’С‹РєР»СЋС‡РёС‚СЊ РјРёРєСЂРѕС„РѕРЅ" : "рџЋ™пёЏ Р’РєР»СЋС‡РёС‚СЊ РјРёРєСЂРѕС„РѕРЅ"}
+                        {isMicActive
+                          ? (useWhisper ? "⏹ Остановить Whisper" : "🛑 Выключить микрофон")
+                          : (useWhisper ? "🤖 Запустить Whisper AI" : "🎙️ Включить микрофон")}
                       </button>
 
                       <button 
@@ -929,11 +1093,16 @@ export default function SubtitlesPage() {
                       </label>
                     </div>
 
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(2,132,199,0.08)", color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>{lang}</span>
-                      <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
-                        {isMicActive ? "Web Speech API" : "Whisper Engine"}
+                      <span style={{ padding: "6px 14px", borderRadius: 30, background: useWhisper ? "rgba(14,165,233,0.12)" : "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
+                        {useWhisper ? (whisperStatus === "processing" ? "⏳ Обработка..." : "🤖 Whisper AI") : "Web Speech API"}
                       </span>
+                      <button onClick={() => { if (!isMicActive) setUseWhisper(v => !v); }} disabled={isMicActive}
+                        style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(14,165,233,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer" }}>
+                        {useWhisper ? "→ Web Speech" : "→ Whisper"}
+                      </button>
+                      {sessionSaved && <span style={{ padding: "4px 10px", borderRadius: 16, background: "rgba(34,197,94,0.1)", color: "#22c55e", fontSize: 11, fontWeight: 600 }}>✓ Сохранено</span>}
                     </div>
                   </div>
                 </div>
@@ -1128,14 +1297,25 @@ export default function SubtitlesPage() {
                       <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Р—Р°РіСЂСѓР·РёС‚Рµ СЃРІРѕРµ РІРёРґРµРѕ</h3>
                       <p style={{ fontSize: 12, color: "var(--textSecondary)" }}>РџРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ С„РѕСЂРјР°С‚С‹ MP4, WebM (С„Р°Р№Р»С‹ РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ Р»РѕРєР°Р»СЊРЅРѕ).</p>
                     </div>
-                    {/* РљРЅРѕРїРєР° Р·Р°РіСЂСѓР·РєРё */}
-                    <label className="btn btn-outline" style={{ padding: "10px 20px", fontSize: 12, borderRadius: 10, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                      </svg>
-                      <span>Р’С‹Р±СЂР°С‚СЊ С„Р°Р№Р»</span>
-                      <input type="file" accept="video/*" onChange={handleVideoUpload} style={{ display: "none" }} />
-                    </label>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <label className="btn btn-outline" style={{ padding: "10px 16px", fontSize: 12, borderRadius: 10, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <span>🎬 Видео</span>
+                        <input type="file" accept="video/*" onChange={handleVideoUpload} style={{ display: "none" }} />
+                      </label>
+                      <label className="btn btn-outline" style={{ padding: "10px 16px", fontSize: 12, borderRadius: 10, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, borderColor: userSubtitles.length > 0 ? "var(--accent)" : undefined, color: userSubtitles.length > 0 ? "var(--accent)" : undefined }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <span>{userSubtitles.length > 0 ? `✓ SRT (${userSubtitles.length})` : "📄 SRT/VTT"}</span>
+                        <input type="file" accept=".srt,.vtt" onChange={handleSubtitleUpload} style={{ display: "none" }} />
+                      </label>
+                      {userSubtitles.length > 0 && (
+                        <button onClick={() => setUserSubtitles([])} style={{ padding: "10px 12px", fontSize: 11, borderRadius: 10, border: "1px solid var(--border)", background: "transparent", color: "var(--textSecondary)", cursor: "pointer" }}>✕ Удалить SRT</button>
+                      )}
+                    </div>
                   </div>
 
                   <div style={{ display: "flex", gap: 12, borderTop: "1px solid var(--border)", paddingTop: 16, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
