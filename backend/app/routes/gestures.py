@@ -29,7 +29,10 @@ async def get_gesture(gesture_id: str):
 
 @router.post("/recognize")
 async def recognize(data: GestureRecognizeRequest):
-    frame = base64.b64decode(data.image)
+    try:
+        frame = base64.b64decode(data.image)
+    except Exception:
+        raise HTTPException(status_code=422, detail="Invalid base64 image data")
     result = recognize_gesture(frame, data.target_gesture)
     return result
 

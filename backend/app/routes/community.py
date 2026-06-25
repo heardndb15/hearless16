@@ -70,28 +70,34 @@ async def list_posts(
     current_user: Optional[dict] = Depends(get_optional_user),
 ):
     db = get_supabase()
-    query = (
-        db.table("posts")
-        .select("id, text, image_url, likes_count, comments_count, created_at, user_id, users(id, name)")
-    )
-    if sort == "popular":
-        query = query.order("likes_count", desc=True).order("created_at", desc=True)
-    else:
-        query = query.order("created_at", desc=True)
-    response = query.range(offset, offset + limit - 1).execute()
-    posts = response.data or []
+    try:
+        query = (
+            db.table("posts")
+            .select("id, text, image_url, likes_count, comments_count, created_at, user_id, users(id, name)")
+        )
+        if sort == "popular":
+            query = query.order("likes_count", desc=True).order("created_at", desc=True)
+        else:
+            query = query.order("created_at", desc=True)
+        response = query.range(offset, offset + limit - 1).execute()
+        posts = response.data or []
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database unavailable: {str(e)}")
 
     liked_set: set = set()
     if current_user and posts:
         post_ids = [p["id"] for p in posts]
-        likes_res = (
-            db.table("post_likes")
-            .select("post_id")
-            .eq("user_id", current_user["id"])
-            .in_("post_id", post_ids)
-            .execute()
-        )
-        liked_set = {row["post_id"] for row in (likes_res.data or [])}
+        try:
+            likes_res = (
+                db.table("post_likes")
+                .select("post_id")
+                .eq("user_id", current_user["id"])
+                .in_("post_id", post_ids)
+                .execute()
+            )
+            liked_set = {row["post_id"] for row in (likes_res.data or [])}
+        except Exception:
+            pass
 
     return [_format_post(p, liked_set) for p in posts]
 
@@ -167,13 +173,16 @@ async def toggle_like(post_id: str, current_user: dict = Depends(get_current_use
 @router.get("/posts/{post_id}/comments")
 async def list_comments(post_id: str):
     db = get_supabase()
-    response = (
-        db.table("post_comments")
-        .select("id, text, created_at, user_id, users(id, name)")
-        .eq("post_id", post_id)
-        .order("created_at", desc=False)
-        .execute()
-    )
+    try:
+        response = (
+            db.table("post_comments")
+            .select("id, text, created_at, user_id, users(id, name)")
+            .eq("post_id", post_id)
+            .order("created_at", desc=False)
+            .execute()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database unavailable: {str(e)}")
     result = []
     for c in (response.data or []):
         author = c.get("users") or {}
