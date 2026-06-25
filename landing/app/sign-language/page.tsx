@@ -3,6 +3,73 @@
 import { useState } from "react";
 import Link from "next/link";
 
+// ── Hand SVG component ────────────────────────────────────────────────────────
+type Fingers = {
+  thumb?: boolean;
+  index?: boolean;
+  middle?: boolean;
+  ring?: boolean;
+  pinky?: boolean;
+  shape?: "o" | "default";
+};
+
+function HandSign({ fingers, size = 120, color = "#0EA5E9" }: { fingers: Fingers; size?: number; color?: string }) {
+  const { thumb, index, middle, ring, pinky, shape } = fingers;
+  const gray = "#CBD5E1";
+  const palm = "#E2E8F0";
+
+  // Special О/кольцо shape
+  if (shape === "o") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 80 100" style={{ display: "block", margin: "0 auto" }}>
+        <rect x="5" y="60" width="70" height="36" rx="12" fill={palm} stroke="#D1D5DB" strokeWidth="1" />
+        {[7, 23, 39, 55].map((x, i) => (
+          <rect key={i} x={x} y="44" width="14" height="18" rx="6" fill={gray} />
+        ))}
+        <circle cx="40" cy="34" r="17" fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" />
+        <path d="M 14 62 Q 8 46 22 34" fill="none" stroke={color} strokeWidth="5.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  const cols = [
+    { key: "pinky",  x: 7,  ext: !!pinky  },
+    { key: "ring",   x: 23, ext: !!ring   },
+    { key: "middle", x: 39, ext: !!middle },
+    { key: "index",  x: 55, ext: !!index  },
+  ];
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 100" style={{ display: "block", margin: "0 auto" }}>
+      {/* Fingers — drawn first so palm covers their base */}
+      {cols.map(({ key, x, ext }) => (
+        <rect
+          key={key}
+          x={x}
+          y={ext ? 2 : 44}
+          width={14}
+          height={ext ? 58 : 17}
+          rx={6}
+          fill={ext ? color : gray}
+        />
+      ))}
+      {/* Palm */}
+      <rect x="5" y="58" width="70" height="38" rx="12" fill={palm} stroke="#D1D5DB" strokeWidth="1" />
+      {/* Thumb — rotated from left edge of palm */}
+      <rect
+        x="-6"
+        y={thumb ? -25 : -11}
+        width="13"
+        height={thumb ? 27 : 13}
+        rx="5"
+        fill={thumb ? color : gray}
+        transform="translate(16, 72) rotate(-40)"
+      />
+    </svg>
+  );
+}
+
+// ── Tutorial data ─────────────────────────────────────────────────────────────
 const TUTORIALS = [
   {
     id: "alphabet",
@@ -16,6 +83,7 @@ const TUTORIALS = [
         letter: "A",
         name: "Буква А",
         emoji: "✊",
+        fingers: { thumb: true, index: false, middle: false, ring: false, pinky: false },
         desc: "Кулак. Четыре пальца сжаты в кулак, большой палец отведён сбоку — не поверх остальных.",
         steps: [
           "Сожмите все четыре пальца в кулак плотно",
@@ -28,6 +96,7 @@ const TUTORIALS = [
         letter: "B",
         name: "Буква В",
         emoji: "🖐️",
+        fingers: { thumb: true, index: true, middle: true, ring: true, pinky: true },
         desc: "Открытая прямая ладонь, все пять пальцев вытянуты и плотно сомкнуты вместе.",
         steps: [
           "Полностью выпрямите все пять пальцев",
@@ -40,6 +109,7 @@ const TUTORIALS = [
         letter: "G",
         name: "Буква Г",
         emoji: "👈",
+        fingers: { thumb: true, index: true, middle: false, ring: false, pinky: false },
         desc: "Указательный палец поднят вертикально вверх, большой — отведён горизонтально под 90°. Остальные сжаты.",
         steps: [
           "Сожмите кулак",
@@ -52,6 +122,7 @@ const TUTORIALS = [
         letter: "V",
         name: "Победа (V)",
         emoji: "✌️",
+        fingers: { thumb: false, index: true, middle: true, ring: false, pinky: false },
         desc: "Указательный и средний пальцы подняты и разведены в стороны, безымянный и мизинец прижаты к ладони.",
         steps: [
           "Прижмите безымянный палец и мизинец к ладони",
@@ -64,6 +135,7 @@ const TUTORIALS = [
         letter: "O",
         name: "Буква О",
         emoji: "👌",
+        fingers: { shape: "o" as const },
         desc: "Пальцы округлены, кончики всех пальцев касаются кончика большого — получается форма кольца.",
         steps: [
           "Согните все четыре пальца в округлую форму",
@@ -86,6 +158,7 @@ const TUTORIALS = [
         letter: "O",
         name: "0 — Ноль",
         emoji: "👌",
+        fingers: { shape: "o" as const },
         desc: "Форма кольца O — ноль. Те же пальцы, что и буква О.",
         steps: [
           "Округлите все четыре пальца",
@@ -97,6 +170,7 @@ const TUTORIALS = [
         letter: "G",
         name: "1 — Один",
         emoji: "☝️",
+        fingers: { thumb: false, index: true, middle: false, ring: false, pinky: false },
         desc: "Один указательный палец поднят вверх — жест «один».",
         steps: [
           "Сожмите все пальцы в кулак",
@@ -108,6 +182,7 @@ const TUTORIALS = [
         letter: "V",
         name: "2 — Два",
         emoji: "✌️",
+        fingers: { thumb: false, index: true, middle: true, ring: false, pinky: false },
         desc: "Два пальца вверх и врозь — жест «два».",
         steps: [
           "Поднимите указательный и средний пальцы",
@@ -129,6 +204,7 @@ const TUTORIALS = [
         letter: "B",
         name: "Привет",
         emoji: "👋",
+        fingers: { thumb: true, index: true, middle: true, ring: true, pinky: true },
         desc: "Открытая ладонь, слегка покачайте кистью вправо-влево — «привет».",
         steps: [
           "Выпрямите все пальцы, раскройте ладонь",
@@ -141,6 +217,7 @@ const TUTORIALS = [
         letter: "A",
         name: "Да",
         emoji: "✊",
+        fingers: { thumb: false, index: false, middle: false, ring: false, pinky: false },
         desc: "Кулак слегка опускается и поднимается — жест согласия «да».",
         steps: [
           "Сожмите кулак",
@@ -162,6 +239,7 @@ const TUTORIALS = [
         letter: "V",
         name: "Хорошо",
         emoji: "👍",
+        fingers: { thumb: true, index: false, middle: false, ring: false, pinky: false },
         desc: "Большой палец поднят вверх — «хорошо», «класс».",
         steps: [
           "Сожмите кулак",
@@ -174,6 +252,7 @@ const TUTORIALS = [
         letter: "O",
         name: "Отлично",
         emoji: "👌",
+        fingers: { shape: "o" as const },
         desc: "Большой и указательный соединены в кольцо — «ок», «отлично».",
         steps: [
           "Соедините кончики большого и указательного в кольцо",
@@ -261,26 +340,45 @@ export default function SignLanguagePage() {
 
           {/* Tutorial area */}
           <div>
-            {/* Gesture step tabs */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+            {/* ── Gesture card grid ── */}
+            <div style={{
+              display: "flex", gap: 10, marginBottom: 20,
+              overflowX: "auto", paddingBottom: 6,
+              scrollbarWidth: "thin",
+            }}>
               {tutorial.gestures.map((g, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveStep(i)}
                   style={{
-                    padding: "7px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    border: activeStep === i ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+                    flexShrink: 0,
+                    width: 88,
+                    padding: "10px 6px 8px",
+                    borderRadius: 14,
+                    border: activeStep === i ? "2px solid #0EA5E9" : "1.5px solid #E2E8F0",
                     background: activeStep === i ? "#E0F2FE" : "white",
-                    color: activeStep === i ? "#0369A1" : "var(--textSecondary)",
-                    transition: "all 0.2s",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    transition: "all 0.18s",
+                    boxShadow: activeStep === i ? "0 0 0 3px rgba(14,165,233,0.12)" : "none",
                   }}
                 >
-                  {g.emoji} {g.name}
+                  <HandSign
+                    fingers={g.fingers}
+                    size={58}
+                    color={activeStep === i ? "#0EA5E9" : "#94A3B8"}
+                  />
+                  <div style={{
+                    fontSize: 10, fontWeight: 700, marginTop: 6, lineHeight: 1.3,
+                    color: activeStep === i ? "#0369A1" : "#475569",
+                  }}>
+                    {g.name}
+                  </div>
                 </button>
               ))}
             </div>
 
-            {/* Main lesson card */}
+            {/* ── Main lesson card ── */}
             <div style={{
               background: "var(--bgCard)",
               border: "1px solid var(--border)",
@@ -290,22 +388,25 @@ export default function SignLanguagePage() {
             }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 36 }}>
 
-                {/* Left: reference */}
+                {/* Left: reference with SVG hand */}
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: 12 }}>
                     Эталон жеста
                   </div>
                   <div style={{
-                    background: "#F0F9FF",
+                    background: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)",
                     borderRadius: 16,
                     height: 200,
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     border: "1px solid #BAE6FD",
                     marginBottom: 16,
+                    gap: 6,
                   }}>
-                    <span style={{ fontSize: 96 }}>{gesture.emoji}</span>
+                    <HandSign fingers={gesture.fingers} size={148} color="#0EA5E9" />
+                    <span style={{ fontSize: 13, color: "#94A3B8" }}>{gesture.emoji} {gesture.name}</span>
                   </div>
                   <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
                     {gesture.name}
@@ -371,7 +472,7 @@ export default function SignLanguagePage() {
                 </div>
               </div>
 
-              {/* Navigation between gestures */}
+              {/* Navigation */}
               <div style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
                 marginTop: 28, paddingTop: 20,
