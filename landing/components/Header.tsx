@@ -26,10 +26,11 @@ export default function Header() {
         right: 0,
         zIndex: 100,
         padding: "16px 0",
-        background: "rgba(255,255,255,0.15)",
+        background: "rgba(255,255,255,0.92)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.2)",
+        borderBottom: "1px solid rgba(14,165,233,0.1)",
+        boxShadow: "0 2px 16px rgba(14,165,233,0.06)",
       }}
     >
       <div
@@ -70,7 +71,7 @@ export default function Header() {
               fontFamily: "'Syne', sans-serif",
               fontSize: 22,
               fontWeight: 700,
-              color: "#ffffff",
+              color: "#0C4A6E",
             }}
           >
             Hearless
@@ -88,7 +89,7 @@ export default function Header() {
               style={{
                 background: "none",
                 border: "none",
-                color: dropdown ? "#ffffff" : "rgba(255,255,255,0.8)",
+                color: dropdown ? "#0EA5E9" : "#075985",
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: "pointer",
@@ -101,7 +102,7 @@ export default function Header() {
               }}
             >
               Возможности
-              <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▼</span>
+              <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s", color: "#075985" }}>▼</span>
             </button>
 
             {dropdown && (
@@ -111,13 +112,13 @@ export default function Header() {
                   top: "calc(100% + 12px)",
                   left: -120,
                   width: 280,
-                  background: "rgba(255,255,255,0.72)",
+                  background: "#FFFFFF",
                   backdropFilter: "blur(16px)",
                   WebkitBackdropFilter: "blur(16px)",
-                  border: "1.5px solid rgba(255,255,255,0.6)",
+                  border: "1px solid rgba(14,165,233,0.12)",
                   borderRadius: "var(--radius)",
                   padding: "8px",
-                  boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
+                  boxShadow: "0 8px 24px rgba(14,165,233,0.1)",
                 }}
               >
                 {FEATURE_LINKS.map(f => (
@@ -131,12 +132,12 @@ export default function Header() {
                       padding: "10px 14px",
                       borderRadius: "var(--radiusSm)",
                       textDecoration: "none",
-                      color: "#1E6FA8",
+                      color: "#075985",
                       fontSize: 13,
                       transition: "all 0.2s",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.85)"; e.currentTarget.style.color = "#0D47A1"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#1E6FA8"; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#F0F9FF"; e.currentTarget.style.color = "#0EA5E9"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#075985"; }}
                   >
                     <span style={{ fontSize: 16 }}>{f.icon}</span>
                     {f.label}
@@ -146,18 +147,18 @@ export default function Header() {
             )}
           </div>
 
-          <Link href="/about" style={{ color: "rgba(255,255,255,0.8)", textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
-            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.8)"}>
+          <Link href="/about" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#0EA5E9"}
+            onMouseLeave={e => e.currentTarget.style.color = "#075985"}>
             О проекте
           </Link>
-          <Link href="/blog" style={{ color: "rgba(255,255,255,0.8)", textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
-            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.8)"}>
+          <Link href="/blog" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500, transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#0EA5E9"}
+            onMouseLeave={e => e.currentTarget.style.color = "#075985"}>
             Блог
           </Link>
-          <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "rgba(255,255,255,0.15)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.4)", transition: "all 0.3s ease" }}>Войти</Link>
-          <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0277BD", color: "#ffffff", border: "none", transition: "all 0.3s ease" }}>Регистрация</Link>
+          <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 50, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>Войти</Link>
+          <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Syne', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff", border: "none", transition: "all 0.3s ease" }}>Регистрация</Link>
         </nav>
       </div>
     </header>
