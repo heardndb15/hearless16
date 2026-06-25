@@ -11,6 +11,7 @@ const FEATURE_LINKS = [
   { label: "Камера → Текст", href: "/camera-to-text", icon: "📷" },
   { label: "Текст → Жесты", href: "/text-to-sign", icon: "👤" },
   { label: "Геймификация", href: "/gamification", icon: "🏆" },
+  { label: "Community", href: "/community", icon: "🌐" },
 ];
 
 export default function Header() {
