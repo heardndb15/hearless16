@@ -9,9 +9,11 @@ router = APIRouter(prefix="/subtitles", tags=["subtitles"])
 @router.post("/")
 async def save_subtitle(data: SubtitleRequest, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    payload = data.model_dump()
-    payload["user_id"] = current_user["id"]
-    response = db.table("subtitles_history").insert(payload).execute()
+    response = db.table("subtitles_history").insert({
+        "user_id": current_user["id"],
+        "text": data.text,
+        "language": data.language,
+    }).execute()
     return response.data
 
 

@@ -9,8 +9,8 @@ class UserCreate(BaseModel):
 
 
 class SubtitleRequest(BaseModel):
-    user_id: str
     text: str
+    language: str = "ru"
 
 
 class SoundAlertCreate(BaseModel):

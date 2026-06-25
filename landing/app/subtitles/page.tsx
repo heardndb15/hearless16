@@ -168,9 +168,10 @@ export default function SubtitlesPage() {
 
   // --- РРќРўР•Р“Р РђР¦РРЇ GEMINI AI ---
   const callGemini = async (prompt: string, textContent: string) => {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyBH3qC3cisbCHtH8CTZKmkg1DLDvdEOfEg";
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) return null;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
+
     try {
       const response = await fetch(url, {
         method: "POST",
