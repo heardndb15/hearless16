@@ -33,7 +33,7 @@ export default function AiTutorPage() {
             <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🤖</div>
               <div>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>AI-преподаватель</div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>AI-преподаватель</div>
                 <div style={{ fontSize: 11, color: "var(--success)" }}>Онлайн</div>
               </div>
             </div>
@@ -58,12 +58,12 @@ export default function AiTutorPage() {
               <div style={{ width: "100%", aspectRatio: "16/9", borderRadius: "var(--radiusSm)", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, border: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 48 }}>🎬</span>
               </div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Видеоурок: Жест «Привет»</h3>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>Видеоурок: Жест «Привет»</h3>
               <p style={{ fontSize: 13, color: "var(--textMuted)" }}>0:42 · Жестоведение</p>
             </div>
 
             <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: "24px" }}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 12 }}>Прогресс</h3>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 12 }}>Прогресс</h3>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--textSecondary)", marginBottom: 6 }}><span>Текущий курс</span><span>4/10 уроков</span></div>
               <div style={{ height: 6, borderRadius: 3, background: "var(--border)", overflow: "hidden", marginBottom: 16 }}>
                 <div style={{ width: "40%", height: "100%", borderRadius: 3, background: "var(--gradient)" }} />
@@ -71,7 +71,7 @@ export default function AiTutorPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
                 {[{ label: "Точность", value: "68%" }, { label: "Тестов пройдено", value: "12" }].map(s => (
                   <div key={s.label} style={{ textAlign: "center", padding: "12px", borderRadius: "var(--radiusSm)", background: "var(--bg)" }}>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, color: "var(--accent)" }}>{s.value}</div>
+                    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: "var(--accent)" }}>{s.value}</div>
                     <div style={{ fontSize: 11, color: "var(--textMuted)" }}>{s.label}</div>
                   </div>
                 ))}

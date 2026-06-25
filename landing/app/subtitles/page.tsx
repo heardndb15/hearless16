@@ -746,8 +746,6 @@ export default function SubtitlesPage() {
         <div style={{
           display: "inline-flex",
           background: "var(--bgCard)",
-          backdropFilter: "blur(8px)",
-          WebkitbackdropFilter: "blur(8px)",
           borderRadius: 30,
           padding: 4,
           border: "1px solid var(--border)",
@@ -761,7 +759,7 @@ export default function SubtitlesPage() {
               border: "none",
               fontSize: 13,
               fontWeight: 600,
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: "pointer",
               background: mode === "speech" ? "var(--gradient)" : "transparent",
               color: mode === "speech" ? "white" : "var(--text)",
@@ -778,7 +776,7 @@ export default function SubtitlesPage() {
               border: "none",
               fontSize: 13,
               fontWeight: 600,
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: "pointer",
               background: mode === "video" ? "var(--gradient)" : "transparent",
               color: mode === "video" ? "white" : "var(--text)",
@@ -810,8 +808,7 @@ export default function SubtitlesPage() {
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "space-between",
-                  backdropFilter: "blur(8px)"
+                  justifyContent: "space-between"
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                     <span style={{ fontSize: 11, color: "var(--textMuted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>
@@ -883,9 +880,9 @@ export default function SubtitlesPage() {
                   </div>
                 </div>
 
-                <div style={{ background: "var(--bgCard)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+                <div style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
                   <textarea value={inputText} onChange={e => setInputText(e.target.value)} placeholder="Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚, С‡С‚РѕР±С‹ СЃС‹РјРёС‚РёСЂРѕРІР°С‚СЊ СЂРµС‡СЊ РЅР° Р»РµС‚Сѓ..." rows={2}
-                    style={{ width: "100%", padding: "16px 20px", borderRadius: "14px", border: "1px solid var(--border)", background: "var(--bgLight)", color: "var(--text)", fontSize: 15, fontFamily: "'DM Sans', sans-serif", resize: "none", outline: "none", marginBottom: 16, transition: "border 0.2s" }}
+                    style={{ width: "100%", padding: "16px 20px", borderRadius: "14px", border: "1px solid var(--border)", background: "var(--bgLight)", color: "var(--text)", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif", resize: "none", outline: "none", marginBottom: 16, transition: "border 0.2s" }}
                     className="focus:border-sky-500" />
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
@@ -946,15 +943,13 @@ export default function SubtitlesPage() {
                    ========================================== */}
                 <div style={{
                   background: "var(--bgCard)",
-                  backdropFilter: "blur(8px)",
-                  WebkitbackdropFilter: "blur(8px)",
                   borderRadius: "20px",
                   padding: "24px",
                   border: "1px solid var(--border)",
                   boxShadow: "var(--shadow)",
                   marginTop: 24,
                 }}>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
                     вњЁ AI-РђСЃСЃРёСЃС‚РµРЅС‚ Gemini
                   </h3>
                   <p style={{ fontSize: 13, color: "var(--textSecondary)", marginBottom: 16 }}>
@@ -1247,7 +1242,7 @@ export default function SubtitlesPage() {
               РџР РђР’Р«Р™ Р‘Р›РћРљ: РќРђРЎРўР РћР™РљР РЎРўРР›Р•Р™
              ========================================== */}
           <div style={{ background: "var(--bgCard)", backdropFilter: "blur(8px)", WebkitbackdropFilter: "blur(8px)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>
               РќР°СЃС‚СЂРѕР№РєРё СЃСѓР±С‚РёС‚СЂРѕРІ
             </h3>
 
@@ -1257,7 +1252,7 @@ export default function SubtitlesPage() {
               <div style={{ display: "flex", gap: 6 }}>
                 {["ТљРђР—", "Р РЈРЎ", "ENG"].map(l => (
                   <button key={l} onClick={() => handleLangChange(l)}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {l}
                   </button>
                 ))}
@@ -1381,10 +1376,10 @@ export default function SubtitlesPage() {
         {/* РСЃС‚РѕСЂРёСЏ СЃРµСЃСЃРёРё РґРёРєС‚РѕРІРєРё */}
         {mode === "speech" && history.length > 0 && (
           <div style={{ marginTop: 40 }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "white", marginBottom: 16 }}>РСЃС‚РѕСЂРёСЏ СЃРµСЃСЃРёРё</h3>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "white", marginBottom: 16 }}>РСЃС‚РѕСЂРёСЏ СЃРµСЃСЃРёРё</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {history.map((h, i) => (
-                <div key={i} style={{ padding: "16px 20px", borderRadius: "14px", background: "var(--bgCard)", backdropFilter: "blur(8px)", WebkitbackdropFilter: "blur(8px)", border: "1px solid var(--border)", fontSize: 14, color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={i} style={{ padding: "16px 20px", borderRadius: "14px", background: "var(--bgCard)", border: "1px solid var(--border)", fontSize: 14, color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span>{h}</span>
                   <span style={{ fontSize: 11, color: "var(--textSecondary)" }}>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
@@ -1401,8 +1396,8 @@ export default function SubtitlesPage() {
             { title: "Р“РёР±РєР°СЏ Р°РґР°РїС‚Р°С†РёСЏ РїРѕРґ РіР»Р°Р·Р°", desc: "РњРµРЅСЏР№С‚Рµ РєРѕРЅС‚СЂР°СЃС‚РЅРѕСЃС‚СЊ, СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р° Рё С†РІРµС‚РѕРІС‹Рµ РїР°Р»РёС‚СЂС‹ СЃСѓР±С‚РёС‚СЂРѕРІ РїСЂСЏРјРѕ РІРѕ РІСЂРµРјСЏ РїСЂРѕСЃРјРѕС‚СЂР° С„РёР»СЊРјР°." },
             { title: "РџСЂСЏРјРѕР№ РєРѕРЅРЅРµРєС‚ Рє FastAPI", desc: "РџРµСЂРµРєР»СЋС‡РёС‚РµСЃСЊ РІ СЂРµР¶РёРј API РґР»СЏ РёРЅС‚РµРіСЂР°С†РёРё СЃ РІР°С€РёРј Whisper WebSocket СЃРµСЂРІРµСЂРѕРј." },
           ].map(d => (
-            <div key={d.title} style={{ background: "var(--bgCard)", backdropFilter: "blur(8px)", WebkitbackdropFilter: "blur(8px)", borderRadius: "20px", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", transition: "transform 0.2s" }} className="hover:-translate-y-1">
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 750, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
+            <div key={d.title} style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", transition: "transform 0.2s" }} className="hover:-translate-y-1">
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 750, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
               <p style={{ fontSize: 13, color: "var(--textSecondary)", lineHeight: 1.6 }}>{d.desc}</p>
             </div>
           ))}

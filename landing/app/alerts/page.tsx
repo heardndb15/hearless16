@@ -36,7 +36,7 @@ export default function AlertsPage() {
               <div style={{ fontSize: 36, minWidth: 48, textAlign: "center" }}>{s.icon}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 17, fontWeight: 600, color: "var(--text)" }}>{s.label}</h3>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 17, fontWeight: 600, color: "var(--text)" }}>{s.label}</h3>
                   <span style={{ fontSize: 11, color: "var(--textMuted)", background: "var(--bg)", padding: "4px 10px", borderRadius: 6 }}>{s.freq}</span>
                 </div>
                 <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7 }}>{s.desc}</p>
@@ -54,15 +54,15 @@ export default function AlertsPage() {
 
         {/* How it works */}
         <div style={{ marginTop: 60 }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>Как это работает</h2>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>Как это работает</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {[{ step: "01", title: "Запись звука", desc: "Микрофон телефона постоянно слушает окружающую обстановку. Все данные обрабатываются локально." },
               { step: "02", title: "AI-анализ", desc: "Нейросеть классифицирует звук по спектру, частоте и длительности. Точность >95%." },
               { step: "03", title: "Оповещение", desc: "Вибрация, вспышка камеры и push-уведомление. Ничего не пропустишь." },
             ].map(d => (
               <div key={d.step} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)" }}>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--accent)", opacity: 0.3, marginBottom: 12 }}>{d.step}</div>
-                <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 800, color: "var(--accent)", opacity: 0.3, marginBottom: 12 }}>{d.step}</div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
                 <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7 }}>{d.desc}</p>
               </div>
             ))}

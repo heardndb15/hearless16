@@ -35,8 +35,6 @@ export default function SignLanguagePage() {
         {/* Banner for Interactive Simulator */}
         <div style={{
           background: "var(--bgCard)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
           borderRadius: "var(--radius)",
           border: "1px solid var(--border)",
           boxShadow: "var(--shadow)",
@@ -57,7 +55,7 @@ export default function SignLanguagePage() {
               <path d="M6 14v-1.5a1.5 1.5 0 0 0-3 0V16a5 5 0 0 0 5 5h4a8 8 0 0 0 8-8v-2a1.5 1.5 0 0 0-3 0" />
             </svg>
             <div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 700, color: "var(--text)" }}>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "20px", fontWeight: 700, color: "var(--text)" }}>
                 Интерактивный тренажер жестов
               </h2>
               <p style={{ fontSize: "14px", color: "var(--textSecondary)", marginTop: "4px" }}>
@@ -79,22 +77,22 @@ export default function SignLanguagePage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, margin: "40px 0" }}>
           {LEVELS.map(l => (
             <div key={l.name} style={{ background: "var(--bgCard)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", textAlign: "center" }}>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 700, color: l.color }}>{l.count}</div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", margin: "8px 0 4px" }}>{l.name}</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 36, fontWeight: 700, color: l.color }}>{l.count}</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", margin: "8px 0 4px" }}>{l.name}</div>
               <div style={{ fontSize: 13, color: "var(--textMuted)" }}>{l.desc}</div>
             </div>
           ))}
         </div>
 
         {/* Lessons */}
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 20 }}>Каталог уроков</h2>
+        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 20 }}>Каталог уроков</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
           {LESSONS.map(lesson => (
             <div key={lesson.title} style={{ background: "var(--bgCard)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderRadius: "var(--radius)", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", transition: "all 0.3s ease", cursor: "default" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; e.currentTarget.style.transform = "translateY(0)"; }}>
               <div style={{ fontSize: 32, marginBottom: 14 }}>{lesson.icon}</div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{lesson.title}</h3>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{lesson.title}</h3>
               <p style={{ fontSize: 13, color: "var(--textSecondary)", lineHeight: 1.6, marginBottom: 14 }}>{lesson.desc}</p>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#1565C0" }}>
                 <span style={{ padding: "3px 8px", borderRadius: 4, background: "rgba(14, 165, 233, 0.05)", border: "1px solid var(--border)" }}>{lesson.level}</span>

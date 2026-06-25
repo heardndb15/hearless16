@@ -24,7 +24,7 @@ export default function SOSPage() {
           {sent ? (
             <div>
               <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>Сигнал отправлен!</h2>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>Сигнал отправлен!</h2>
               <p style={{ fontSize: 14, color: "var(--textSecondary)", marginBottom: 20 }}>
                 Геолокация передана родственникам. Ожидайте помощи.
               </p>
@@ -39,10 +39,10 @@ export default function SOSPage() {
                   onMouseDown={() => setPressing(true)}
                   onMouseUp={() => { setPressing(false); setSent(true); }}
                   onMouseLeave={() => setPressing(false)}>
-                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800, color: "white" }}>SOS</span>
+                  <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: "white" }}>SOS</span>
                 </div>
               </div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 6 }}>Нажми и удерживай 2 секунды</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 6 }}>Нажми и удерживай 2 секунды</div>
               <p style={{ fontSize: 13, color: "var(--textMuted)" }}>Сигнал с геолокацией будет отправлен твоим близким</p>
             </>
           )}
@@ -57,7 +57,7 @@ export default function SOSPage() {
           ].map(d => (
             <div key={d.title} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "24px 20px", border: "1px solid var(--border)" }}>
               <div style={{ fontSize: 28, marginBottom: 12 }}>{d.icon}</div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
               <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7 }}>{d.desc}</p>
             </div>
           ))}
@@ -65,7 +65,7 @@ export default function SOSPage() {
 
         {/* Settings */}
         <div style={{ marginTop: 40, background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: "28px 24px" }}>
-          <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Настройки экстренной помощи</h3>
+          <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Настройки экстренной помощи</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[{ label: "Автоотправка через", value: "5 секунд" },
               { label: "Повторная отправка", value: "Каждые 5 минут" },
@@ -73,7 +73,7 @@ export default function SOSPage() {
             ].map(s => (
               <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 14, color: "var(--textSecondary)" }}>{s.label}</span>
-                <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{s.value}</span>
+                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{s.value}</span>
               </div>
             ))}
           </div>
