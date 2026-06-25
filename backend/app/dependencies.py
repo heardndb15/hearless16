@@ -12,15 +12,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     token = credentials.credentials
     db = get_supabase()
     try:
-        # Verify the user token against Supabase Auth service
         user_res = db.auth.get_user(token)
-        if not user_res or not getattr(user_res, "user", None):
-            raise HTTPException(
-                status_code=401, detail="Неверный или просроченный токен авторизации"
-            )
-        user = user_res.user
-        return {"id": user.id, "email": user.email}
     except Exception as e:
         raise HTTPException(
             status_code=401, detail=f"Ошибка авторизации: {str(e)}"
         )
+    if not user_res or not getattr(user_res, "user", None):
+        raise HTTPException(
+            status_code=401, detail="Неверный или просроченный токен авторизации"
+        )
+    user = user_res.user
+    return {"id": user.id, "email": user.email}

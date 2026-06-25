@@ -2,13 +2,13 @@ import io
 import wave
 import numpy as np
 
-WHISPER_AVAILABLE = False
+WHISPER_AVAILABLE = None  # None = not tried, True = loaded, False = failed
 WHISPER_MODEL = None
 
 
 def get_local_whisper():
     global WHISPER_MODEL, WHISPER_AVAILABLE
-    if WHISPER_MODEL is None and WHISPER_AVAILABLE is not False:
+    if WHISPER_MODEL is None and WHISPER_AVAILABLE is None:
         try:
             from faster_whisper import WhisperModel
             WHISPER_MODEL = WhisperModel("small", device="cpu", compute_type="int8")
