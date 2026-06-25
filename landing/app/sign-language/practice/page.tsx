@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 
@@ -226,8 +227,12 @@ const CONNECTIONS = [
   [5, 9], [9, 13], [13, 17] // Ладонь
 ];
 
-export default function GesturePracticePage() {
-  const [activeGesture, setActiveGesture] = useState<string>("A");
+function GesturePracticeContent() {
+  const searchParams = useSearchParams();
+  const initialGesture = searchParams.get("gesture") ?? "A";
+  const [activeGesture, setActiveGesture] = useState<string>(
+    Object.keys(GESTURE_DEFS).includes(initialGesture) ? initialGesture : "A"
+  );
   const [similarity, setSimilarity] = useState<number>(0);
   const [isMatched, setIsMatched] = useState<boolean>(false);
   const [hints, setHints] = useState<string[]>([]);
@@ -1079,5 +1084,13 @@ export default function GesturePracticePage() {
         }
       `}} />
     </div>
+  );
+}
+
+export default function GesturePracticePage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--textSecondary)" }}>Загрузка...</div>}>
+      <GesturePracticeContent />
+    </Suspense>
   );
 }
