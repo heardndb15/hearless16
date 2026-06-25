@@ -505,12 +505,12 @@ export default function CommunityPage() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(160deg,#0D47A1 0%,#0277BD 40%,#0288D1 70%,#26C6DA 100%)",
+      background: "#F0F9FF",
       paddingTop: 80,
     }}>
       {/* Back link */}
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 12px" }}>
-        <Link href="/" style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none", fontSize: 13, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+        <Link href="/" style={{ color: "#075985", textDecoration: "none", fontSize: 13, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
           ← На главную
         </Link>
       </div>
@@ -519,10 +519,10 @@ export default function CommunityPage() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "white", fontFamily: "'Syne', sans-serif" }}>
+            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "#0C4A6E", fontFamily: "'Syne', sans-serif" }}>
               Community
             </h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "rgba(255,255,255,0.75)" }}>
+            <p style={{ margin: "4px 0 0", fontSize: 14, color: "#075985" }}>
               Общайтесь с сообществом Hearless
             </p>
           </div>
@@ -530,8 +530,8 @@ export default function CommunityPage() {
             <button
               onClick={() => setShowCreate(true)}
               style={{
-                background: "white", color: "#0277BD", border: "none",
-                borderRadius: 50, padding: "10px 20px", fontWeight: 700,
+                background: "#0EA5E9", color: "white", border: "none",
+                borderRadius: 12, padding: "10px 20px", fontWeight: 700,
                 fontSize: 14, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
                 display: "flex", alignItems: "center", gap: 6,
               }}
@@ -542,8 +542,8 @@ export default function CommunityPage() {
             <Link
               href="/login"
               style={{
-                background: "white", color: "#0277BD", textDecoration: "none",
-                borderRadius: 50, padding: "10px 20px", fontWeight: 700,
+                background: "#0EA5E9", color: "white", textDecoration: "none",
+                borderRadius: 12, padding: "10px 20px", fontWeight: 700,
                 fontSize: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
               }}
             >
@@ -559,11 +559,11 @@ export default function CommunityPage() {
               key={s}
               onClick={() => setSort(s)}
               style={{
-                padding: "8px 20px", borderRadius: 50, border: "1.5px solid rgba(255,255,255,0.4)",
-                background: sort === s ? "white" : "rgba(255,255,255,0.15)",
-                color: sort === s ? "#0277BD" : "white",
+                padding: "8px 20px", borderRadius: 50, border: sort === s ? "1.5px solid #0EA5E9" : "1.5px solid #BAE6FD",
+                background: sort === s ? "#0EA5E9" : "white",
+                color: sort === s ? "white" : "#0369A1",
                 fontWeight: 700, fontSize: 14, cursor: "pointer",
-                backdropFilter: "blur(8px)", transition: "all 0.2s",
+                transition: "all 0.2s",
               }}
             >
               {s === "new" ? "Новые" : "Популярные"}
@@ -575,11 +575,11 @@ export default function CommunityPage() {
         {loading && posts.length === 0 ? (
           <div style={{ textAlign: "center", paddingTop: 60 }}>
             <div style={{
-              width: 44, height: 44, border: "4px solid rgba(255,255,255,0.3)",
-              borderTopColor: "white", borderRadius: "50%",
+              width: 44, height: 44, border: "4px solid rgba(14,165,233,0.2)",
+              borderTopColor: "#0EA5E9", borderRadius: "50%",
               animation: "spin 0.8s linear infinite", margin: "0 auto 16px",
             }} />
-            <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>Загрузка постов...</p>
+            <p style={{ color: "#075985", fontSize: 14 }}>Загрузка постов...</p>
           </div>
         ) : posts.length === 0 ? (
           <div style={{
@@ -611,9 +611,8 @@ export default function CommunityPage() {
                   onClick={() => fetchPosts(sort, offset, true)}
                   disabled={loading}
                   style={{
-                    background: "rgba(255,255,255,0.2)", color: "white", border: "1.5px solid rgba(255,255,255,0.4)",
+                    background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD",
                     borderRadius: 50, padding: "10px 28px", fontWeight: 700, fontSize: 14, cursor: "pointer",
-                    backdropFilter: "blur(8px)",
                   }}
                 >
                   {loading ? "Загрузка..." : "Загрузить ещё"}
