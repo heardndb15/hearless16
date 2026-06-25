@@ -77,7 +77,7 @@ function PostCard({
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.72)",
+      background: "var(--bgCard)",
       backdropFilter: "blur(16px)",
       WebkitBackdropFilter: "blur(16px)",
       border: "1.5px solid rgba(255,255,255,0.7)",
@@ -91,7 +91,7 @@ function PostCard({
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
         <Avatar name={post.author.name} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "#0D47A1" }}>{post.author.name}</div>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div>
           <div style={{ fontSize: 12, color: "#64748b", marginTop: 1 }}>{timeAgo(post.created_at)}</div>
         </div>
         {currentUserId === post.author.id && (
@@ -241,7 +241,7 @@ function PostModal({
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", borderBottom: "1px solid #f1f5f9" }}>
           <Avatar name={post.author.name} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#0D47A1" }}>{post.author.name}</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div>
             <div style={{ fontSize: 12, color: "#64748b" }}>{timeAgo(post.created_at)}</div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#94a3b8" }}>✕</button>
@@ -277,7 +277,7 @@ function PostModal({
               <div key={c.id} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                 <Avatar name={c.author.name} size={32} />
                 <div style={{ flex: 1, background: "#f8fafc", borderRadius: 12, padding: "10px 14px" }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#0D47A1", marginBottom: 3 }}>{c.author.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "var(--text)", marginBottom: 3 }}>{c.author.name}</div>
                   <div style={{ fontSize: 14, color: "#334155", lineHeight: 1.5 }}>{c.text}</div>
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>{timeAgo(c.created_at)}</div>
                 </div>
@@ -371,7 +371,7 @@ function CreatePostModal({ token, onClose, onCreated }: { token: string; onClose
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: "1px solid #f1f5f9" }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0D47A1" }}>Новый пост</h3>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--text)" }}>Новый пост</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#94a3b8" }}>✕</button>
         </div>
         <div style={{ padding: "20px 24px" }}>
@@ -583,12 +583,12 @@ export default function CommunityPage() {
           </div>
         ) : posts.length === 0 ? (
           <div style={{
-            background: "rgba(255,255,255,0.72)", backdropFilter: "blur(16px)",
+            background: "var(--bgCard)", backdropFilter: "blur(16px)",
             border: "1.5px solid rgba(255,255,255,0.7)", borderRadius: 20,
             padding: "48px 32px", textAlign: "center",
           }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>
-            <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#0D47A1" }}>
+            <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "var(--text)" }}>
               Будьте первым — опубликуйте пост!
             </p>
           </div>

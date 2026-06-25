@@ -39,7 +39,7 @@ export default function ContactPage() {
             <p style={{ fontSize: 16, color: "var(--heading)", marginBottom: 8 }}>
               Сообщение отправлено!
             </p>
-            <p style={{ fontSize: 14, color: "#5a7a8f" }}>
+            <p style={{ fontSize: 14, color: "var(--textSecondary)" }}>
               Мы ответим вам в ближайшее время.
             </p>
           </div>
