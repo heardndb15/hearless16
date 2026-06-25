@@ -29,11 +29,11 @@ export default function LanguageSection() {
     <section id="languages">
       <div className="container">
         <div style={{ marginBottom: 48 }}>
-          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Языки</div>
-          <h2 className="section-title" style={{ color: "#ffffff" }}>
-            Три языка. Один <span style={{ background: "linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>голос</span>.
+          <div className="section-label">Языки</div>
+          <h2 className="section-title">
+            Три языка. Один <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>голос</span>.
           </h2>
-          <p className="section-subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
+          <p className="section-subtitle" style={{ color: "#075985" }}>
             Hearless говорит на казахском, русском и английском. Автоопределение
             языка и перевод в реальном времени.
           </p>
@@ -50,13 +50,11 @@ export default function LanguageSection() {
             <div
               key={l.code}
               style={{
-                background: "rgba(255,255,255,0.72)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
+                background: "#FFFFFF",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1.5px solid rgba(255,255,255,0.6)",
-                boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
+                border: "1px solid rgba(14,165,233,0.12)",
+                boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -64,12 +62,16 @@ export default function LanguageSection() {
               {/* Language code badge */}
               <div
                 style={{
+                  display: "inline-block",
                   fontFamily: "'Syne', sans-serif",
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: 700,
-                  color: "var(--accent)",
+                  color: "#0369A1",
                   letterSpacing: 3,
                   marginBottom: 16,
+                  background: "#E0F2FE",
+                  padding: "4px 10px",
+                  borderRadius: 6,
                 }}
               >
                 {l.code}
@@ -79,7 +81,7 @@ export default function LanguageSection() {
                   fontFamily: "'Syne', sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
-                  color: "#0D47A1",
+                  color: "#0C4A6E",
                   marginBottom: 12,
                 }}
               >
@@ -88,7 +90,7 @@ export default function LanguageSection() {
               <p
                 style={{
                   fontSize: 14,
-                  color: "#1E6FA8",
+                  color: "#075985",
                   lineHeight: 1.7,
                   marginBottom: 24,
                 }}
@@ -107,12 +109,12 @@ export default function LanguageSection() {
                     fontFamily: "'Syne', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
-                    color: "#0D47A1",
+                    color: "#0EA5E9",
                   }}
                 >
                   {l.stat}
                 </span>
-                <span style={{ fontSize: 13, color: "#1565C0" }}>
+                <span style={{ fontSize: 13, color: "#075985" }}>
                   {l.statLabel}
                 </span>
               </div>

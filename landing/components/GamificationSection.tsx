@@ -12,11 +12,11 @@ export default function GamificationSection() {
     <section id="gamification">
       <div className="container">
         <div style={{ marginBottom: 48 }}>
-          <div className="section-label" style={{ color: "rgba(255,255,255,0.9)" }}>Геймификация</div>
-          <h2 className="section-title" style={{ color: "#ffffff" }}>
-            Учись, играя. <span style={{ background: "linear-gradient(135deg, #E3F2FD 0%, #90CAF9 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Прогресс</span> — это XP.
+          <div className="section-label">Геймификация</div>
+          <h2 className="section-title">
+            Учись, играя. <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Прогресс</span> — это XP.
           </h2>
-          <p className="section-subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
+          <p className="section-subtitle" style={{ color: "#075985" }}>
             Зарабатывай XP, открывай ачивки, продлевай стрики и соревнуйся с друзьями.
             Каждый урок — это шаг к новому уровню.
           </p>
@@ -33,13 +33,11 @@ export default function GamificationSection() {
           {/* User card */}
           <div
             style={{
-              background: "rgba(255,255,255,0.72)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
+              background: "#FFFFFF",
               borderRadius: "var(--radius)",
               padding: "32px 28px",
-              border: "1.5px solid rgba(255,255,255,0.6)",
-              boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
+              border: "1px solid rgba(14,165,233,0.12)",
+              boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
             }}
           >
             <div
@@ -73,12 +71,12 @@ export default function GamificationSection() {
                     fontFamily: "'Syne', sans-serif",
                     fontSize: 18,
                     fontWeight: 600,
-                    color: "#0D47A1",
+                    color: "#0C4A6E",
                   }}
                 >
                   Айгуль
                 </div>
-                <div style={{ fontSize: 13, color: "#1565C0" }}>
+                <div style={{ fontSize: 13, color: "#075985" }}>
                   Уровень 4 · Жестовед
                 </div>
               </div>
@@ -102,7 +100,7 @@ export default function GamificationSection() {
                 style={{
                   height: 6,
                   borderRadius: 3,
-                  background: "var(--border)",
+                  background: "#E0F2FE",
                   overflow: "hidden",
                 }}
               >
@@ -111,7 +109,7 @@ export default function GamificationSection() {
                     width: "62%",
                     height: "100%",
                     borderRadius: 3,
-                    background: "var(--gradient)",
+                    background: "#0EA5E9",
                     animation: "xp-fill 1.5s ease-out",
                   }}
                 />
@@ -147,10 +145,8 @@ export default function GamificationSection() {
                     textAlign: "center",
                     padding: "14px 8px",
                     borderRadius: "var(--radiusSm)",
-                    background: "rgba(255,255,255,0.5)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                    border: "1px solid rgba(255,255,255,0.5)",
+                    background: "#F0F9FF",
+                    border: "1px solid rgba(14,165,233,0.12)",
                   }}
                 >
                   <div
@@ -175,10 +171,8 @@ export default function GamificationSection() {
               style={{
                 padding: "16px",
                 borderRadius: "var(--radiusSm)",
-                background: "rgba(255,255,255,0.5)",
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.5)",
+                background: "#F0F9FF",
+                border: "1px solid rgba(14,165,233,0.12)",
               }}
             >
               <div
@@ -194,7 +188,7 @@ export default function GamificationSection() {
                     fontFamily: "'Syne', sans-serif",
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "#0D47A1",
+                    color: "#0C4A6E",
                   }}
                 >
                   Ежедневное задание
@@ -211,7 +205,7 @@ export default function GamificationSection() {
                   marginTop: 10,
                   height: 4,
                   borderRadius: 2,
-                  background: "var(--border)",
+                  background: "#E0F2FE",
                   overflow: "hidden",
                 }}
               >
@@ -220,7 +214,7 @@ export default function GamificationSection() {
                     width: "40%",
                     height: "100%",
                     borderRadius: 2,
-                    background: "var(--accent)",
+                    background: "#0EA5E9",
                   }}
                 />
               </div>
@@ -239,13 +233,11 @@ export default function GamificationSection() {
               <div
                 key={a.label}
                 style={{
-                  background: "rgba(255,255,255,0.72)",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
+                  background: "#FFFFFF",
                   borderRadius: "var(--radius)",
                   padding: "24px 20px",
-                  border: "1.5px solid rgba(255,255,255,0.6)",
-                  boxShadow: "0 8px 20px rgba(2,136,209,0.18)",
+                  border: "1px solid rgba(14,165,233,0.12)",
+                  boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
                   textAlign: "center",
                   transition: "all 0.3s ease",
                 }}
@@ -254,7 +246,7 @@ export default function GamificationSection() {
                   e.currentTarget.style.transform = "translateY(-3px)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)";
+                  e.currentTarget.style.borderColor = "rgba(14,165,233,0.12)";
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
@@ -264,12 +256,12 @@ export default function GamificationSection() {
                     fontFamily: "'Syne', sans-serif",
                     fontSize: 14,
                     fontWeight: 600,
-                    color: "#0D47A1",
+                    color: "#0C4A6E",
                   }}
                 >
                   {a.label}
                 </div>
-                <div style={{ fontSize: 12, color: "#1565C0" }}>
+                <div style={{ fontSize: 12, color: "#075985" }}>
                   Ачивка
                 </div>
               </div>
@@ -295,7 +287,7 @@ export default function GamificationSection() {
               >
                 Начни свой путь
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
                 Зарабатывай XP, открывай ачивки и становись лучше каждый день.
               </div>
             </div>
