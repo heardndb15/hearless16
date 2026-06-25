@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-800">
+      <div className="min-h-screen flex items-center justify-center bg-[#F0F9FF] text-sky-900">
         {/* Decorative background blobs */}
         <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-cyan-200/50 rounded-full blur-[80px] pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-purple-200/40 rounded-full blur-[80px] pointer-events-none"></div>
@@ -121,10 +121,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-[url('/bg-main.png')] bg-cover bg-no-repeat bg-center bg-fixed font-dm flex text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F0F9FF] font-dm flex text-slate-800 relative overflow-hidden">
 
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-72 bg-white/40 backdrop-blur-xl border-r border-white/60 shadow-xl shrink-0 z-10 relative">
+      <aside className="hidden md:flex flex-col w-72 bg-white border-r border-sky-100 shadow-sm shrink-0 z-10 relative">
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-200/60 flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-lg shadow-md shadow-accent/20">
@@ -146,8 +146,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={item.path}
                 className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all duration-200 group ${
                   isActive
-                    ? "bg-accent/10 border border-accent/20 text-accent shadow-sm"
-                    : "border border-transparent text-slate-500 hover:bg-slate-200/50 hover:text-slate-800"
+                    ? "bg-sky-100 border border-sky-200 text-sky-700 shadow-sm"
+                    : "border border-transparent text-sky-800 hover:bg-sky-50 hover:text-sky-900"
                 }`}
               >
                 <span className={`transition-transform duration-200 group-hover:scale-110 ${isActive ? "" : "opacity-80"}`}>
@@ -160,8 +160,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User Card */}
-        <div className="p-4 border-t border-slate-200/60 bg-white/30">
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/60 border border-white/80 shadow-sm mb-3">
+        <div className="p-4 border-t border-slate-200/60 bg-white">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-sky-50 border border-sky-100 shadow-sm mb-3">
             <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/20 text-accent flex items-center justify-center font-extrabold font-syne">
               {profile?.name ? profile.name[0].toUpperCase() : user?.email?.[0].toUpperCase()}
             </div>
@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0 z-10 relative">
         {/* Mobile Header */}
-        <header className="flex md:hidden items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg border-b border-white/60">
+        <header className="flex md:hidden items-center justify-between px-6 py-4 bg-white border-b border-sky-100">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-md">
               H
@@ -210,7 +210,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
 
             {/* Sidebar Content */}
-            <aside className="relative flex flex-col w-72 bg-white/90 backdrop-blur-2xl h-full border-r border-white/60 shadow-2xl p-6">
+            <aside className="relative flex flex-col w-72 bg-white h-full border-r border-white/60 shadow-2xl p-6">
               <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-accent/20 border border-accent/30 text-accent flex items-center justify-center font-bold">
@@ -238,8 +238,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all group ${
                         isActive
-                          ? "bg-accent/10 border border-accent/20 text-accent"
-                          : "border border-transparent text-slate-500 hover:bg-slate-200/50 hover:text-slate-800"
+                          ? "bg-sky-100 border border-sky-200 text-sky-700"
+                          : "border border-transparent text-sky-800 hover:bg-sky-50 hover:text-sky-900"
                       }`}
                     >
                       <span>{item.icon}</span>
@@ -250,7 +250,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </nav>
 
               <div className="mt-auto pt-4 border-t border-slate-200">
-                <div className="flex items-center gap-3 p-2 rounded-xl bg-white/60 border border-white/80 shadow-sm mb-3">
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-sky-50 border border-sky-100 shadow-sm mb-3">
                   <div className="w-9 h-9 rounded-lg bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
                     {profile?.name ? profile.name[0].toUpperCase() : user?.email?.[0].toUpperCase()}
                   </div>
