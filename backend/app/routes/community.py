@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, 
 from pydantic import BaseModel
 from app.database import get_supabase
 from app.dependencies import get_current_user
+from app.limiter import limiter
 
 router = APIRouter(tags=["community"])
 
@@ -96,7 +97,8 @@ async def list_posts(
 
 
 @router.post("/posts")
-async def create_post(data: PostCreate, current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_post(request: Request, data: PostCreate, current_user: dict = Depends(get_current_user)):
     if not data.text.strip():
         raise HTTPException(status_code=422, detail="Текст поста не может быть пустым")
     db = get_supabase()

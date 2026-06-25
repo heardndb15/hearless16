@@ -2,6 +2,10 @@ import json
 import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.requests import Request
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+from app.limiter import limiter
 from app.routes import users, subtitles, gestures, alerts, transcribe, sos, study, community
 from app.services.whisper_service import transcribe_audio
 
@@ -10,6 +14,9 @@ app = FastAPI(
     description="Бэкенд для приложения Hearless — помощь глухим и слабослышащим",
     version="1.0.0",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
