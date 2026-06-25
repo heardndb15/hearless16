@@ -1,5 +1,6 @@
 import json
 import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
@@ -9,10 +10,19 @@ from app.limiter import limiter
 from app.routes import users, subtitles, gestures, alerts, transcribe, sos, study, community
 from app.services.whisper_service import transcribe_audio
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.migrate import run_migrations
+    await asyncio.to_thread(run_migrations)
+    yield
+
+
 app = FastAPI(
     title="Hearless API",
     description="Бэкенд для приложения Hearless — помощь глухим и слабослышащим",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.state.limiter = limiter
