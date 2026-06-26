@@ -187,6 +187,58 @@ _MIGRATIONS = [
       CREATE POLICY "Users can save subtitles" ON subtitles_history FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
     EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
 
+    # ── Chat messages (public group chat) ────────────────────────────────────
+    """
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+      user_id     UUID        NOT NULL,
+      user_name   TEXT        NOT NULL DEFAULT 'Пользователь',
+      text        TEXT        NOT NULL CHECK (char_length(trim(text)) > 0 AND char_length(text) <= 500),
+      created_at  TIMESTAMPTZ DEFAULT NOW()
+    )
+    """,
+
+    # ── Direct messages (1:1) ─────────────────────────────────────────────────
+    """
+    CREATE TABLE IF NOT EXISTS direct_messages (
+      id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+      sender_id     UUID        NOT NULL,
+      sender_name   TEXT        NOT NULL DEFAULT 'Пользователь',
+      receiver_id   UUID        NOT NULL,
+      receiver_name TEXT        NOT NULL DEFAULT 'Пользователь',
+      text          TEXT        NOT NULL CHECK (char_length(trim(text)) > 0 AND char_length(text) <= 1000),
+      created_at    TIMESTAMPTZ DEFAULT NOW(),
+      read_at       TIMESTAMPTZ
+    )
+    """,
+
+    # ── RLS for chat tables ───────────────────────────────────────────────────
+    "ALTER TABLE chat_messages   ENABLE ROW LEVEL SECURITY",
+    "ALTER TABLE direct_messages ENABLE ROW LEVEL SECURITY",
+
+    """DO $$ BEGIN
+      CREATE POLICY "Public can read chat" ON chat_messages FOR SELECT USING (true);
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
+    """DO $$ BEGIN
+      CREATE POLICY "Authenticated users can send chat" ON chat_messages FOR INSERT TO authenticated
+        WITH CHECK (auth.uid() = user_id);
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
+    """DO $$ BEGIN
+      CREATE POLICY "Users can delete own chat messages" ON chat_messages FOR DELETE USING (auth.uid() = user_id);
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
+
+    """DO $$ BEGIN
+      CREATE POLICY "DM participants can read" ON direct_messages FOR SELECT
+        USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
+    """DO $$ BEGIN
+      CREATE POLICY "Authenticated users can send DM" ON direct_messages FOR INSERT TO authenticated
+        WITH CHECK (auth.uid() = sender_id);
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
+    """DO $$ BEGIN
+      CREATE POLICY "Sender can delete own DM" ON direct_messages FOR DELETE USING (auth.uid() = sender_id);
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
+
     # ── Realtime ───────────────────────────────────────────────────────────────
     """DO $$ BEGIN
       ALTER PUBLICATION supabase_realtime ADD TABLE posts;
@@ -196,6 +248,12 @@ _MIGRATIONS = [
     EXCEPTION WHEN OTHERS THEN NULL; END $$""",
     """DO $$ BEGIN
       ALTER PUBLICATION supabase_realtime ADD TABLE post_comments;
+    EXCEPTION WHEN OTHERS THEN NULL; END $$""",
+    """DO $$ BEGIN
+      ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
+    EXCEPTION WHEN OTHERS THEN NULL; END $$""",
+    """DO $$ BEGIN
+      ALTER PUBLICATION supabase_realtime ADD TABLE direct_messages;
     EXCEPTION WHEN OTHERS THEN NULL; END $$""",
 ]
 
