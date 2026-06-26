@@ -140,6 +140,9 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const startStreaming = useCallback(async () => {
     try {
       setError(null);
+      setStreamText("");
+      setStreamSegments([]);
+      setChunks([]);
       const { granted } = await Audio.requestPermissionsAsync();
       if (!granted) {
         setError("Доступ к микрофону отклонен");
@@ -234,22 +237,27 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   }, []);
 
   useEffect(() => {
+    const loadLang = (userId: string) => {
+      supabase
+        .from("users")
+        .select("language")
+        .eq("id", userId)
+        .single()
+        .then(({ data }) => {
+          if (data?.language) userLangRef.current = data.language;
+        });
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        supabase
-          .from("users")
-          .select("language")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.language) {
-              userLangRef.current = data.language;
-            }
-          });
-      }
+      if (session?.user) loadLang(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) loadLang(session.user.id);
     });
 
     return () => {
+      subscription.unsubscribe();
       if (intervalRef.current) clearInterval(intervalRef.current);
       wsRef.current?.close();
     };

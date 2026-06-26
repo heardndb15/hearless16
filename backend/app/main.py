@@ -92,7 +92,7 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
         return
 
     session_bytes = b""
-    running_merged: bytes = b""          # replaces session_chunks list
+    audio_window_chunks: list[bytes] = []  # sliding window of recent M4A chunks
     last_transcribed_len = 0
     
     # Режим стриминга (True для потокового WebM с веба, False для независимых M4A с мобильного)
@@ -198,40 +198,39 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                                 })
                             last_transcribed_len = len(session_bytes)
                     else:
-                        # Independent M4A files from mobile — merge incrementally (O(N) total)
-                        from app.services.whisper_service import merge_audio_chunks, detect_audio_format
+                        # Independent M4A files from mobile — sliding window of last 3 chunks
+                        # to keep transcription cost bounded regardless of session length
+                        from app.services.whisper_service import merge_audio_chunks, merge_transcripts, detect_audio_format
                         ext = detect_audio_format(audio_bytes)
                         try:
-                            if running_merged == b"":
-                                merged_bytes = audio_bytes
-                                text = await asyncio.wait_for(
-                                    asyncio.to_thread(transcribe_audio, merged_bytes, language=lang),
-                                    timeout=15.0
-                                )
-                                # Only commit after successful transcription
-                                running_merged = audio_bytes
+                            audio_window_chunks.append(audio_bytes)
+                            if len(audio_window_chunks) > 3:
+                                audio_window_chunks[:] = audio_window_chunks[-3:]
+
+                            if len(audio_window_chunks) == 1:
+                                merged_window = audio_bytes
                             else:
-                                merged_bytes = await asyncio.wait_for(
-                                    asyncio.to_thread(merge_audio_chunks, [running_merged, audio_bytes], ext),
+                                merged_window = await asyncio.wait_for(
+                                    asyncio.to_thread(merge_audio_chunks, list(audio_window_chunks), ext),
                                     timeout=10.0
                                 )
-                                if merged_bytes:
-                                    running_merged = merged_bytes
-                                else:
-                                    raise Exception("merge returned empty")
-                                text = await asyncio.wait_for(
-                                    asyncio.to_thread(transcribe_audio, merged_bytes, language=lang),
-                                    timeout=15.0
-                                )
-                            if text:
-                                current_full_text = text.strip()
+                                if not merged_window:
+                                    merged_window = audio_bytes
+
+                            chunk_text = await asyncio.wait_for(
+                                asyncio.to_thread(transcribe_audio, merged_window, language=lang),
+                                timeout=15.0
+                            )
+                            if chunk_text and chunk_text.strip():
+                                current_full_text = merge_transcripts(current_full_text, chunk_text.strip())
                         except Exception as e:
                             import sys
-                            print(f"Incremental merge failed, transcribing single chunk: {e}", file=sys.stderr)
+                            print(f"M4A chunk transcription failed: {e}", file=sys.stderr)
                             try:
                                 chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes, language=lang)
                                 if chunk_text and chunk_text.strip():
-                                    current_full_text = (current_full_text + " " + chunk_text.strip()).strip()
+                                    from app.services.whisper_service import merge_transcripts as mt
+                                    current_full_text = mt(current_full_text, chunk_text.strip())
                             except Exception as ex:
                                 print(f"Single-chunk transcribe also failed: {ex}", file=sys.stderr)
 
