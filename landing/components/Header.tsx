@@ -49,6 +49,7 @@ export default function Header() {
             </div>
             <Link href="/about" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>О проекте</Link>
             <Link href="/blog" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Блог</Link>
+            <Link href="/pricing" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Тарифы</Link>
             <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD" }}>Войти</Link>
             <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>Регистрация</Link>
           </nav>
@@ -93,6 +94,7 @@ export default function Header() {
             <div style={{ display: "flex", gap: 8, padding: "4px 0 8px" }}>
               <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>О проекте</Link>
               <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>Блог</Link>
+              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#0EA5E9", fontSize: 14, fontWeight: 600, textAlign: "center", background: "#E0F2FE", border: "1px solid rgba(14,165,233,0.15)" }}>Тарифы</Link>
             </div>
 
             {/* Auth buttons */}

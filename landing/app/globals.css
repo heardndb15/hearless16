@@ -288,6 +288,13 @@ section:nth-child(odd) {
   margin-bottom: 48px;
 }
 
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
   section { padding: 60px 0; }
@@ -303,9 +310,11 @@ section:nth-child(odd) {
   .lang-grid { grid-template-columns: 1fr; gap: 14px; }
   .gamification-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
 @media (max-width: 480px) {
   .features-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
 }

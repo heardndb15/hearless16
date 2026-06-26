@@ -71,6 +71,7 @@ export default function Footer() {
               title: "Продукт",
               links: [
                 ["Возможности", "/features"],
+                ["Тарифы", "/pricing"],
                 ["О проекте", "/about"],
                 ["Блог", "/blog"],
               ],
