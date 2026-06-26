@@ -418,59 +418,6 @@ export default function SubtitlesDashboard() {
 
   return (
     <div className="space-y-6 relative">
-      {/* Dynamic Keyframes Injection */}
-      <style jsx global>{`
-        @keyframes slide-up {
-          0% {
-            opacity: 0;
-            transform: translateY(16px) scale(0.97);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
-          }
-          70% {
-            transform: scale(1);
-            box-shadow: 0 0 0 12px rgba(34, 211, 238, 0);
-          }
-          100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
-          }
-        }
-        @keyframes pulse-soft {
-          0%, 100% {
-            opacity: 0.3;
-          }
-          50% {
-            opacity: 0.65;
-          }
-        }
-        .text-shadow-glow {
-          text-shadow: 0 0 20px rgba(34, 211, 238, 0.35), 0 0 4px rgba(255, 255, 255, 0.8);
-        }
-        /* Custom scrollbar for subtitles */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 9999px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-      `}</style>
-
       {/* Screen Header */}
       <div className="flex flex-col gap-1 text-left">
         <h2 className="font-syne font-extrabold text-3xl tracking-tight" style={{ color: "var(--text)" }}>AI Субтитры</h2>
