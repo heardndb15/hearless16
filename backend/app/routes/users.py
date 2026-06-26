@@ -1,9 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import Optional
 from app.database import get_supabase
 from app.models import UserCreate
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+class UsernameUpdate(BaseModel):
+    name: str
 
 
 @router.post("/")
@@ -38,4 +44,20 @@ async def update_user(user_id: str, data: UserCreate, current_user: dict = Depen
         .execute()
     )
     return response.data
+
+
+@router.patch("/me/username")
+async def update_username(data: UsernameUpdate, current_user: dict = Depends(get_current_user)):
+    name = data.name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="Имя не может быть пустым")
+    if len(name) > 32:
+        raise HTTPException(status_code=422, detail="Имя не может быть длиннее 32 символов")
+    db = get_supabase()
+    existing = db.table("users").select("id").eq("id", current_user["id"]).execute()
+    if existing.data:
+        db.table("users").update({"name": name}).eq("id", current_user["id"]).execute()
+    else:
+        db.table("users").insert({"id": current_user["id"], "name": name, "language": "ru"}).execute()
+    return {"name": name}
 

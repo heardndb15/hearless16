@@ -35,29 +35,21 @@ export default function Hero() {
   return (
     <section
       style={{
-        paddingTop: 160,
-        paddingBottom: 100,
+        paddingTop: "clamp(100px, 14vw, 160px)",
+        paddingBottom: "clamp(60px, 8vw, 100px)",
         overflow: "hidden",
       }}
     >
-      <div
-        className="container"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 60,
-          alignItems: "center",
-        }}
-      >
+      <div className="container hero-grid">
         <div>
           <div className="section-label">AI-платформа</div>
           <h1
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
               fontSize: "clamp(40px, 6vw, 68px)",
               lineHeight: 1.08,
-              color: "var(--text)",
+              color: "#0C4A6E",
               marginBottom: 24,
             }}
           >
@@ -68,7 +60,7 @@ export default function Hero() {
           <p
             style={{
               fontSize: 17,
-              color: "var(--textSecondary)",
+              color: "#075985",
               lineHeight: 1.7,
               maxWidth: 480,
               marginBottom: 36,
@@ -79,11 +71,11 @@ export default function Hero() {
             жестовому языку с помощью ИИ.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <a href="/register" className="btn btn-primary" style={{ fontSize: 15, padding: "16px 36px" }}>
+            <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}>
               Начать бесплатно
               <span style={{ fontSize: 18 }}>→</span>
             </a>
-            <a href="/features" className="btn btn-outline" style={{ fontSize: 15, padding: "16px 36px" }}>
+            <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>
               Как это работает
             </a>
           </div>
@@ -94,7 +86,7 @@ export default function Hero() {
               gap: 32,
               marginTop: 48,
               paddingTop: 32,
-              borderTop: "1px solid var(--border)",
+              borderTop: "1px solid #BAE6FD",
             }}
           >
             {[
@@ -105,21 +97,22 @@ export default function Hero() {
               <div key={s.label}>
                 <div
                   style={{
-                    fontFamily: "'Syne', sans-serif",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
-                    color: "var(--accent)",
+                    color: "#0C4A6E",
                   }}
                 >
                   {s.value}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--textMuted)" }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: "#075985" }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
 
         <div
+          className="hero-phone-col"
           style={{
             position: "relative",
             display: "flex",
@@ -175,7 +168,7 @@ export default function Hero() {
               padding: "16px 14px",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "var(--shadowPhone)",
+              boxShadow: "0 24px 80px rgba(14,165,233,0.18), 0 0 40px rgba(14,165,233,0.1)",
               overflow: "hidden"
             }}
           >
@@ -221,29 +214,29 @@ export default function Hero() {
             <div
               style={{
                 flex: 1,
-                background: "rgba(15, 23, 42, 0.85)",
-                borderRadius: 18,
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "#FFFFFF",
+                borderRadius: 16,
+                border: "1.5px solid #BAE6FD",
                 padding: "16px 12px",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-end",
                 overflow: "hidden",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+                boxShadow: "0 4px 20px rgba(14,165,233,0.08)",
                 zIndex: 5,
               }}
             >
               {/* Rolling lines preview */}
               <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, justifyContent: "flex-end", marginBottom: 12 }}>
-                <div style={{ fontSize: 9, fontWeight: 600, color: "rgba(255, 255, 255, 0.2)", transform: "scale(0.95)", transformOrigin: "left" }}>
+                <div style={{ fontSize: 9, fontWeight: 600, color: "#BAE6FD", transform: "scale(0.95)", transformOrigin: "left" }}>
                   Здравствуйте! Меня зовут...
                 </div>
                 <div style={{
                   fontSize: 13,
                   fontWeight: 800,
-                  color: "#ffffff",
+                  color: "#0369A1",
                   lineHeight: 1.4,
-                  textShadow: "0 0 10px rgba(34, 211, 238, 0.4)"
+                  textShadow: "none"
                 }}>
                   {displayText}
                   <span
@@ -251,7 +244,7 @@ export default function Hero() {
                       display: "inline-block",
                       width: 2,
                       height: 14,
-                      background: "#22d3ee",
+                      background: "#0EA5E9",
                       marginLeft: 2,
                       verticalAlign: "middle",
                       animation: "cursor-blink 0.8s step-end infinite",
@@ -275,8 +268,8 @@ export default function Hero() {
                     style={{
                       flex: 1,
                       height: h * 0.7,
-                      background: "linear-gradient(to top, #22d3ee, #c084fc)",
-                      opacity: 0.8,
+                      background: "linear-gradient(to top, #0EA5E9, #0369A1)",
+                      opacity: 0.9,
                       borderRadius: "1px 1px 0 0",
                       animation: `sound-pulse ${0.8 + Math.random() * 0.6}s ease-in-out infinite`,
                       animationDelay: `${i * 0.06}s`,

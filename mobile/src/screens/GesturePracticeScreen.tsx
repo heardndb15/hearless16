@@ -7,13 +7,14 @@ import {
   SafeAreaView,
   Animated,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import axios from "axios";
 import { supabase } from "../services/supabase";
 import Confetti from "../components/Confetti";
-import { Colors, Spacing, FontSize } from "../constants/theme";
+import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import type { RootStackParamList } from "../../../shared/types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
@@ -21,6 +22,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrende
 type RecognitionResult = {
   gesture: string;
   confidence: number;
+  error?: "no_hand_detected" | "invalid_image";
   components: {
     hand_shape: number;
     position: number;
@@ -40,7 +42,9 @@ export default function GesturePracticeScreen() {
   const [countdownIdx, setCountdownIdx] = useState(0);
   const [result, setResult] = useState<RecognitionResult | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [totalFrames, setTotalFrames] = useState(0);
+  const frameCountRef = useRef(0);
+  const [displayFrames, setDisplayFrames] = useState(0);
+  const maxConfidenceRef = useRef(0);
   const cameraRef = useRef<CameraView>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashAnim = useRef(new Animated.Value(0)).current;
@@ -51,7 +55,9 @@ export default function GesturePracticeScreen() {
     setPhase("countdown");
     setCountdownIdx(0);
     setResult(null);
-    setTotalFrames(0);
+    frameCountRef.current = 0;
+    setDisplayFrames(0);
+    maxConfidenceRef.current = 0;
 
     const timer = setInterval(() => {
       setCountdownIdx((prev) => {
@@ -90,12 +96,23 @@ export default function GesturePracticeScreen() {
           target_gesture: gestureName,
         });
 
+        frameCountRef.current += 1;
+        // Update display counter every 5 frames to avoid re-render churn
+        if (frameCountRef.current % 5 === 0) {
+          setDisplayFrames(frameCountRef.current);
+        }
+
+        if (response.data.error === "no_hand_detected") {
+          // Show feedback without stopping practice
+          setResult({ ...response.data, confidence: 0 });
+          return;
+        }
+
         setResult(response.data);
-        const currentFrames = totalFrames + 1;
-        setTotalFrames(currentFrames);
+        maxConfidenceRef.current = Math.max(maxConfidenceRef.current, response.data.confidence ?? 0);
 
         if (response.data.confidence >= 80) {
-          handleSuccess(response.data.confidence, currentFrames);
+          handleSuccess(response.data.confidence, frameCountRef.current);
         }
       } catch {}
     }, 300);
@@ -103,9 +120,10 @@ export default function GesturePracticeScreen() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [phase, gestureName, totalFrames]);
+  }, [phase, gestureName]); // totalFrames removed from deps
 
   async function handleSuccess(confidence: number, frames: number) {
+    const bestAccuracy = Math.max(confidence, maxConfidenceRef.current);
     if (intervalRef.current) clearInterval(intervalRef.current);
     setPhase("result");
     setShowConfetti(true);
@@ -134,7 +152,7 @@ export default function GesturePracticeScreen() {
           learned: true,
           accuracy: confidence,
           attempts: frames,
-          best_accuracy: confidence,
+          best_accuracy: bestAccuracy,   // now tracks actual best across all frames
         }, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
@@ -149,10 +167,6 @@ export default function GesturePracticeScreen() {
   }
 
   function handleTryAgain() {
-    setPhase("countdown");
-    setCountdownIdx(0);
-    setResult(null);
-    setTotalFrames(0);
     startCountdown();
   }
 
@@ -162,14 +176,16 @@ export default function GesturePracticeScreen() {
 
   if (!permission?.granted) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.permissionWrap}>
-          <Text style={styles.permissionTitle}>Нет доступа к камере</Text>
-          <Text style={styles.permissionText}>
-            Разрешите доступ к камере в настройках для практики жестов
-          </Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.permissionWrap}>
+            <Text style={styles.permissionTitle}>Нет доступа к камере</Text>
+            <Text style={styles.permissionText}>
+              Разрешите доступ к камере в настройках для практики жестов
+            </Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -179,6 +195,7 @@ export default function GesturePracticeScreen() {
   const borderWidth = phase === "result" ? 4 : 0;
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       <Confetti visible={showConfetti} />
 
@@ -211,45 +228,67 @@ export default function GesturePracticeScreen() {
           )}
 
           {phase === "practice" && (
-            <View style={styles.practiceOverlay}>
-              <View style={styles.targetBadge}>
-                <Text style={styles.targetLabel}>Цель:</Text>
-                <Text style={styles.targetGesture}>{gestureName}</Text>
+            <>
+              <View style={styles.practiceOverlay}>
+                <View style={styles.targetBadge}>
+                  <Text style={styles.targetLabel}>Цель:</Text>
+                  <Text style={styles.targetGesture}>{gestureName}</Text>
+                </View>
+                <Text style={styles.framesText}>Кадров: {displayFrames}</Text>
               </View>
-              <Text style={styles.framesText}>Кадров: {totalFrames}</Text>
-            </View>
+              {result?.error === "no_hand_detected" && (
+                <View style={styles.noHandHint}>
+                  <Text style={styles.noHandHintText}>Рука не обнаружена</Text>
+                </View>
+              )}
+            </>
           )}
         </View>
       </View>
 
       {phase === "result" && result && (
         <View style={styles.resultSection}>
-          <Text style={styles.resultTitle}>
-            {isMatch ? "Жест распознан!" : "Попробуйте ещё раз"}
-          </Text>
-
-          <View style={styles.resultCard}>
-            <View style={styles.mainResult}>
-              <Text style={styles.resultGesture}>{result.gesture}</Text>
-              <View
-                style={[
-                  styles.confidenceBadge,
-                  { backgroundColor: isMatch ? "#22c55e" : Colors.sos },
-                ]}
-              >
-                <Text style={styles.confidenceText}>
-                  {result.confidence}%
+          {result.error === "no_hand_detected" ? (
+            <>
+              <Text style={[styles.resultTitle, { color: "rgba(255,255,255,0.8)" }]}>
+                Рука не обнаружена
+              </Text>
+              <View style={styles.resultCard}>
+                <Text style={{ textAlign: "center", color: Colors.textSecondary, fontSize: 14 }}>
+                  Убедитесь, что рука видна в кадре и освещение достаточное
                 </Text>
               </View>
-            </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.resultTitle}>
+                {isMatch ? "Жест распознан!" : "Попробуйте ещё раз"}
+              </Text>
 
-            <Text style={styles.componentsTitle}>Разбивка по компонентам</Text>
-            <View style={styles.componentsRow}>
-              <ComponentBar label="Форма руки" value={result.components.hand_shape} />
-              <ComponentBar label="Позиция" value={result.components.position} />
-              <ComponentBar label="Движение" value={result.components.movement} />
-            </View>
-          </View>
+              <View style={styles.resultCard}>
+                <View style={styles.mainResult}>
+                  <Text style={styles.resultGesture}>{result.gesture}</Text>
+                  <View
+                    style={[
+                      styles.confidenceBadge,
+                      { backgroundColor: isMatch ? "#22c55e" : Colors.sos },
+                    ]}
+                  >
+                    <Text style={styles.confidenceText}>
+                      {result.confidence}%
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.componentsTitle}>Разбивка по компонентам</Text>
+                <View style={styles.componentsRow}>
+                  <ComponentBar label="Форма руки" value={result.components.hand_shape} />
+                  <ComponentBar label="Позиция" value={result.components.position} />
+                  <ComponentBar label="Движение" value={result.components.movement} />
+                </View>
+              </View>
+            </>
+          )}
 
           <View style={styles.actions}>
             <TouchableOpacity style={styles.tryAgainBtn} onPress={handleTryAgain}>
@@ -270,6 +309,7 @@ export default function GesturePracticeScreen() {
         </View>
       )}
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
@@ -301,7 +341,7 @@ const compStyles = StyleSheet.create({
     flex: 1,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: "rgba(255,255,255,0.3)",
     overflow: "hidden",
   },
   fill: {
@@ -319,7 +359,6 @@ const compStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   cameraWrap: {
     flex: 1,
@@ -390,6 +429,22 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     overflow: "hidden",
   },
+  noHandHint: {
+    position: "absolute",
+    bottom: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: "rgba(239,68,68,0.75)",
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  noHandHintText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
   flashOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "#22c55e",
@@ -403,20 +458,15 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: FontSize.title,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
     textAlign: "center",
     marginBottom: Spacing.md,
   },
   resultCard: {
-    backgroundColor: Colors.white,
+    ...GlassCard,
     borderRadius: 16,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
   },
   mainResult: {
     flexDirection: "row",
@@ -454,7 +504,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     alignItems: "center",
   },
   tryAgainText: {
@@ -466,7 +516,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: Colors.card,
+    backgroundColor: "rgba(255,255,255,0.72)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.6)",
     alignItems: "center",
   },
   backBtnText: {
@@ -480,7 +532,7 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: FontSize.subtitle,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.85)",
     textAlign: "center",
   },
   permissionWrap: {
@@ -492,12 +544,12 @@ const styles = StyleSheet.create({
   permissionTitle: {
     fontSize: FontSize.title,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
     marginBottom: Spacing.sm,
   },
   permissionText: {
     fontSize: FontSize.body,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.8)",
     textAlign: "center",
   },
 });

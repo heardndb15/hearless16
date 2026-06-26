@@ -22,7 +22,15 @@ export default function TranscriptPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [subtitlesList, setSubtitlesList] = useState<SubtitleSegment[]>([]);
   const [displayText, setDisplayText] = useState("");
-  
+
+  // Speaker diarization
+  interface SpeakerSegment { text: string; speaker: number; }
+  const [speakerSegments, setSpeakerSegments] = useState<SpeakerSegment[]>([]);
+  const [useDiarization, setUseDiarization] = useState(false);
+  const SPEAKER_COLORS = ["#0EA5E9", "#10B981", "#F59E0B", "#8B5CF6"];
+  const SPEAKER_BG = ["rgba(14,165,233,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
+  const SPEAKER_LABELS = ["Говорящий 1", "Говорящий 2", "Говорящий 3", "Говорящий 4"];
+
   // Состояния AI
   const [aiSummary, setAiSummary] = useState("");
   const [aiResponse, setAiResponse] = useState("");
@@ -87,6 +95,8 @@ export default function TranscriptPage() {
         if (payload.displayText !== undefined) setDisplayText(payload.displayText);
         if (payload.aiSummary !== undefined) setAiSummary(payload.aiSummary);
         if (payload.aiResponse !== undefined) setAiResponse(payload.aiResponse);
+        if (payload.speakerSegments !== undefined) setSpeakerSegments(payload.speakerSegments);
+        if (payload.useDiarization !== undefined) setUseDiarization(payload.useDiarization);
       } else if (type === "time-update") {
         if (payload.currentTime !== undefined) setCurrentTime(payload.currentTime);
         if (payload.videoSubtitle !== undefined) setVideoSubtitle(payload.videoSubtitle);
@@ -184,6 +194,9 @@ export default function TranscriptPage() {
   // Логика экспорта
   const getFullText = () => {
     if (mode === "speech") {
+      if (useDiarization && speakerSegments.length > 0) {
+        return speakerSegments.map(s => `[${SPEAKER_LABELS[s.speaker % 4]}]: ${s.text}`).join("\n");
+      }
       return [...history, displayText].filter(Boolean).join("\n");
     } else {
       return subtitlesList
@@ -236,7 +249,7 @@ export default function TranscriptPage() {
         backgroundColor: theme.bg,
         color: theme.text,
         transition: "all 0.3s ease",
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
         padding: "40px 24px"
       }}
     >
@@ -256,7 +269,7 @@ export default function TranscriptPage() {
           <div>
             <h1
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontSize: 24,
                 fontWeight: 800,
                 color: theme.accent,
@@ -482,49 +495,62 @@ export default function TranscriptPage() {
             )}
 
             {/* Режим 1: Диктовка речи */}
-            {mode === "speech" && (isConnected || history.length > 0) && (
-              <div
-                style={{
-                  fontSize: `${fontSize}px`,
-                  lineHeight: lineHeight,
-                  fontWeight: 500,
-                  textAlign: "left"
-                }}
-              >
-                {history.map((ph, idx) => (
-                  <p
-                    key={idx}
-                    style={{
-                      color: themeMode === "contrast" ? "rgba(253, 235, 71, 0.6)" : "rgba(255, 255, 255, 0.4)",
-                      marginBottom: 16
-                    }}
-                    className={themeMode === "light" ? "text-slate-400" : ""}
-                  >
-                    {ph}
-                  </p>
-                ))}
-                {displayText && (
-                  <p style={{ color: theme.accent, fontWeight: 700 }}>
-                    {displayText}
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: 3,
-                        height: fontSize - 4,
-                        background: theme.accent,
-                        marginLeft: 6,
-                        verticalAlign: "middle",
-                        animation: "cursor-blink 0.8s step-end infinite"
-                      }}
-                    />
-                  </p>
-                )}
-                {!displayText && history.length === 0 && (
-                  <div style={{ textAlign: "center", color: theme.textSecondary, padding: "60px 0", fontSize: 14 }}>
-                    Ожидание начала речи...
-                  </div>
-                )}
-              </div>
+            {mode === "speech" && (isConnected || history.length > 0 || speakerSegments.length > 0) && (
+              useDiarization && speakerSegments.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {speakerSegments.map((seg, idx) => {
+                    const si = seg.speaker % 4;
+                    const isEven = seg.speaker % 2 === 0;
+                    return (
+                      <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 12, flexDirection: isEven ? "row" : "row-reverse" }}>
+                        <div style={{ width: 38, height: 38, borderRadius: "50%", background: SPEAKER_COLORS[si], display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                          S{seg.speaker + 1}
+                        </div>
+                        <div style={{ maxWidth: "70%" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: SPEAKER_COLORS[si], marginBottom: 4, textAlign: isEven ? "left" : "right" }}>
+                            {SPEAKER_LABELS[si]}
+                          </div>
+                          <div style={{
+                            background: themeMode === "dark" ? SPEAKER_BG[si] : (themeMode === "contrast" ? "#111" : SPEAKER_BG[si]),
+                            border: `1px solid ${SPEAKER_COLORS[si]}44`,
+                            borderRadius: isEven ? "4px 18px 18px 18px" : "18px 4px 18px 18px",
+                            padding: "10px 16px",
+                            fontSize: `${fontSize}px`,
+                            lineHeight: lineHeight,
+                            color: theme.text,
+                            fontWeight: 500,
+                          }}>
+                            {seg.text}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {displayText && (
+                    <div style={{ paddingLeft: 50, color: theme.accent, fontWeight: 700, fontSize: `${fontSize}px` }}>
+                      {displayText}
+                      <span style={{ display: "inline-block", width: 3, height: fontSize - 4, background: theme.accent, marginLeft: 6, verticalAlign: "middle", animation: "cursor-blink 0.8s step-end infinite" }} />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ fontSize: `${fontSize}px`, lineHeight: lineHeight, fontWeight: 500, textAlign: "left" }}>
+                  {history.map((ph, idx) => (
+                    <p key={idx} style={{ color: themeMode === "contrast" ? "rgba(253, 235, 71, 0.6)" : themeMode === "light" ? "#94a3b8" : "rgba(255,255,255,0.4)", marginBottom: 16 }}>
+                      {ph}
+                    </p>
+                  ))}
+                  {displayText && (
+                    <p style={{ color: theme.accent, fontWeight: 700 }}>
+                      {displayText}
+                      <span style={{ display: "inline-block", width: 3, height: fontSize - 4, background: theme.accent, marginLeft: 6, verticalAlign: "middle", animation: "cursor-blink 0.8s step-end infinite" }} />
+                    </p>
+                  )}
+                  {!displayText && history.length === 0 && (
+                    <div style={{ textAlign: "center", color: theme.textSecondary, padding: "60px 0", fontSize: 14 }}>Ожидание начала речи...</div>
+                  )}
+                </div>
+              )
             )}
 
             {/* Режим 2: Таймлайн субтитров видео */}
@@ -605,7 +631,7 @@ export default function TranscriptPage() {
                   padding: 24,
                   boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none"
                 }}>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
                     📝 AI-Конспект (Тезисы):
                   </h3>
                   <div style={{ 
@@ -628,7 +654,7 @@ export default function TranscriptPage() {
                   padding: 24,
                   boxShadow: themeMode === "dark" ? "0 20px 40px rgba(0,0,0,0.4)" : "none"
                 }}>
-                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                  <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: theme.accent, marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
                     💬 AI-Ответ на вопрос:
                   </h3>
                   <div style={{ 

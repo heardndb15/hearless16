@@ -154,6 +154,13 @@ export default function SubtitlesDashboard() {
       audioStreamRef.current.getTracks().forEach(track => track.stop());
     }
     if (wsRef.current) {
+      const wsAny = wsRef.current as any;
+      if (wsAny.audioContext) {
+        try { wsAny.audioContext.close(); } catch (e) {}
+      }
+      if (wsAny.audioProcessor) {
+        try { wsAny.audioProcessor.disconnect(); } catch (e) {}
+      }
       wsRef.current.close();
       wsRef.current = null;
     }
@@ -173,28 +180,78 @@ export default function SubtitlesDashboard() {
       const isProd = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
       const defaultProdUrl = "wss://hearless16-1.onrender.com/ws/transcribe";
       const defaultDevUrl = "ws://localhost:8000/ws/transcribe";
+      
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || "";
+
       const wsBaseUrl = process.env.NEXT_PUBLIC_WS_API_URL || (isProd ? defaultProdUrl : defaultDevUrl);
-      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}`;
+      const wsUrl = `${wsBaseUrl}?lang=${userLanguage === "kk" ? "kk" : "ru"}&token=${token}&format=pcm`;
 
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
         setAiStatus("listening");
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-        mediaRecorderRef.current = mediaRecorder;
+        
+        try {
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          const audioContext = new AudioContextClass();
+          (ws as any).audioContext = audioContext;
 
-        mediaRecorder.ondataavailable = async (event) => {
-          if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64data = (reader.result as string).split(",")[1];
-              ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
-            };
-            reader.readAsDataURL(event.data);
-          }
-        };
-        mediaRecorder.start(1500);
+          const source = audioContext.createMediaStreamSource(stream);
+          const processor = audioContext.createScriptProcessor(4096, 1, 1);
+          (ws as any).audioProcessor = processor;
+
+          source.connect(processor);
+          processor.connect(audioContext.destination);
+
+          const inputSampleRate = audioContext.sampleRate;
+          const targetSampleRate = 16000;
+
+          let pcmBuffer: Int16Array[] = [];
+          let pcmLength = 0;
+
+          processor.onaudioprocess = (e) => {
+            if (!isRecordingRef.current) return;
+            const inputData = e.inputBuffer.getChannelData(0);
+
+            // Resample and convert to 16-bit PCM
+            const resampledData = resample(inputData, inputSampleRate, targetSampleRate);
+            const int16Data = float32ToInt16(resampledData);
+
+            pcmBuffer.push(int16Data);
+            pcmLength += int16Data.length;
+
+            // Send chunks of ~250ms (4000 samples at 16kHz)
+            if (pcmLength >= 4000) {
+              const merged = mergeInt16Arrays(pcmBuffer, pcmLength);
+              pcmBuffer = [];
+              pcmLength = 0;
+
+              const base64 = int16ToBase64(merged);
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: "chunk", audio: base64 }));
+              }
+            }
+          };
+        } catch (audioErr) {
+          console.error("Web Audio API initialization failed, falling back to MediaRecorder WebM:", audioErr);
+          // Fallback to WebM MediaRecorder if Web Audio fails
+          const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+          mediaRecorderRef.current = mediaRecorder;
+          mediaRecorder.ondataavailable = async (event) => {
+            if (event.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64data = (reader.result as string).split(",")[1];
+                ws.send(JSON.stringify({ action: "chunk", audio: base64data }));
+              };
+              reader.readAsDataURL(event.data);
+            }
+          };
+          mediaRecorder.start(1500);
+        }
       };
 
       ws.onmessage = (event) => {
@@ -352,7 +409,7 @@ export default function SubtitlesDashboard() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center text-slate-400">
+      <div className="py-20 text-center" style={{ color: "rgba(255,255,255,0.7)" }}>
         <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         Загрузка ИИ-Субтитров...
       </div>
@@ -361,63 +418,10 @@ export default function SubtitlesDashboard() {
 
   return (
     <div className="space-y-6 relative">
-      {/* Dynamic Keyframes Injection */}
-      <style jsx global>{`
-        @keyframes slide-up {
-          0% {
-            opacity: 0;
-            transform: translateY(16px) scale(0.97);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
-          }
-          70% {
-            transform: scale(1);
-            box-shadow: 0 0 0 12px rgba(34, 211, 238, 0);
-          }
-          100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
-          }
-        }
-        @keyframes pulse-soft {
-          0%, 100% {
-            opacity: 0.3;
-          }
-          50% {
-            opacity: 0.65;
-          }
-        }
-        .text-shadow-glow {
-          text-shadow: 0 0 20px rgba(34, 211, 238, 0.35), 0 0 4px rgba(255, 255, 255, 0.8);
-        }
-        /* Custom scrollbar for subtitles */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 9999px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-      `}</style>
-
       {/* Screen Header */}
       <div className="flex flex-col gap-1 text-left">
-        <h2 className="font-syne font-extrabold text-3xl text-slate-800 tracking-tight">AI Субтитры</h2>
-        <p className="text-slate-500 text-sm max-w-2xl font-medium">
+        <h2 className="font-syne font-extrabold text-3xl tracking-tight" style={{ color: "var(--text)" }}>AI Субтитры</h2>
+        <p className="text-sm max-w-2xl font-medium" style={{ color: "var(--textSecondary)" }}>
           Высокоточная расшифровка речи с автоподключением локального распознавания при отсутствии интернета.
         </p>
       </div>
@@ -760,7 +764,7 @@ export default function SubtitlesDashboard() {
         {historyOpen && (
           <div className="lg:col-span-4 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
             <div className="flex justify-between items-center">
-              <h3 className="font-syne font-extrabold text-base text-slate-800">История диалогов</h3>
+              <h3 className="font-syne font-extrabold text-base" style={{ color: "var(--text)" }}>История диалогов</h3>
               {history.length > 0 && (
                 <button
                   onClick={handleClearHistory}
@@ -815,3 +819,58 @@ export default function SubtitlesDashboard() {
     </div>
   );
 }
+
+// Audio helper utilities for raw PCM streaming
+function resample(inputData: Float32Array, inputSampleRate: number, outputSampleRate: number): Float32Array {
+  if (inputSampleRate === outputSampleRate) {
+    return inputData;
+  }
+  const sampleRateRatio = inputSampleRate / outputSampleRate;
+  const newLength = Math.round(inputData.length / sampleRateRatio);
+  const result = new Float32Array(newLength);
+  let offsetResult = 0;
+  let offsetInput = 0;
+  while (offsetResult < result.length) {
+    const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+    let accum = 0, count = 0;
+    for (let i = offsetInput; i < nextOffsetBuffer && i < inputData.length; i++) {
+      accum += inputData[i];
+      count++;
+    }
+    result[offsetResult] = accum / (count || 1);
+    offsetResult++;
+    offsetInput = nextOffsetBuffer;
+  }
+  return result;
+}
+
+function float32ToInt16(buffer: Float32Array): Int16Array {
+  const l = buffer.length;
+  const buf = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    let s = Math.max(-1, Math.min(1, buffer[i]));
+    buf[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
+  return buf;
+}
+
+function mergeInt16Arrays(arrays: Int16Array[], totalLength: number): Int16Array {
+  const result = new Int16Array(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+}
+
+function int16ToBase64(buffer: Int16Array): string {
+  const bytes = new Uint8Array(buffer.buffer);
+  let binary = "";
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+

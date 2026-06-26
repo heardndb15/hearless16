@@ -81,7 +81,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   text: {
     fontSize: 16,
-    color: "#5a7a8f",
+    color: "var(--textSecondary)",
     lineHeight: 1.7,
   },
 };

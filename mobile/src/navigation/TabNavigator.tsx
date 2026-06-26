@@ -6,6 +6,7 @@ import SubtitlesScreen from "../screens/SubtitlesScreen";
 import GesturesScreen from "../screens/GesturesScreen";
 import StudyScreen from "../screens/StudyScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import CommunityFeedScreen from "../screens/CommunityFeedScreen";
 import type { RootTabParamList } from "../../../shared/types";
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -16,6 +17,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     Жесты: "🤟",
     Учеба: "🎓",
     Профиль: "👤",
+    Комьюнити: "👥",
   };
   return (
     <Text style={{ fontSize: focused ? 24 : 20, opacity: focused ? 1 : 0.6 }}>
@@ -29,14 +31,20 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.accent,
-        tabBarInactiveTintColor: Colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopColor: Colors.border,
+          backgroundColor: 'rgba(255, 255, 255, 0.88)',
+          borderTopColor: 'rgba(255,255,255,0.5)',
+          borderTopWidth: 1.5,
           paddingBottom: 4,
           height: 60,
+          shadowColor: '#0288D1',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 12,
+          elevation: 10,
         },
+        tabBarActiveTintColor: '#0277BD',
+        tabBarInactiveTintColor: '#1E6FA8',
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
@@ -73,6 +81,14 @@ export default function TabNavigator() {
         options={{
           tabBarLabel: "Профиль",
           tabBarIcon: ({ focused }) => <TabIcon label="Профиль" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Community"
+        component={CommunityFeedScreen}
+        options={{
+          tabBarLabel: "Комьюнити",
+          tabBarIcon: ({ focused }) => <TabIcon label="Комьюнити" focused={focused} />,
         }}
       />
     </Tab.Navigator>

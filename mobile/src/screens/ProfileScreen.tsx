@@ -9,7 +9,8 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Colors, Spacing, FontSize } from "../constants/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import { supabase } from "../services/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -151,14 +152,17 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={Colors.accent} />
-        <Text style={styles.loadingText}>Загрузка профиля...</Text>
-      </SafeAreaView>
+      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+        <SafeAreaView style={[styles.container, styles.center]}>
+          <ActivityIndicator size="large" color={Colors.white} />
+          <Text style={styles.loadingText}>Загрузка профиля...</Text>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
@@ -370,13 +374,13 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   center: {
     justifyContent: "center",
@@ -385,7 +389,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: FontSize.body,
-    color: Colors.textSecondary,
+    color: Colors.white,
   },
   scrollContent: {
     paddingHorizontal: Spacing.md,
@@ -399,10 +403,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: Spacing.md,
+    borderWidth: 3,
+    borderColor: "rgba(255,255,255,0.8)",
   },
   avatarText: {
     fontSize: FontSize.heading,
@@ -412,10 +418,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSize.heading,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
   },
   section: {
-    backgroundColor: Colors.card,
+    backgroundColor: "rgba(255, 255, 255, 0.72)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.6)",
     borderRadius: 16,
     padding: Spacing.md,
     marginBottom: Spacing.md,
@@ -423,20 +431,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSize.subtitle,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "rgba(255,255,255,0.9)",
     marginBottom: Spacing.sm,
   },
   emailLabel: {
     fontSize: FontSize.caption,
-    color: Colors.textSecondary,
+    color: Colors.heading,
     marginBottom: Spacing.sm,
   },
   input: {
-    backgroundColor: Colors.background,
+    backgroundColor: "rgba(255,255,255,0.5)",
     borderRadius: 12,
     padding: Spacing.md,
     fontSize: FontSize.body,
-    color: Colors.textPrimary,
+    color: Colors.heading,
   },
   toggleRow: {
     flexDirection: "row",
@@ -447,15 +455,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
     borderRadius: 12,
-    backgroundColor: Colors.background,
+    backgroundColor: "rgba(255,255,255,0.3)",
     alignItems: "center",
   },
   toggleActive: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
   },
   toggleText: {
     fontSize: FontSize.body,
-    color: Colors.textPrimary,
+    color: Colors.heading,
   },
   toggleTextActive: {
     color: Colors.white,
@@ -463,7 +471,7 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     fontSize: FontSize.body,
-    color: Colors.textPrimary,
+    color: Colors.heading,
     paddingVertical: Spacing.xs,
   },
   message: {
@@ -473,7 +481,7 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.xs,
   },
   saveButton: {
-    backgroundColor: Colors.button,
+    backgroundColor: "#0277BD",
     borderRadius: 16,
     padding: Spacing.md,
     alignItems: "center",

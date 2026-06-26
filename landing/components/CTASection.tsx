@@ -6,6 +6,7 @@ export default function CTASection() {
       style={{
         position: "relative",
         overflow: "hidden",
+        background: "#E0F2FE",
       }}
     >
       {/* Background glow */}
@@ -19,7 +20,7 @@ export default function CTASection() {
           height: "60%",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(43,191,207,0.08) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -32,30 +33,28 @@ export default function CTASection() {
         </div>
         <h2
           className="section-title"
-          style={{ maxWidth: 640, margin: "0 auto 20px" }}
+          style={{ maxWidth: 640, margin: "0 auto 20px", color: "#0C4A6E" }}
         >
           Готов сделать мир{" "}
-          <span className="gradient-text">доступнее</span>?
+          <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>доступнее</span>?
         </h2>
         <p
           className="section-subtitle"
-          style={{ margin: "0 auto 36px", textAlign: "center" }}
+          style={{ margin: "0 auto 36px", textAlign: "center", color: "#075985" }}
         >
           Присоединяйся к сообществу Hearless. Бесплатно. Навсегда.
         </p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="/register"
-            className="btn btn-primary"
-            style={{ padding: "16px 40px", fontSize: 15 }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}
           >
             Создать аккаунт
             <span style={{ fontSize: 18 }}>→</span>
           </a>
           <a
             href="/features"
-            className="btn btn-outline"
-            style={{ padding: "16px 40px", fontSize: 15 }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}
           >
             Все возможности
           </a>
@@ -84,30 +83,31 @@ export default function CTASection() {
                 gap: 12,
                 padding: "12px 24px",
                 borderRadius: "var(--radiusSm)",
-                background: "var(--bgCard)",
-                border: "1px solid var(--border)",
+                background: "#FFFFFF",
+                border: "1.5px solid rgba(14,165,233,0.12)",
+                boxShadow: "0 8px 20px rgba(14,165,233,0.07)",
                 textDecoration: "none",
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.background = "var(--bgCardHover)";
+                e.currentTarget.style.background = "#F0F9FF";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.background = "var(--bgCard)";
+                e.currentTarget.style.borderColor = "rgba(14,165,233,0.12)";
+                e.currentTarget.style.background = "#FFFFFF";
               }}
             >
               <span style={{ fontSize: 24 }}>{store.icon}</span>
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 10, color: "var(--textMuted)" }}>
+                <div style={{ fontSize: 10, color: "#0369A1" }}>
                   {store.sub}
                 </div>
                 <div
                   style={{
                     fontSize: 15,
                     fontWeight: 600,
-                    color: "var(--text)",
+                    color: "#0C4A6E",
                   }}
                 >
                   {store.label}

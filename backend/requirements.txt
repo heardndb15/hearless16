@@ -1,4 +1,6 @@
 fastapi>=0.110.0,<1.0.0
+psycopg2-binary>=2.9.9
+slowapi>=0.1.9
 uvicorn[standard]>=0.29.0,<1.0.0
 supabase>=2.5.0,<3.0.0
 python-multipart>=0.0.9
@@ -9,5 +11,7 @@ websockets>=12.0
 numpy>=1.26.0
 pydub>=0.25.1
 audioop-lts
+faster-whisper>=1.0.0
+mediapipe>=0.10.0
 
 

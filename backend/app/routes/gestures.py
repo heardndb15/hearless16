@@ -29,9 +29,16 @@ async def get_gesture(gesture_id: str):
 
 @router.post("/recognize")
 async def recognize(data: GestureRecognizeRequest):
-    frame = base64.b64decode(data.image)
-    result = recognize_gesture(frame, data.target_gesture)
-    return result
+    try:
+        frame = base64.b64decode(data.image, validate=False)
+        result = recognize_gesture(frame, data.target_gesture)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        import sys
+        print(f"recognize error: {e}", file=sys.stderr)
+        return {"gesture": None, "confidence": 0, "components": {"hand_shape": 0, "position": 0, "movement": 0}, "error": "processing_error"}
 
 
 @router.post("/progress")

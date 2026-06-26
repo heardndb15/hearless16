@@ -51,7 +51,7 @@ export default function CameraToTextPage() {
 
           {/* Results */}
           <div>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Распознанные жесты</h3>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Распознанные жесты</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {GESTURES.map((g, i) => (
                 <div key={g.name}
@@ -60,7 +60,7 @@ export default function CameraToTextPage() {
                   style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", borderRadius: "var(--radiusSm)", background: selected === i ? "var(--bgCardHover)" : "var(--bgCard)", border: selected === i ? "1px solid var(--accent)" : "1px solid var(--border)", transition: "all 0.2s ease", cursor: "default" }}>
                   <span style={{ fontSize: 28 }}>{g.emoji}</span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)" }}>{g.name}</div>
+                    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)" }}>{g.name}</div>
                     <div style={{ fontSize: 12, color: "var(--textMuted)" }}>Уверенность: {g.confidence}%</div>
                   </div>
                   <div style={{ width: 48, height: 48, position: "relative" }}>
@@ -84,7 +84,7 @@ export default function CameraToTextPage() {
             { title: "Без интернета", desc: "Базовое распознавание работает офлайн на устройстве. Никакой задержки." },
           ].map(d => (
             <div key={d.title} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "24px 20px", border: "1px solid var(--border)" }}>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
               <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7 }}>{d.desc}</p>
             </div>
           ))}

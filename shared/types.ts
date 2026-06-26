@@ -20,6 +20,7 @@ export interface Gesture {
   name: string;
   category: string;
   image_url: string;
+  gif_url?: string | null;
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
@@ -61,15 +62,37 @@ export interface StudyLecture {
   created_at: string;
 }
 
+export interface PostResponse {
+  id: string;
+  text: string;
+  image_url: string | null;
+  likes_count: number;
+  comments_count: number;
+  liked_by_me: boolean;
+  created_at: string;
+  author: { id: string; name: string; avatar_url: string | null };
+}
+
+export interface CommentResponse {
+  id: string;
+  text: string;
+  created_at: string;
+  author: { id: string; name: string; avatar_url: string | null };
+}
+
 export type RootTabParamList = {
   Subtitles: undefined;
   Gestures: undefined;
   Study: undefined;
   Profile: undefined;
+  Community: undefined;
 };
 
 export type RootStackParamList = {
   Tabs: undefined;
   GesturePractice: { gestureId: string; gestureName: string };
+  GestureDictionary: undefined;
+  PostDetail: { post: PostResponse };
+  CreatePost: undefined;
 };
 

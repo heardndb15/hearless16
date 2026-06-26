@@ -96,7 +96,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   meta: {
     fontSize: 13,
-    color: "#5a7a8f",
+    color: "var(--textSecondary)",
     marginBottom: 8,
   },
   postTitle: {
@@ -107,7 +107,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   excerpt: {
     fontSize: 14,
-    color: "#5a7a8f",
+    color: "var(--textSecondary)",
     lineHeight: 1.6,
   },
 };

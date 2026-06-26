@@ -11,8 +11,9 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
-import { Colors, Spacing } from "../constants/theme";
+import { Colors, Spacing, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import { supabase } from "../services/supabase";
 import axios from "axios";
 import type { StudyLecture } from "../../../shared/types";
@@ -216,6 +217,7 @@ export default function StudyScreen() {
   }
 
   return (
+    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -228,7 +230,7 @@ export default function StudyScreen() {
         <View style={{ flex: 1 }}>
           {loading ? (
             <View style={styles.center}>
-              <ActivityIndicator size="large" color={Colors.accent} />
+              <ActivityIndicator size="large" color={Colors.white} />
               <Text style={styles.loadingText}>Загрузка лекций...</Text>
             </View>
           ) : lectures.length === 0 ? (
@@ -539,13 +541,13 @@ export default function StudyScreen() {
         </View>
       )}
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
     paddingHorizontal: Spacing.md,
   },
   center: {
@@ -556,7 +558,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: Colors.white,
     marginTop: Spacing.sm,
     fontWeight: "600",
   },
@@ -567,16 +569,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#ffffff",
   },
   subtitle: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.8)",
     marginTop: 4,
     fontWeight: "600",
   },
   placeholderCard: {
-    backgroundColor: Colors.card,
+    ...GlassCard,
     borderRadius: 24,
     padding: Spacing.lg,
     marginVertical: Spacing.xl,
@@ -599,13 +601,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   actionButton: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: Colors.accent,
+    shadowColor: "#0277BD",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -617,9 +619,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   lectureCard: {
-    backgroundColor: "#f0f9ff", // soft sky blue instead of white
-    borderWidth: 1,
-    borderColor: Colors.border,
+    ...GlassCard,
     borderRadius: 20,
     padding: Spacing.md,
     marginBottom: Spacing.md,
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     color: Colors.accent,
-    backgroundColor: "rgba(60, 149, 187, 0.1)",
+    backgroundColor: "rgba(2,136,209,0.15)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
   },
   cardFooter: {
     borderTopWidth: 1,
-    borderTopColor: "#e0f2fe", // soft sky blue separator instead of gray
+    borderTopColor: "rgba(255,255,255,0.4)",
     paddingTop: Spacing.sm,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -671,17 +671,17 @@ const styles = StyleSheet.create({
     color: Colors.accent,
   },
   recordBox: {
-    backgroundColor: Colors.dark,
+    ...GlassCard,
     borderRadius: 24,
     padding: Spacing.lg,
     marginVertical: Spacing.sm,
     alignItems: "center",
   },
   recordBoxStatus: {
-    color: "#94a3b8",
+    color: Colors.textSecondary,
     fontSize: 11,
     fontWeight: "bold",
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.4)",
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -695,14 +695,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
   },
   transcriptText: {
-    color: Colors.white,
+    color: Colors.heading,
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
     lineHeight: 24,
   },
   transcriptPlaceholder: {
-    color: "#64748b",
+    color: Colors.textSecondary,
     fontSize: 13,
     fontWeight: "600",
     textAlign: "center",
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
   },
   micButton: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 30,
@@ -739,9 +739,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   loadingBox: {
-    backgroundColor: "#f0f9ff", // soft sky blue instead of white
-    borderWidth: 1,
-    borderColor: "#bae6fd", // sky blue border instead of Colors.border
+    ...GlassCard,
     borderRadius: 20,
     padding: Spacing.lg,
     alignItems: "center",
@@ -754,9 +752,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   analysisResultBox: {
-    backgroundColor: "#f0f9ff", // soft sky blue instead of white
-    borderWidth: 1,
-    borderColor: "#bae6fd", // sky blue border instead of Colors.border
+    ...GlassCard,
     borderRadius: 24,
     padding: Spacing.md,
     marginVertical: Spacing.md,
@@ -776,8 +772,8 @@ const styles = StyleSheet.create({
   },
   titleInput: {
     borderWidth: 1,
-    borderColor: "#bae6fd", // sky blue border instead of Colors.border
-    backgroundColor: Colors.white,
+    borderColor: "rgba(255,255,255,0.6)",
+    backgroundColor: "rgba(255,255,255,0.5)",
     borderRadius: 12,
     padding: 10,
     fontSize: 13,
@@ -790,11 +786,11 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontWeight: "600",
     lineHeight: 18,
-    backgroundColor: Colors.white,
+    backgroundColor: "rgba(255,255,255,0.5)",
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#bae6fd",
+    borderColor: "rgba(255,255,255,0.6)",
     marginBottom: Spacing.md,
   },
   metaBadgeRow: {
@@ -806,7 +802,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     color: Colors.accent,
-    backgroundColor: "rgba(60, 149, 187, 0.1)",
+    backgroundColor: "rgba(2,136,209,0.15)",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -828,7 +824,7 @@ const styles = StyleSheet.create({
   },
   backLinkText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.85)",
     fontWeight: "bold",
   },
   backHeader: {
@@ -837,14 +833,12 @@ const styles = StyleSheet.create({
   },
   backHeaderText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: "rgba(255,255,255,0.85)",
     fontWeight: "bold",
   },
   detailCard: {
     flex: 1,
-    backgroundColor: "#f0f9ff", // soft sky blue instead of white
-    borderWidth: 1,
-    borderColor: "#bae6fd", // sky blue border instead of Colors.border
+    ...GlassCard,
     borderRadius: 24,
     padding: Spacing.md,
     marginTop: Spacing.xs,
@@ -864,7 +858,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "#e0f2fe", // light sky blue instead of #f1f5f9
+    backgroundColor: "rgba(255,255,255,0.3)",
     padding: 3,
     borderRadius: 12,
     marginBottom: Spacing.md,
@@ -876,7 +870,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   tabBtnActive: {
-    backgroundColor: Colors.white,
+    backgroundColor: "#0277BD",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -889,7 +883,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   tabBtnTextActive: {
-    color: Colors.heading,
+    color: Colors.white,
     fontWeight: "700",
   },
   tabContentContainer: {
@@ -914,11 +908,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   rawTranscriptText: {
-    backgroundColor: Colors.white, // white container inside blue card instead of #f8fafc
+    backgroundColor: "rgba(255,255,255,0.5)",
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#bae6fd", // sky blue border instead of #e2e8f0
+    borderColor: "rgba(255,255,255,0.6)",
   },
   highlightBulletRow: {
     flexDirection: "row",
@@ -940,9 +934,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   termItemCard: {
-    backgroundColor: Colors.white, // white container inside blue card instead of #f8fafc
+    backgroundColor: "rgba(255,255,255,0.5)",
     borderWidth: 1,
-    borderColor: "#bae6fd", // sky blue border instead of #e2e8f0
+    borderColor: "rgba(255,255,255,0.6)",
     padding: 12,
     borderRadius: 14,
     marginBottom: Spacing.sm,
@@ -974,9 +968,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   chatWelcomeBubble: {
-    backgroundColor: "rgba(60, 149, 187, 0.08)",
+    backgroundColor: "rgba(2,136,209,0.1)",
     borderWidth: 1,
-    borderColor: "#bae6fd",
+    borderColor: "rgba(255,255,255,0.5)",
     borderRadius: 14,
     padding: 12,
     marginBottom: 4,
@@ -993,13 +987,13 @@ const styles = StyleSheet.create({
     maxWidth: "85%",
   },
   chatBubbleUser: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     alignSelf: "flex-end",
   },
   chatBubbleAssistant: {
-    backgroundColor: Colors.white,
+    backgroundColor: "rgba(255,255,255,0.7)",
     borderWidth: 1,
-    borderColor: "#bae6fd",
+    borderColor: "rgba(255,255,255,0.6)",
     alignSelf: "flex-start",
   },
   chatBubbleText: {
@@ -1019,13 +1013,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "#e0f2fe",
+    borderTopColor: "rgba(255,255,255,0.4)",
   },
   chatTextInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#bae6fd",
-    backgroundColor: Colors.white,
+    borderColor: "rgba(255,255,255,0.6)",
+    backgroundColor: "rgba(255,255,255,0.5)",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -1034,7 +1028,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   chatSendBtn: {
-    backgroundColor: Colors.accent,
+    backgroundColor: "#0277BD",
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -1042,7 +1036,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   chatSendBtnDisabled: {
-    backgroundColor: "#bae6fd",
+    backgroundColor: "rgba(2,136,209,0.4)",
   },
   chatSendBtnText: {
     color: Colors.white,

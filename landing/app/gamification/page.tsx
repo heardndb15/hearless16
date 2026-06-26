@@ -48,9 +48,9 @@ export default function GamificationPage() {
         {/* User card */}
         <div style={{ marginTop: 40, background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: "32px 28px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 700, color: "white" }}>A</div>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: "white" }}>A</div>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 600, color: "var(--text)" }}>Айгуль</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 600, color: "var(--text)" }}>Айгуль</div>
               <div style={{ fontSize: 13, color: "var(--textMuted)" }}>Уровень 4 · Жестовед · 1,240 XP</div>
             </div>
           </div>
@@ -68,7 +68,7 @@ export default function GamificationPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[{ value: "12", label: "Стрик, дней" }, { value: "48", label: "Слов" }, { value: "3", label: "Ачивки" }, { value: "28", label: "Уроков" }].map(s => (
               <div key={s.label} style={{ textAlign: "center", padding: "14px 8px", borderRadius: "var(--radiusSm)", background: "var(--bg)" }}>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--accent)" }}>{s.value}</div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--accent)" }}>{s.value}</div>
                 <div style={{ fontSize: 11, color: "var(--textMuted)" }}>{s.label}</div>
               </div>
             ))}
@@ -77,11 +77,11 @@ export default function GamificationPage() {
 
         {/* Levels */}
         <div style={{ marginTop: 40 }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Уровни</h2>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Уровни</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10 }}>
             {LEVELS.map(l => (
               <div key={l.level} style={{ background: l.level <= 4 ? "var(--bgCard)" : "var(--bg)", borderRadius: "var(--radiusSm)", padding: "16px 12px", textAlign: "center", border: l.level <= 4 ? "1px solid var(--accent)" : "1px solid var(--border)", opacity: l.level <= 4 ? 1 : 0.4 }}>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, color: l.level <= 4 ? "var(--accent)" : "var(--textMuted)" }}>{l.level}</div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: l.level <= 4 ? "var(--accent)" : "var(--textMuted)" }}>{l.level}</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", marginTop: 4 }}>{l.name}</div>
                 <div style={{ fontSize: 10, color: "var(--textMuted)", marginTop: 2 }}>{l.xp} XP</div>
               </div>
@@ -91,13 +91,13 @@ export default function GamificationPage() {
 
         {/* Daily quests */}
         <div style={{ marginTop: 40 }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Ежедневные задания</h2>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Ежедневные задания</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {DAILY_QUESTS.map((q, i) => (
               <div key={i} style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", padding: "20px 24px", border: "1px solid var(--border)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <span style={{ fontSize: 14, color: "var(--text)" }}>{q.task}</span>
-                  <span style={{ fontSize: 12, color: "var(--accent)", fontFamily: "'Syne', sans-serif", fontWeight: 600 }}>+{q.xp} XP</span>
+                  <span style={{ fontSize: 12, color: "var(--accent)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>+{q.xp} XP</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--border)", overflow: "hidden" }}>
@@ -112,12 +112,12 @@ export default function GamificationPage() {
 
         {/* Achievements */}
         <div style={{ marginTop: 40 }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Ачивки</h2>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 16 }}>Ачивки</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
             {ACHIEVEMENTS.map(a => (
               <div key={a.name} style={{ background: a.locked ? "var(--bg)" : "var(--bgCard)", borderRadius: "var(--radius)", padding: "24px 20px", textAlign: "center", border: "1px solid var(--border)", opacity: a.locked ? 0.4 : 1 }}>
                 <div style={{ fontSize: 32, marginBottom: 10 }}>{a.icon}</div>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>{a.name}</div>
+                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>{a.name}</div>
                 <div style={{ fontSize: 11, color: "var(--textMuted)", lineHeight: 1.4, marginBottom: 8 }}>{a.desc}</div>
                 <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>+{a.xp} XP</div>
               </div>

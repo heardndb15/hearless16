@@ -52,14 +52,14 @@ export default function SubtitleDemo() {
     : inputText;
 
   return (
-    <section id="subtitles" style={{ background: "var(--bgCard)" }}>
+    <section id="subtitles">
       <div className="container" style={{ maxWidth: 720 }}>
         <div style={{ marginBottom: 40 }}>
           <div className="section-label">Субтитры</div>
-          <h2 className="section-title">
-            Живые <span className="gradient-text">AI-субтитры</span>
+          <h2 className="section-title" style={{ color: "#0C4A6E" }}>
+            Живые <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>AI-субтитры</span>
           </h2>
-          <p className="section-subtitle">
+          <p className="section-subtitle" style={{ color: "#075985" }}>
             Введи текст или смотри демо. Так работают субтитры в реальном времени.
           </p>
         </div>
@@ -83,10 +83,10 @@ export default function SubtitleDemo() {
               style={{
                 padding: "10px 24px",
                 borderRadius: 50,
-                border: lang === l ? "none" : "1px solid var(--border)",
-                background: lang === l ? "var(--gradient)" : "transparent",
-                color: lang === l ? "white" : "var(--textSecondary)",
-                fontFamily: "'Syne', sans-serif",
+                border: lang === l ? "none" : "1.5px solid #BAE6FD",
+                background: lang === l ? "#0EA5E9" : "white",
+                color: lang === l ? "white" : "#075985",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontWeight: 600,
                 fontSize: 13,
                 cursor: "pointer",
@@ -101,10 +101,11 @@ export default function SubtitleDemo() {
         {/* Subtitle display */}
         <div
           style={{
-            background: "var(--bg)",
+            background: "#FFFFFF",
             borderRadius: "var(--radius)",
             padding: "28px 24px",
-            border: "1px solid var(--border)",
+            border: "1px solid rgba(14,165,233,0.12)",
+            boxShadow: "0 8px 20px rgba(14,165,233,0.07)",
             minHeight: 100,
             marginBottom: 20,
           }}
@@ -153,11 +154,11 @@ export default function SubtitleDemo() {
             width: "100%",
             padding: "14px 18px",
             borderRadius: "var(--radiusSm)",
-            border: "1px solid var(--border)",
-            background: "var(--bg)",
+            border: "1px solid rgba(14,165,233,0.12)",
+            background: "#F0F9FF",
             color: "var(--text)",
             fontSize: 15,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             resize: "none",
             outline: "none",
             marginBottom: 20,
@@ -183,7 +184,7 @@ export default function SubtitleDemo() {
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                background: "rgba(43, 191, 207, 0.1)",
+                background: "rgba(14,165,233,0.1)",
                 color: "var(--accent)",
                 fontSize: 11,
                 fontWeight: 600,
@@ -211,7 +212,7 @@ export default function SubtitleDemo() {
           <div style={{ marginTop: 28 }}>
             <h4
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontSize: 14,
                 fontWeight: 600,
                 color: "var(--textSecondary)",
@@ -227,10 +228,10 @@ export default function SubtitleDemo() {
                   style={{
                     padding: "12px 16px",
                     borderRadius: "var(--radiusSm)",
-                    background: "var(--bg)",
-                    border: "1px solid var(--border)",
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(14,165,233,0.12)",
                     fontSize: 14,
-                    color: "var(--textSecondary)",
+                    color: "#075985",
                   }}
                 >
                   {h}

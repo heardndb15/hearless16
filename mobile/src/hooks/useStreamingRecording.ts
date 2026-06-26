@@ -8,15 +8,25 @@ const DEFAULT_API_URL = "https://hearless16-1.onrender.com";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
 const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || API_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws/transcribe";
 
+export interface SpeakerSegment {
+  text: string;
+  speaker: number;
+  start: number;
+  end: number;
+}
+
 export interface StreamChunk {
   text: string;
   full_text: string;
   is_final: boolean;
+  segments?: SpeakerSegment[];
 }
 
 export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const [isRecording, setIsRecording] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [streamText, setStreamText] = useState("");
+  const [streamSegments, setStreamSegments] = useState<SpeakerSegment[]>([]);
   const [chunks, setChunks] = useState<StreamChunk[]>([]);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -49,9 +59,11 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
             text: data.text || "",
             full_text: data.full_text || "",
             is_final: data.type === "final",
+            segments: data.segments ?? [],
           };
           setChunks((prev) => [...prev, chunk]);
           setStreamText(data.full_text || "");
+          setStreamSegments(chunk.segments ?? []);
 
           if (!options?.skipAutoSave && data.type === "final" && data.full_text?.trim()) {
             supabase.auth.getSession().then(({ data: { session } }) => {
@@ -76,7 +88,8 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
       } catch {}
     };
     ws.onerror = () => {
-      setError("WebSocket connection error");
+      setIsConnecting(false);
+      setError("Ошибка подключения к серверу. Проверьте интернет-соединение.");
     };
     ws.onclose = () => {
       if (wsRef.current === ws) {
@@ -127,6 +140,9 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   const startStreaming = useCallback(async () => {
     try {
       setError(null);
+      setStreamText("");
+      setStreamSegments([]);
+      setChunks([]);
       const { granted } = await Audio.requestPermissionsAsync();
       if (!granted) {
         setError("Доступ к микрофону отклонен");
@@ -141,19 +157,30 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
 
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token || "";
+      setIsConnecting(true);
       const ws = connectWs(token);
-      await new Promise<void>((resolve) => {
+      // Wait for WS to open with a 30s timeout (handles Render cold starts)
+      const connected = await new Promise<boolean>((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 30000);
         const check = () => {
           if (ws.readyState === WebSocket.OPEN) {
-            resolve();
-          } else if (ws.readyState === WebSocket.CLOSED) {
-            resolve();
+            clearTimeout(timeout);
+            resolve(true);
+          } else if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+            clearTimeout(timeout);
+            resolve(false);
           } else {
             setTimeout(check, 50);
           }
         };
         check();
       });
+      setIsConnecting(false);
+      if (!connected) {
+        setError("Не удалось подключиться к серверу. Попробуйте ещё раз.");
+        setIsRecording(false);
+        return;
+      }
 
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
@@ -165,7 +192,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
         if (wsRef.current) {
           sendChunk(wsRef.current);
         }
-      }, 3000);
+      }, 1500);
     } catch (err: any) {
       setError(err?.message || "Не удалось запустить запись. Проверьте настройки микрофона.");
       setIsRecording(false);
@@ -210,22 +237,27 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
   }, []);
 
   useEffect(() => {
+    const loadLang = (userId: string) => {
+      supabase
+        .from("users")
+        .select("language")
+        .eq("id", userId)
+        .single()
+        .then(({ data }) => {
+          if (data?.language) userLangRef.current = data.language;
+        });
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        supabase
-          .from("users")
-          .select("language")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.language) {
-              userLangRef.current = data.language;
-            }
-          });
-      }
+      if (session?.user) loadLang(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) loadLang(session.user.id);
     });
 
     return () => {
+      subscription.unsubscribe();
       if (intervalRef.current) clearInterval(intervalRef.current);
       wsRef.current?.close();
     };
@@ -233,7 +265,9 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
 
   return {
     isRecording,
+    isConnecting,
     streamText,
+    streamSegments,
     chunks,
     error,
     startStreaming,

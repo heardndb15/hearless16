@@ -6,19 +6,13 @@ export default function Footer() {
   return (
     <footer
       style={{
-        borderTop: "1px solid var(--border)",
+        background: "#F0F9FF",
+        borderTop: "1px solid rgba(14,165,233,0.12)",
         padding: "60px 0 32px",
       }}
     >
       <div className="container">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr 1fr",
-            gap: 40,
-            marginBottom: 48,
-          }}
-        >
+        <div className="footer-grid">
           {/* Brand */}
           <div>
             <Link
@@ -49,10 +43,10 @@ export default function Footer() {
               </div>
               <span
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 20,
                   fontWeight: 700,
-                  color: "var(--text)",
+                  color: "#0C4A6E",
                 }}
               >
                 Hearless
@@ -61,7 +55,7 @@ export default function Footer() {
             <p
               style={{
                 fontSize: 13,
-                color: "var(--textMuted)",
+                color: "#075985",
                 lineHeight: 1.7,
                 maxWidth: 280,
               }}
@@ -77,6 +71,7 @@ export default function Footer() {
               title: "Продукт",
               links: [
                 ["Возможности", "/features"],
+                ["Тарифы", "/pricing"],
                 ["О проекте", "/about"],
                 ["Блог", "/blog"],
               ],
@@ -101,10 +96,10 @@ export default function Footer() {
             <div key={col.title}>
               <h4
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "var(--text)",
+                  color: "#0C4A6E",
                   marginBottom: 16,
                   textTransform: "uppercase",
                   letterSpacing: 1,
@@ -118,16 +113,16 @@ export default function Footer() {
                     key={label}
                     href={href}
                     style={{
-                      color: "var(--textMuted)",
+                      color: "#075985",
                       textDecoration: "none",
                       fontSize: 13,
                       transition: "color 0.2s",
                     }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "var(--accent)")
+                      (e.currentTarget.style.color = "#0EA5E9")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "var(--textMuted)")
+                      (e.currentTarget.style.color = "#075985")
                     }
                   >
                     {label}
@@ -141,7 +136,7 @@ export default function Footer() {
         <div
           style={{
             paddingTop: 24,
-            borderTop: "1px solid var(--border)",
+            borderTop: "1px solid rgba(14,165,233,0.12)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -149,7 +144,7 @@ export default function Footer() {
             gap: 12,
           }}
         >
-          <div style={{ fontSize: 12, color: "var(--textMuted)" }}>
+          <div style={{ fontSize: 12, color: "#0369A1" }}>
             © {new Date().getFullYear()} Hearless. Все права защищены.
           </div>
           <div style={{ display: "flex", gap: 12 }}>
@@ -158,12 +153,12 @@ export default function Footer() {
                 key={s}
                 style={{
                   fontSize: 12,
-                  color: "var(--textMuted)",
+                  color: "#075985",
                   cursor: "pointer",
                   transition: "color 0.2s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--textMuted)")}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#0EA5E9")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#075985")}
               >
                 {s}
               </span>
