@@ -107,12 +107,25 @@ async def list_posts(
 async def create_post(request: Request, data: PostCreate, current_user: dict = Depends(get_current_user)):
     if not data.text.strip():
         raise HTTPException(status_code=422, detail="Текст поста не может быть пустым")
+
+    user_token = request.headers.get("Authorization", "")[7:]  # strip "Bearer "
     db = get_supabase()
-    row = db.table("posts").insert({
-        "user_id": current_user["id"],
-        "text": data.text.strip(),
-        "image_url": data.image_url,
-    }).execute()
+
+    try:
+        # Use user JWT so insert satisfies RLS even if SUPABASE_KEY is anon key
+        row = db.postgrest.auth(user_token).from_("posts").insert({
+            "user_id": current_user["id"],
+            "text": data.text.strip(),
+            "image_url": data.image_url,
+        }).execute()
+    except Exception:
+        # Fallback: try with default client (works when SUPABASE_KEY is service role key)
+        row = db.table("posts").insert({
+            "user_id": current_user["id"],
+            "text": data.text.strip(),
+            "image_url": data.image_url,
+        }).execute()
+
     if not row.data:
         raise HTTPException(status_code=500, detail="Не удалось создать пост")
 
@@ -145,8 +158,10 @@ async def delete_post(post_id: str, current_user: dict = Depends(get_current_use
 
 
 @router.post("/posts/{post_id}/like")
-async def toggle_like(post_id: str, current_user: dict = Depends(get_current_user)):
+async def toggle_like(post_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    user_token = request.headers.get("Authorization", "")[7:]
     db = get_supabase()
+    authed = db.postgrest.auth(user_token)
     existing = (
         db.table("post_likes")
         .select("user_id")
@@ -155,15 +170,21 @@ async def toggle_like(post_id: str, current_user: dict = Depends(get_current_use
         .execute()
     )
     if existing.data:
-        db.table("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id).execute()
+        try:
+            authed.from_("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id).execute()
+        except Exception:
+            db.table("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id).execute()
         liked = False
     else:
         try:
-            db.table("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
+            authed.from_("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
             liked = True
         except Exception:
-            # Unique constraint violation — already liked by concurrent request
-            liked = True
+            try:
+                db.table("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
+                liked = True
+            except Exception:
+                liked = True  # Unique constraint — already liked
 
     post_res = db.table("posts").select("likes_count").eq("id", post_id).single().execute()
     likes_count = (post_res.data or {}).get("likes_count", 0)
@@ -205,19 +226,28 @@ async def list_comments(post_id: str):
 async def create_comment(
     post_id: str,
     data: CommentCreate,
+    request: Request,
     current_user: dict = Depends(get_current_user),
 ):
     if not data.text.strip():
         raise HTTPException(status_code=422, detail="Комментарий не может быть пустым")
+    user_token = request.headers.get("Authorization", "")[7:]
     db = get_supabase()
     post_check = db.table("posts").select("id").eq("id", post_id).single().execute()
     if not post_check.data:
         raise HTTPException(status_code=404, detail="Post not found")
-    row = db.table("post_comments").insert({
-        "post_id": post_id,
-        "user_id": current_user["id"],
-        "text": data.text.strip(),
-    }).execute()
+    try:
+        row = db.postgrest.auth(user_token).from_("post_comments").insert({
+            "post_id": post_id,
+            "user_id": current_user["id"],
+            "text": data.text.strip(),
+        }).execute()
+    except Exception:
+        row = db.table("post_comments").insert({
+            "post_id": post_id,
+            "user_id": current_user["id"],
+            "text": data.text.strip(),
+        }).execute()
     if not row.data:
         raise HTTPException(status_code=500, detail="Не удалось создать комментарий")
     c = row.data[0]

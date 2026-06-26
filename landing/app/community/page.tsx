@@ -162,13 +162,32 @@ function CreatePostModal({ token, onClose, onCreated }: { token: string; onClose
 
   async function submit() {
     if (!text.trim()) return;
+    if (!token) { setError("Войдите в аккаунт чтобы публиковать посты"); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${API_URL}/community/posts`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ text: text.trim() }) });
-      if (!res.ok) { const d = await res.json().catch(() => ({})); setError(d.detail || "Ошибка при создании поста"); return; }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${API_URL}/community/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: text.trim() }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.detail || `Ошибка сервера (${res.status}). Попробуйте ещё раз.`);
+        return;
+      }
       const post: Post = await res.json();
       onCreated(post); onClose();
-    } catch { setError("Ошибка сети. Попробуйте ещё раз."); } finally { setLoading(false); }
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === "AbortError") {
+        setError("Сервер не отвечает. Сервер может быть на паузе — подождите 30 сек и попробуйте снова.");
+      } else {
+        setError("Ошибка сети. Проверьте подключение и попробуйте ещё раз.");
+      }
+    } finally { setLoading(false); }
   }
 
   return (
@@ -180,7 +199,11 @@ function CreatePostModal({ token, onClose, onCreated }: { token: string; onClose
         </div>
         <div style={{ padding: "20px 24px" }}>
           <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Что у вас нового?" rows={5} style={{ width: "100%", border: "1.5px solid #e2e8f0", borderRadius: 14, padding: "14px 16px", fontSize: 15, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6, boxSizing: "border-box", background: "#f8fafc" }} />
-          {error && <p style={{ color: "#ef4444", fontSize: 13, marginTop: 8 }}>{error}</p>}
+          {error && (
+            <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginTop: 10 }}>
+              <p style={{ color: "#DC2626", fontSize: 13, margin: 0, fontWeight: 600 }}>⚠️ {error}</p>
+            </div>
+          )}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
             <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 12, border: "1.5px solid #e2e8f0", background: "white", cursor: "pointer", fontWeight: 600, fontSize: 14, color: "#64748b" }}>Отмена</button>
             <button onClick={submit} disabled={loading || !text.trim()} style={{ padding: "10px 24px", borderRadius: 12, border: "none", background: "#0EA5E9", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", opacity: (loading || !text.trim()) ? 0.5 : 1 }}>
