@@ -22,14 +22,7 @@ export default function GamificationSection() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.2fr 1fr",
-            gap: 24,
-            alignItems: "stretch",
-          }}
-        >
+        <div className="gamification-grid">
           {/* User card */}
           <div
             style={{

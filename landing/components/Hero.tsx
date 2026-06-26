@@ -35,20 +35,12 @@ export default function Hero() {
   return (
     <section
       style={{
-        paddingTop: 160,
-        paddingBottom: 100,
+        paddingTop: "clamp(100px, 14vw, 160px)",
+        paddingBottom: "clamp(60px, 8vw, 100px)",
         overflow: "hidden",
       }}
     >
-      <div
-        className="container"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 60,
-          alignItems: "center",
-        }}
-      >
+      <div className="container hero-grid">
         <div>
           <div className="section-label">AI-платформа</div>
           <h1
@@ -120,6 +112,7 @@ export default function Hero() {
         </div>
 
         <div
+          className="hero-phone-col"
           style={{
             position: "relative",
             display: "flex",

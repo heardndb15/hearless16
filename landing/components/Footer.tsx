@@ -12,14 +12,7 @@ export default function Footer() {
       }}
     >
       <div className="container">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr 1fr",
-            gap: 40,
-            marginBottom: 48,
-          }}
-        >
+        <div className="footer-grid">
           {/* Brand */}
           <div>
             <Link

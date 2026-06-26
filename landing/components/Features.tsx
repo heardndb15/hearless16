@@ -28,7 +28,7 @@ export default function FeaturesSection() {
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        <div className="features-grid">
           {FEATURES.map((feat) => (
             <Link
               key={feat.title}

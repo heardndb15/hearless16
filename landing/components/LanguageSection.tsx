@@ -39,13 +39,7 @@ export default function LanguageSection() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 20,
-          }}
-        >
+        <div className="lang-grid">
           {langs.map((l) => (
             <div
               key={l.code}
