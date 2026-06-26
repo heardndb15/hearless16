@@ -21,27 +21,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data, error }) => {
-      if (error || !data?.user) {
-        router.push("/login");
-      } else {
-        setUser(data.user);
-        supabase
-          .from("users")
-          .select("name, language")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: profileData }) => {
-            if (profileData) {
-              setProfile({
-                name: profileData.name || "",
-                language: profileData.language || "ru",
-              });
-            }
-            setLoading(false);
-          });
+
+    async function loadUser() {
+      // Try server-validated getUser first; fall back to getSession on network errors
+      let currentUser = null;
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data?.user) {
+          currentUser = data.user;
+        }
+      } catch {}
+
+      if (!currentUser) {
+        // Fallback: read session from local storage (no network call)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          currentUser = session.user;
+        } else {
+          router.push("/login");
+          return;
+        }
       }
-    });
+
+      setUser(currentUser);
+      supabase
+        .from("users")
+        .select("name, language")
+        .eq("id", currentUser.id)
+        .single()
+        .then(({ data: profileData }) => {
+          if (profileData) {
+            setProfile({ name: profileData.name || "", language: profileData.language || "ru" });
+          }
+          setLoading(false);
+        });
+    }
+
+    loadUser();
   }, [router]);
 
   async function handleSignOut() {
