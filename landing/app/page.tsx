@@ -5,6 +5,7 @@ import SubtitleDemo from "../components/SubtitleDemo";
 import SoundIndicators from "../components/SoundIndicators";
 import LanguageSection from "../components/LanguageSection";
 import GamificationSection from "../components/GamificationSection";
+import PricingSection from "../components/PricingSection";
 import CTASection from "../components/CTASection";
 import Footer from "../components/Footer";
 
@@ -19,6 +20,7 @@ export default function Home() {
         <SoundIndicators />
         <LanguageSection />
         <GamificationSection />
+        <PricingSection />
         <CTASection />
       </main>
       <Footer />
