@@ -25,7 +25,7 @@ const PLANS = [
     badge: "Популярный",
     highlight: true,
     cta: "Попробовать Basic",
-    ctaHref: "/register?plan=basic",
+    ctaHref: "/api/checkout?plan=basic",
     features: [
       "Субтитры до 2 часов в день",
       "Все базовые уроки",
@@ -41,7 +41,7 @@ const PLANS = [
     badge: null,
     highlight: false,
     cta: "Выбрать Pro",
-    ctaHref: "/register?plan=pro",
+    ctaHref: "/api/checkout?plan=pro",
     features: [
       "Субтитры без ограничений",
       "Полный курс жестового языка",

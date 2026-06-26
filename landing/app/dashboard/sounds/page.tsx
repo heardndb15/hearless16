@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -15,6 +15,8 @@ export default function SoundsPage() {
   const [alerts, setAlerts] = useState<SoundAlert[]>([]);
   const [monitoring, setMonitoring] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [micError, setMicError] = useState("");
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -24,7 +26,27 @@ export default function SoundsPage() {
         fetchAlerts(data.user.id);
       }
     });
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
   }, []);
+
+  async function toggleMonitoring() {
+    if (monitoring) {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      setMonitoring(false);
+      return;
+    }
+    setMicError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      setMonitoring(true);
+    } catch {
+      setMicError("Нет доступа к микрофону. Разрешите доступ в настройках браузера.");
+    }
+  }
 
   async function fetchAlerts(userId: string) {
     const supabase = createClient();
@@ -73,10 +95,9 @@ export default function SoundsPage() {
               <span className={`w-2.5 h-2.5 rounded-full ${monitoring ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></span>
               {monitoring ? "Микрофон слушает окружение..." : "Мониторинг выключен"}
             </span>
+            {micError && <p style={{ color: "#ef4444", fontSize: 12, margin: "0 0 4px" }}>{micError}</p>}
             <button
-              onClick={() => {
-                setMonitoring(!monitoring);
-              }}
+              onClick={toggleMonitoring}
               className={`px-4 py-2 rounded-xl text-xs font-bold font-syne shadow-sm transition-all duration-200 ${
                 monitoring
                   ? "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"

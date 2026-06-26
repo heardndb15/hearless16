@@ -13,16 +13,19 @@ export default function SOSPage() {
   const [activeSosId, setActiveSosId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
+      if (isMounted.current && data?.user) {
         setUser(data.user);
       }
     });
 
     return () => {
+      isMounted.current = false;
       clearTimers();
     };
   }, []);
@@ -75,11 +78,13 @@ export default function SOSPage() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          if (!isMounted.current) return;
           lat = pos.coords.latitude;
           lng = pos.coords.longitude;
           saveSOSToDB(lat, lng);
         },
         () => {
+          if (!isMounted.current) return;
           saveSOSToDB(lat, lng);
         }
       );

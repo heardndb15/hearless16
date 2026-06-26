@@ -10,13 +10,20 @@ _MIGRATIONS = [
     # ── Users ─────────────────────────────────────────────────────────────────
     """
     CREATE TABLE IF NOT EXISTS users (
-      id          UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-      name        TEXT        NOT NULL DEFAULT 'Пользователь',
-      language    TEXT        NOT NULL DEFAULT 'ru',
-      avatar_url  TEXT,
-      created_at  TIMESTAMPTZ DEFAULT NOW(),
-      updated_at  TIMESTAMPTZ DEFAULT NOW()
+      id               UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+      name             TEXT        NOT NULL DEFAULT 'Пользователь',
+      language         TEXT        NOT NULL DEFAULT 'ru',
+      avatar_url       TEXT,
+      plan             TEXT        NOT NULL DEFAULT 'free',
+      plan_expires_at  TIMESTAMPTZ,
+      created_at       TIMESTAMPTZ DEFAULT NOW(),
+      updated_at       TIMESTAMPTZ DEFAULT NOW()
     )
+    """,
+    """
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS plan            TEXT        NOT NULL DEFAULT 'free',
+      ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ
     """,
     """
     CREATE OR REPLACE FUNCTION public.handle_new_user()
