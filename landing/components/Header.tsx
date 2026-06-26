@@ -21,22 +21,30 @@ export default function Header() {
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        supabase.from("users").select("name").eq("id", session.user.id).single()
-          .then(({ data }) => setUserName(data?.name || session.user.email?.split("@")[0] || "Аккаунт"));
-      }
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        supabase.from("users").select("name").eq("id", session.user.id).single()
-          .then(({ data }) => setUserName(data?.name || session.user.email?.split("@")[0] || "Аккаунт"));
-      } else {
-        setUserName(null);
-      }
-    });
-    return () => subscription.unsubscribe();
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const supabase = createClient();
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          supabase.from("users").select("name").eq("id", session.user.id).single()
+            .then(({ data }) => setUserName(data?.name || session.user.email?.split("@")[0] || "Аккаунт"))
+            .catch(() => { if (session.user.email) setUserName(session.user.email.split("@")[0]); });
+        }
+      }).catch(() => {});
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          supabase.from("users").select("name").eq("id", session.user.id).single()
+            .then(({ data: profileData }) => setUserName(profileData?.name || session.user.email?.split("@")[0] || "Аккаунт"))
+            .catch(() => { if (session.user.email) setUserName(session.user.email.split("@")[0]); });
+        } else {
+          setUserName(null);
+        }
+      });
+      subscription = data.subscription;
+    } catch {
+      // Supabase not configured — show Войти/Регистрация by default
+    }
+    return () => subscription?.unsubscribe();
   }, []);
 
   return (

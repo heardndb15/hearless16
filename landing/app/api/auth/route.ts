@@ -32,9 +32,13 @@ export async function POST(req: NextRequest) {
     if (action === "register") {
       const supabase = createSupabase();
       const { email, password, name, language } = body;
+      const origin = req.headers.get("origin") || "";
       const { data, error } = await supabase.auth.signUp({
         email, password,
-        options: { data: { name, language: language || "ru" } },
+        options: {
+          data: { name, language: language || "ru" },
+          emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+        },
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
       const res = NextResponse.json({ user: data.user, session: data.session });
@@ -74,9 +78,10 @@ export async function POST(req: NextRequest) {
 
     if (action === "google") {
       const supabase = createSupabase();
+      const origin = req.headers.get("origin") || "";
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${req.headers.get("origin") || ""}/dashboard` },
+        options: { redirectTo: `${origin}/auth/callback?next=/dashboard` },
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
       const res = NextResponse.json({ url: data.url });
