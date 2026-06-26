@@ -22,20 +22,24 @@ export default function Header() {
 
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
+
+    async function loadName(supabase: ReturnType<typeof createClient>, userId: string, email?: string) {
+      try {
+        const { data } = await supabase.from("users").select("name").eq("id", userId).single();
+        setUserName(data?.name || email?.split("@")[0] || "Аккаунт");
+      } catch {
+        setUserName(email?.split("@")[0] || "Аккаунт");
+      }
+    }
+
     try {
       const supabase = createClient();
       supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          supabase.from("users").select("name").eq("id", session.user.id).single()
-            .then(({ data }) => setUserName(data?.name || session.user.email?.split("@")[0] || "Аккаунт"))
-            .catch(() => { if (session.user.email) setUserName(session.user.email.split("@")[0]); });
-        }
-      }).catch(() => {});
+        if (session?.user) loadName(supabase, session.user.id, session.user.email ?? undefined);
+      });
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
-          supabase.from("users").select("name").eq("id", session.user.id).single()
-            .then(({ data: profileData }) => setUserName(profileData?.name || session.user.email?.split("@")[0] || "Аккаунт"))
-            .catch(() => { if (session.user.email) setUserName(session.user.email.split("@")[0]); });
+          loadName(supabase, session.user.id, session.user.email ?? undefined);
         } else {
           setUserName(null);
         }
