@@ -98,12 +98,24 @@ export default function CommunityFeedScreen() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string>("");
   const loadingRef = useRef(false);
+  const tokenRef = useRef<string>("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      const t = session?.access_token ?? "";
+      tokenRef.current = t;
       setCurrentUserId(session?.user?.id ?? null);
-      setToken(session?.access_token ?? "");
+      setToken(t);
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const t = session?.access_token ?? "";
+      tokenRef.current = t;
+      setCurrentUserId(session?.user?.id ?? null);
+      setToken(t);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchPosts = useCallback(async (
@@ -115,7 +127,8 @@ export default function CommunityFeedScreen() {
     loadingRef.current = true;
     setLoading(true);
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const currentToken = tokenRef.current;
+      const headers = currentToken ? { Authorization: `Bearer ${currentToken}` } : {};
       const res = await axios.get<PostResponse[]>(`${API_URL}/community/posts`, {
         params: { sort: newSort, limit: 20, offset: newOffset },
         headers,
@@ -130,7 +143,7 @@ export default function CommunityFeedScreen() {
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Refetch when the screen comes into focus (e.g. after creating a post)
   useFocusEffect(
@@ -148,7 +161,7 @@ export default function CommunityFeedScreen() {
     setPosts([]);
     setOffset(0);
     fetchPosts(sort, 0, false);
-  }, [sort]);
+  }, [sort, fetchPosts]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
