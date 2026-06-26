@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { createClient } from "../lib/supabase";
 
 const FEATURE_LINKS = [
   { label: "AI-субтитры", href: "/subtitles", icon: "💬" },
@@ -17,6 +18,26 @@ const FEATURE_LINKS = [
 export default function Header() {
   const [dropdown, setDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.from("users").select("name").eq("id", session.user.id).single()
+          .then(({ data }) => setUserName(data?.name || session.user.email?.split("@")[0] || "Аккаунт"));
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        supabase.from("users").select("name").eq("id", session.user.id).single()
+          .then(({ data }) => setUserName(data?.name || session.user.email?.split("@")[0] || "Аккаунт"));
+      } else {
+        setUserName(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <>
@@ -50,8 +71,17 @@ export default function Header() {
             <Link href="/about" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>О проекте</Link>
             <Link href="/blog" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Блог</Link>
             <Link href="/pricing" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Тарифы</Link>
-            <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD" }}>Войти</Link>
-            <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>Регистрация</Link>
+            {userName ? (
+              <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{userName[0].toUpperCase()}</span>
+                {userName}
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD" }}>Войти</Link>
+                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>Регистрация</Link>
+              </>
+            )}
           </nav>
 
           {/* Hamburger — mobile only */}
@@ -99,8 +129,16 @@ export default function Header() {
 
             {/* Auth buttons */}
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-              <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "#0369A1", border: "1.5px solid #BAE6FD", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Войти</Link>
-              <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Регистрация</Link>
+              {userName ? (
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  {userName[0].toUpperCase()} · {userName}
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "#0369A1", border: "1.5px solid #BAE6FD", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Войти</Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Регистрация</Link>
+                </>
+              )}
             </div>
           </div>
         </div>
