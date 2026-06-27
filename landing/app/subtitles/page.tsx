@@ -88,7 +88,7 @@ export default function SubtitlesPage() {
   const recognitionRef = useRef<any>(null);
   const isDemo = inputText.trim() === "" && !isMicActive;
 
-  // РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ Gemini AI
+  // РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ Replicate AI
   const [aiSummary, setAiSummary] = useState("");
   const [aiQuery, setAiQuery] = useState("");
   const [aiResponse, setAiResponse] = useState("");
@@ -171,43 +171,25 @@ export default function SubtitlesPage() {
     : (isDemo ? PHRASES[lang][phraseIdx].slice(0, chars) : inputText);
 
   // --- РРќРўР•Р“Р РђР¦РРЇ GEMINI AI ---
-  const callGemini = async (prompt: string, textContent: string) => {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) return null;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
+  const callReplicateAI = async (prompt: string, textContent: string) => {
     try {
-      const response = await fetch(url, {
+      const res = await fetch("/api/ai", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `${prompt}\n\nРўРµРєСЃС‚:\n${textContent}`
-                }
-              ]
-            }
-          ]
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, text: textContent }),
       });
-      
-      const data = await response.json();
-      const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      return resultText.trim();
-    } catch (error) {
-      console.error("Gemini API Error:", error);
-      return "";
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.result || null;
+    } catch {
+      return null;
     }
   };
 
   // РњРµС‚РѕРґ РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕР№ РїСѓРЅРєС‚СѓР°С†РёРё С„СЂР°Р·С‹
-  const getPunctuationWithGemini = async (rawText: string) => {
+  const getPunctuationWithAI = async (rawText: string) => {
     const prompt = "РўС‹ вЂ” AI-СЂРµРґР°РєС‚РѕСЂ. РўРІРѕСЏ Р·Р°РґР°С‡Р° вЂ” СЂР°СЃСЃС‚Р°РІРёС‚СЊ Р·РЅР°РєРё РїСЂРµРїРёРЅР°РЅРёСЏ, РёСЃРїСЂР°РІРёС‚СЊ Р·Р°РіР»Р°РІРЅС‹Рµ Р±СѓРєРІС‹ Рё РјРµР»РєРёРµ РѕРїРµС‡Р°С‚РєРё РІ РїСЂРµРґР»РѕР¶РµРЅРЅРѕРј С‚РµРєСЃС‚Рµ СЂР°СЃРїРѕР·РЅР°РЅРЅРѕР№ СЂСѓСЃСЃРєРѕР№, РєР°Р·Р°С…СЃРєРѕР№ РёР»Рё Р°РЅРіР»РёР№СЃРєРѕР№ СЂРµС‡Рё. Р’РµСЂРЅРё РўРћР›Р¬РљРћ РёСЃРїСЂР°РІР»РµРЅРЅС‹Р№ С‚РµРєСЃС‚, Р±РµР· РєР°РєРёС…-Р»РёР±Рѕ РІРІРѕРґРЅС‹С… СЃР»РѕРІ РёР»Рё РєР°РІС‹С‡РµРє.";
-    const cleaned = await callGemini(prompt, rawText);
+    const cleaned = await callReplicateAI(prompt, rawText);
     return cleaned || rawText;
   };
 
@@ -221,7 +203,7 @@ export default function SubtitlesPage() {
     
     setIsAiLoading(true);
     const prompt = "РўС‹ вЂ” РїСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅС‹Р№ Р°СЃСЃРёСЃС‚РµРЅС‚ РїРѕ РґРѕСЃС‚СѓРїРЅРѕСЃС‚Рё. РЎРґРµР»Р°Р№ РєСЂР°С‚РєРѕРµ РєРѕРЅСЃРїРµРєС‚РёСЂРѕРІР°РЅРёРµ (РІ РІРёРґРµ С‚РµР·РёСЃРѕРІ Рё bullet points РЅР° СЂСѓСЃСЃРєРѕРј СЏР·С‹РєРµ) РґР»СЏ РїСЂРµРґР»РѕР¶РµРЅРЅРѕРіРѕ С‚СЂР°РЅСЃРєСЂРёРїС‚Р°. Р’С‹РґРµР»Рё РіР»Р°РІРЅС‹Рµ РјС‹СЃР»Рё, СЂРµС€РµРЅРёСЏ Рё РєР»СЋС‡РµРІС‹Рµ С„Р°РєС‚С‹.";
-    const result = await callGemini(prompt, fullTranscript);
+    const result = await callReplicateAI(prompt, fullTranscript);
     if (result) {
       setAiSummary(result);
     } else {
@@ -244,7 +226,7 @@ export default function SubtitlesPage() {
     setIsAiLoading(true);
     setAiResponse("AI РґСѓРјР°РµС‚...");
     const prompt = `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ Р·Р°РґР°РµС‚ РІРѕРїСЂРѕСЃ: "${aiQuery}". РћС‚РІРµС‚СЊ РЅР° РЅРµРіРѕ РєРѕСЂРѕС‚РєРѕ Рё СЃРѕРґРµСЂР¶Р°С‚РµР»СЊРЅРѕ, РѕСЃРЅРѕРІС‹РІР°СЏСЃСЊ РёСЃРєР»СЋС‡РёС‚РµР»СЊРЅРѕ РЅР° СЃРѕРґРµСЂР¶Р°РЅРёРё РїСЂРµРґР»РѕР¶РµРЅРЅРѕРіРѕ С‚СЂР°РЅСЃРєСЂРёРїС‚Р°. Р•СЃР»Рё РІ С‚РµРєСЃС‚Рµ РЅРµС‚ РѕС‚РІРµС‚Р° РЅР° СЌС‚РѕС‚ РІРѕРїСЂРѕСЃ, С‚Р°Рє Рё СЃРєР°Р¶Рё.`;
-    const result = await callGemini(prompt, fullTranscript);
+    const result = await callReplicateAI(prompt, fullTranscript);
     if (result) {
       setAiResponse(result);
     } else {
@@ -274,14 +256,35 @@ export default function SubtitlesPage() {
   };
 
   const startWhisperRecording = async () => {
-    if (!token) { alert("Войдите в аккаунт для Whisper AI"); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setWhisperStatus("recording");
       setIsMicActive(true);
       isMicActiveRef.current = true;
-      setInterimText("Слушаю (Whisper AI)...");
       audioChunksRef.current = [];
+
+      // Browser SpeechRecognition runs in parallel for real-time interim display
+      const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognitionAPI) {
+        const interimRec = new SpeechRecognitionAPI();
+        interimRec.continuous = true;
+        interimRec.interimResults = true;
+        const lc = toLangCode(lang);
+        interimRec.lang = lc === "en" ? "en-US" : lc === "kk" ? "kk-KZ" : "ru-RU";
+        interimRec.onresult = (event: any) => {
+          let interim = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (!event.results[i].isFinal) interim += event.results[i][0].transcript;
+          }
+          if (isMicActiveRef.current) setInterimText(interim || "Слушаю (Replicate AI)...");
+        };
+        interimRec.onend = () => {
+          if (isMicActiveRef.current) { try { interimRec.start(); } catch {} }
+        };
+        recognitionRef.current = interimRec;
+        interimRec.start();
+      }
+      setInterimText("Слушаю (Replicate AI)...");
 
       const sendChunk = async () => {
         const chunks = [...audioChunksRef.current];
@@ -292,41 +295,17 @@ export default function SubtitlesPage() {
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
-          if (useDiarizationRef.current) {
-            fd.append("last_speaker", String(diarizationStateRef.current.current_speaker));
-            fd.append("last_end", String(diarizationStateRef.current.last_end));
-            fd.append("language", lang);
-            const res = await fetch(`${API_URL}/transcribe/diarize`, {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-              body: fd,
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data.segments?.length) {
-                setSpeakerSegments(prev => [...prev, ...data.segments]);
-                setHistory(prev => [...prev, data.text?.trim()].filter(Boolean) as string[]);
-                diarizationStateRef.current = {
-                  current_speaker: data.next_speaker ?? 0,
-                  last_end: data.next_end ?? 0,
-                };
-              }
-            }
-          } else {
-            fd.append("language", toLangCode(lang));
-            const res = await fetch(`${API_URL}/transcribe/`, {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-              body: fd,
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data.text?.trim()) setHistory(prev => [...prev, data.text.trim()]);
-            }
+          fd.append("language", toLangCode(lang));
+          const res = await fetch("/api/transcribe", {
+            method: "POST",
+            body: fd,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.text?.trim()) setHistory(prev => [...prev, data.text.trim()]);
           }
         } catch {}
         if (isMicActiveRef.current) setWhisperStatus("recording");
-        setInterimText(isMicActiveRef.current ? "Слушаю (Whisper AI)..." : "");
       };
 
       const startRecorder = () => {
@@ -353,6 +332,7 @@ export default function SubtitlesPage() {
     clearInterval(whisperIntervalRef.current);
     isMicActiveRef.current = false;
     if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    if (recognitionRef.current) { try { recognitionRef.current.stop(); } catch {} recognitionRef.current = null; }
     setIsMicActive(false);
     setWhisperStatus("idle");
     setInterimText("");
@@ -472,7 +452,7 @@ export default function SubtitlesPage() {
               const updated = [...prev, textToProcess];
               const targetIdx = updated.length - 1; // Р—Р°РїРѕРјРёРЅР°РµРј С‚РѕС‡РЅС‹Р№ РёРЅРґРµРєСЃ С„СЂР°Р·С‹
               
-              getPunctuationWithGemini(textToProcess).then((punctuatedText) => {
+              getPunctuationWithAI(textToProcess).then((punctuatedText) => {
                 if (punctuatedText && punctuatedText !== textToProcess) {
                   setHistory((currentHistory) => {
                     const nextHistory = [...currentHistory];
@@ -1138,8 +1118,8 @@ export default function SubtitlesPage() {
                         }}
                       >
                         {isMicActive
-                          ? (useWhisper ? "⏹ Остановить Whisper" : "🛑 Выключить микрофон")
-                          : (useWhisper ? "🤖 Запустить Whisper AI" : "🎙️ Включить микрофон")}
+                          ? (useWhisper ? "⏹ Остановить Replicate AI" : "🛑 Выключить микрофон")
+                          : (useWhisper ? "🤖 Запустить Replicate AI" : "🎙️ Включить микрофон")}
                       </button>
 
                       <button 
@@ -1171,11 +1151,11 @@ export default function SubtitlesPage() {
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(2,132,199,0.08)", color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>{lang}</span>
                       <span style={{ padding: "6px 14px", borderRadius: 30, background: useWhisper ? "rgba(14,165,233,0.12)" : "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
-                        {useWhisper ? (whisperStatus === "processing" ? "⏳ Обработка..." : "🤖 Whisper AI") : "Web Speech API"}
+                        {useWhisper ? (whisperStatus === "processing" ? "⏳ Обработка..." : "🤖 Replicate AI") : "Web Speech API"}
                       </span>
                       <button onClick={() => { if (!isMicActive) setUseWhisper(v => !v); }} disabled={isMicActive}
                         style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(14,165,233,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer" }}>
-                        {useWhisper ? "→ Web Speech" : "→ Whisper"}
+                        {useWhisper ? "→ Web Speech" : "→ Replicate AI"}
                       </button>
                       {useWhisper && (
                         <button
@@ -1202,10 +1182,10 @@ export default function SubtitlesPage() {
                   marginTop: 24,
                 }}>
                   <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                    вњЁ AI-РђСЃСЃРёСЃС‚РµРЅС‚ Gemini
+                    вњЁ AI-РђСЃСЃРёСЃС‚РµРЅС‚ Replicate
                   </h3>
                   <p style={{ fontSize: 13, color: "var(--textSecondary)", marginBottom: 16 }}>
-                    РСЃРїРѕР»СЊР·СѓР№С‚Рµ РёРЅС‚РµР»Р»РµРєС‚ Gemini РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РєРѕРЅСЃРїРµРєС‚РёСЂРѕРІР°РЅРёСЏ Р±РµСЃРµРґС‹ РёР»Рё РѕС‚РІРµС‚РѕРІ РЅР° РІРѕРїСЂРѕСЃС‹ РїРѕ СЃРѕРґРµСЂР¶Р°РЅРёСЋ.
+                    РСЃРїРѕР»СЊР·СѓР№С‚Рµ РёРЅС‚РµР»Р»РµРєС‚ Replicate РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РєРѕРЅСЃРїРµРєС‚РёСЂРѕРІР°РЅРёСЏ Р±РµСЃРµРґС‹ РёР»Рё РѕС‚РІРµС‚РѕРІ РЅР° РІРѕРїСЂРѕСЃС‹ РїРѕ СЃРѕРґРµСЂР¶Р°РЅРёСЋ.
                   </p>
 
                   <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>

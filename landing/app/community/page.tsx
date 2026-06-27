@@ -89,6 +89,7 @@ function PostModal({ post, token, currentUserId, onClose, onLike, onDelete }: { 
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [commentError, setCommentError] = useState("");
 
   useEffect(() => {
     fetch(`${API_URL}/community/posts/${post.id}/comments`)
@@ -98,10 +99,22 @@ function PostModal({ post, token, currentUserId, onClose, onLike, onDelete }: { 
   async function sendComment() {
     if (!commentText.trim() || !token) return;
     setSending(true);
+    setCommentError("");
     try {
       const res = await fetch(`${API_URL}/community/posts/${post.id}/comments`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ text: commentText.trim() }) });
-      if (res.ok) { const c: Comment = await res.json(); setComments((prev) => [...prev, c]); setCommentText(""); }
-    } finally { setSending(false); }
+      if (res.ok) {
+        const c: Comment = await res.json();
+        setComments((prev) => [...prev, c]);
+        setCommentText("");
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setCommentError(d.detail || `Ошибка (${res.status}). Попробуйте ещё раз.`);
+      }
+    } catch {
+      setCommentError("Нет подключения. Проверьте сеть и попробуйте снова.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -136,14 +149,15 @@ function PostModal({ post, token, currentUserId, onClose, onLike, onDelete }: { 
               </div>
             ))}
         </div>
-        <div style={{ padding: "14px 24px", borderTop: "1px solid #f1f5f9", display: "flex", gap: 10 }}>
+        <div style={{ padding: "14px 24px", borderTop: "1px solid #f1f5f9", display: "flex", flexDirection: "column", gap: 8 }}>
+          {commentError && <p style={{ margin: 0, fontSize: 12, color: "#ef4444" }}>{commentError}</p>}
           {token ? (
-            <>
+            <div style={{ display: "flex", gap: 10 }}>
               <input value={commentText} onChange={(e) => setCommentText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(); } }} placeholder="Написать комментарий..." style={{ flex: 1, border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "10px 14px", fontSize: 14, outline: "none", fontFamily: "inherit", background: "#f8fafc" }} />
               <button onClick={sendComment} disabled={sending || !commentText.trim()} style={{ background: "#0EA5E9", color: "white", border: "none", borderRadius: 12, padding: "0 18px", fontWeight: 700, cursor: "pointer", fontSize: 14, opacity: (sending || !commentText.trim()) ? 0.5 : 1 }}>
                 {sending ? "..." : "↑"}
               </button>
-            </>
+            </div>
           ) : (
             <p style={{ margin: 0, fontSize: 13, color: "#64748b", textAlign: "center", width: "100%" }}>
               <Link href="/login" style={{ color: "#0EA5E9", fontWeight: 600 }}>Войдите</Link>, чтобы оставить комментарий

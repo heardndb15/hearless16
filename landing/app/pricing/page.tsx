@@ -38,7 +38,7 @@ const PLANS = [
     border: "transparent",
     highlight: true,
     cta: "Попробовать Basic",
-    ctaHref: "/register?plan=basic",
+    ctaHref: "/api/checkout?plan=basic",
     features: [
       { text: "Субтитры до 2 часов в день", ok: true },
       { text: "Все базовые уроки", ok: true },
@@ -61,7 +61,7 @@ const PLANS = [
     border: "rgba(14,165,233,0.15)",
     highlight: false,
     cta: "Выбрать Pro",
-    ctaHref: "/register?plan=pro",
+    ctaHref: "/api/checkout?plan=pro",
     features: [
       { text: "Субтитры без ограничений", ok: true },
       { text: "Полный курс жестового языка", ok: true },
