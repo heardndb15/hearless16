@@ -22,42 +22,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const supabase = createClient();
 
-    async function loadUser() {
-      // Try server-validated getUser first; fall back to getSession on network errors
-      let currentUser = null;
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (!error && data?.user) {
-          currentUser = data.user;
-        }
-      } catch {}
-
-      if (!currentUser) {
-        // Fallback: read session from local storage (no network call)
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          currentUser = session.user;
-        } else {
-          router.push("/login");
-          return;
-        }
-      }
-
-      setUser(currentUser);
-      supabase
+    async function loadProfile(userId: string) {
+      const { data: profileData } = await supabase
         .from("users")
         .select("name, language")
-        .eq("id", currentUser.id)
-        .single()
-        .then(({ data: profileData }) => {
-          if (profileData) {
-            setProfile({ name: profileData.name || "", language: profileData.language || "ru" });
-          }
-          setLoading(false);
-        });
+        .eq("id", userId)
+        .single();
+      if (profileData) {
+        setProfile({ name: profileData.name || "", language: profileData.language || "ru" });
+      }
+      setLoading(false);
     }
 
-    loadUser();
+    // Read session from browser storage — no network call, instant
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) {
+        router.push("/login");
+        return;
+      }
+      setUser(session.user);
+      loadProfile(session.user.id);
+    });
+
+    // React to sign-out or token expiry in real time
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   async function handleSignOut() {
