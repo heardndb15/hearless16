@@ -287,6 +287,7 @@ export default function CommunityPage() {
   const [sort, setSort] = useState<"new" | "popular">("new");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [token, setToken] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -297,6 +298,7 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState<Tab>("feed");
   const [dmWith, setDmWith] = useState<{ id: string; name: string } | null>(null);
   const loadingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -313,19 +315,39 @@ export default function CommunityPage() {
   }, []);
 
   const fetchPosts = useCallback(async (newSort: "new" | "popular", newOffset: number, append: boolean) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true; setLoading(true);
+    if (loadingRef.current) {
+      abortRef.current?.abort();
+      loadingRef.current = false;
+    }
+    abortRef.current = new AbortController();
+    const timeout = setTimeout(() => abortRef.current?.abort(), 20000);
+    loadingRef.current = true;
+    setLoading(true);
+    setFetchError("");
     try {
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const params = new URLSearchParams({ sort: newSort, limit: "20", offset: String(newOffset) });
-      const res = await fetch(`${API_URL}/community/posts?${params}`, { headers });
-      if (!res.ok) throw new Error();
+      const res = await fetch(`${API_URL}/community/posts?${params}`, { headers, signal: abortRef.current.signal });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`Ошибка сервера (${res.status})`);
       const data: Post[] = await res.json();
       setPosts((prev) => append ? [...prev, ...data] : data);
       setHasMore(data.length === 20);
       setOffset(newOffset + data.length);
-    } catch {} finally { loadingRef.current = false; setLoading(false); }
+    } catch (e: unknown) {
+      clearTimeout(timeout);
+      if (e instanceof Error && e.name === "AbortError") {
+        setFetchError("Сервер не отвечает. Возможно, он на паузе — подождите 30 сек и нажмите «Повторить».");
+      } else if (e instanceof Error) {
+        setFetchError(e.message || "Не удалось загрузить посты. Проверьте подключение.");
+      } else {
+        setFetchError("Не удалось загрузить посты. Проверьте подключение.");
+      }
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
   }, [token]);
 
   useEffect(() => { setPosts([]); setOffset(0); fetchPosts(sort, 0, false); }, [sort, fetchPosts]);
@@ -422,7 +444,14 @@ export default function CommunityPage() {
                 </button>
               ))}
             </div>
-            {loading && posts.length === 0 ? (
+            {fetchError ? (
+              <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
+                <p style={{ color: "#DC2626", fontSize: 14, fontWeight: 600, margin: "0 0 14px" }}>⚠️ {fetchError}</p>
+                <button onClick={() => fetchPosts(sort, 0, false)} style={{ background: "#0EA5E9", color: "white", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  Повторить
+                </button>
+              </div>
+            ) : loading && posts.length === 0 ? (
               <div style={{ textAlign: "center", paddingTop: 60 }}>
                 <div style={{ width: 44, height: 44, border: "4px solid rgba(14,165,233,0.2)", borderTopColor: "#0EA5E9", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
                 <p style={{ color: "#075985", fontSize: 14 }}>Загрузка постов...</p>
