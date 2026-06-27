@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import { HandSign } from "../../../components/HandSign";
+import { GESTURE_TUTORIALS } from "../../../lib/gesturesTutorial";
 
 interface Gesture {
   id: string;
@@ -41,6 +43,7 @@ export default function LearnSignLanguagePage() {
     components: { hand_shape: number; position: number; movement: number };
   } | null>(null);
   const [verifyError, setVerifyError] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -557,27 +560,76 @@ export default function LearnSignLanguagePage() {
               return (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedGesture(item)}
-                  className={`p-4 rounded-xl border text-left cursor-pointer transition-all flex items-center gap-4 ${
+                  className={`rounded-xl border text-left transition-all ${
                     isSelected
-                      ? "bg-white/70 border-accent shadow-md scale-[1.02]"
+                      ? "bg-white/70 border-accent shadow-md"
                       : "bg-white/40 border-white/60 hover:bg-white/50 hover:border-slate-300 shadow-sm"
                   }`}
                 >
-                  <div className="text-2xl p-2 bg-white/80 border border-slate-100 shadow-sm rounded-lg">
-                    {translateNameToEmoji(item.name)}
+                  {/* Card header row — clicking here selects the gesture */}
+                  <div
+                    onClick={() => setSelectedGesture(item)}
+                    className="p-4 flex items-center gap-4 cursor-pointer"
+                  >
+                    <div className="text-2xl p-2 bg-white/80 border border-slate-100 shadow-sm rounded-lg">
+                      {translateNameToEmoji(item.name)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-syne font-bold text-sm text-slate-800 truncate">{item.name}</h4>
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5 truncate">
+                        Попыток: {hasProgress?.attempts || 0}
+                      </p>
+                    </div>
+                    {hasProgress?.learned && (
+                      <span className="w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-500 text-[10px] font-bold shrink-0">
+                        ✓
+                      </span>
+                    )}
+                    {GESTURE_TUTORIALS[item.name] && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedId(expandedId === item.id ? null : item.id);
+                        }}
+                        className="shrink-0 w-7 h-7 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-xs text-sky-600 hover:bg-sky-100 transition-colors"
+                        title="Как делать этот жест"
+                      >
+                        {expandedId === item.id ? "✕" : "📖"}
+                      </button>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-syne font-bold text-sm text-slate-800 truncate">{item.name}</h4>
-                    <p className="text-[10px] text-slate-400 font-bold mt-0.5 truncate">
-                      Попыток: {hasProgress?.attempts || 0}
-                    </p>
-                  </div>
-                  {hasProgress?.learned && (
-                    <span className="w-5 h-5 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-500 text-[10px] font-bold">
-                      ✓
-                    </span>
-                  )}
+
+                  {/* Expandable tutorial panel */}
+                  {expandedId === item.id && GESTURE_TUTORIALS[item.name] && (() => {
+                    const tutorial = GESTURE_TUTORIALS[item.name];
+                    return (
+                      <div className="px-4 pb-4 border-t border-slate-100">
+                        <div className="flex gap-4 pt-4">
+                          {/* SVG hand */}
+                          <div className="shrink-0 w-20 h-20 bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border border-sky-100 flex items-center justify-center">
+                            <HandSign fingers={tutorial.fingers} size={64} color="#0EA5E9" />
+                          </div>
+                          {/* Steps */}
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            {tutorial.steps.map((step, i) => (
+                              <div key={i} className="flex gap-2 items-start">
+                                <span className="shrink-0 w-4 h-4 rounded-full bg-sky-100 border border-sky-200 text-[9px] font-bold text-sky-600 flex items-center justify-center mt-0.5">
+                                  {i + 1}
+                                </span>
+                                <p className="text-[11px] text-slate-600 leading-tight">{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {tutorial.tip && (
+                          <div className="mt-3 flex gap-2 items-start bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                            <span className="text-xs shrink-0">💡</span>
+                            <p className="text-[11px] text-amber-700 leading-tight">{tutorial.tip}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
