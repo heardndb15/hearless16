@@ -431,12 +431,37 @@ export default function LearnSignLanguagePage() {
                     </div>
                   )}
                 </div>
+              ) : GESTURE_TUTORIALS[selectedGesture.name] ? (
+                /* Tutorial view: SVG hand + steps + tip */
+                <div className="w-full space-y-4">
+                  <div className="flex gap-4 items-start">
+                    <div className="shrink-0 w-28 h-28 bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl border border-sky-100 flex items-center justify-center shadow-sm">
+                      <HandSign fingers={GESTURE_TUTORIALS[selectedGesture.name].fingers} size={88} color="#0EA5E9" />
+                    </div>
+                    <div className="flex-1 text-left space-y-2">
+                      {GESTURE_TUTORIALS[selectedGesture.name].steps.map((step, i) => (
+                        <div key={i} className="flex gap-2 items-start">
+                          <span className="shrink-0 w-5 h-5 rounded-full bg-sky-100 border border-sky-200 text-[10px] font-bold text-sky-600 flex items-center justify-center mt-0.5">
+                            {i + 1}
+                          </span>
+                          <p className="text-xs text-slate-600 leading-snug">{step}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {GESTURE_TUTORIALS[selectedGesture.name].tip && (
+                    <div className="flex gap-2 items-start bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 text-left">
+                      <span className="text-sm shrink-0">💡</span>
+                      <p className="text-xs text-amber-700 leading-snug">{GESTURE_TUTORIALS[selectedGesture.name].tip}</p>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="relative aspect-square w-48 h-48 mx-auto rounded-full bg-gradient-to-tr from-accent/5 to-purpleBrand/5 border border-white flex items-center justify-center shadow-lg shadow-accent/5">
                   <span className="text-8xl animate-[float_4s_infinite_ease-in-out]">
                     {translateNameToEmoji(selectedGesture.name)}
                   </span>
-                  
+
                   {/* Visual scanning circle border */}
                   <div className="absolute inset-2 border border-dashed border-accent/20 rounded-full animate-[spin_40s_linear_infinite]"></div>
                 </div>
