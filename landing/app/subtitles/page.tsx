@@ -170,7 +170,7 @@ export default function SubtitlesPage() {
     ? interimText
     : (isDemo ? PHRASES[lang][phraseIdx].slice(0, chars) : inputText);
 
-  // --- РРќРўР•Р“Р РђР¦РРЇ GEMINI AI ---
+  // --- REPLICATE AI ---
   const callReplicateAI = async (prompt: string, textContent: string) => {
     try {
       const res = await fetch("/api/ai", {

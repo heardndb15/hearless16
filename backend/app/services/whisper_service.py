@@ -113,7 +113,7 @@ def transcribe_openai(audio_bytes: bytes, language: str = "ru") -> str:
         from openai import OpenAI
         from app.config import OPENAI_API_KEY
 
-        if not OPENAI_API_KEY or OPENAI_API_KEY.startswith("xai-"):
+        if not OPENAI_API_KEY:
             return ""
 
         client = OpenAI(api_key=OPENAI_API_KEY)
