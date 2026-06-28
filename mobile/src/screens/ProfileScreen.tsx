@@ -42,14 +42,16 @@ export default function ProfileScreen() {
       }
     });
 
-    // Listen to changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
+    // Listen to changes — only react to explicit SIGNED_OUT to avoid spurious logouts
+    // during token refresh (Supabase can fire transient null-session events)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        setUser(null);
         setName("");
         setLoading(false);
+      } else if (session?.user) {
+        setUser(session.user);
+        fetchProfile(session.user.id);
       }
     });
 

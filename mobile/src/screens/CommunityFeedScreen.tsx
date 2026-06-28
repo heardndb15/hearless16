@@ -95,6 +95,7 @@ export default function CommunityFeedScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string>("");
   const loadingRef = useRef(false);
@@ -108,11 +109,17 @@ export default function CommunityFeedScreen() {
       setToken(t);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const t = session?.access_token ?? "";
-      tokenRef.current = t;
-      setCurrentUserId(session?.user?.id ?? null);
-      setToken(t);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        tokenRef.current = "";
+        setCurrentUserId(null);
+        setToken("");
+      } else if (session) {
+        const t = session.access_token ?? "";
+        tokenRef.current = t;
+        setCurrentUserId(session.user?.id ?? null);
+        setToken(t);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -126,19 +133,21 @@ export default function CommunityFeedScreen() {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
+    setError(false);
     try {
       const currentToken = tokenRef.current;
       const headers = currentToken ? { Authorization: `Bearer ${currentToken}` } : {};
       const res = await axios.get<PostResponse[]>(`${API_URL}/community/posts`, {
         params: { sort: newSort, limit: 20, offset: newOffset },
         headers,
+        timeout: 15000,
       });
       const data = res.data;
       setPosts((prev) => append ? [...prev, ...data] : data);
       setHasMore(data.length === 20);
       setOffset(newOffset + data.length);
     } catch {
-      // silent — user sees empty state
+      if (!append) setError(true);
     } finally {
       loadingRef.current = false;
       setLoading(false);
@@ -272,6 +281,19 @@ export default function CommunityFeedScreen() {
           ListEmptyComponent={
             loading ? (
               <ActivityIndicator color="white" size="large" style={{ marginTop: 40 }} />
+            ) : error ? (
+              <View style={[GlassCard, styles.emptyCard]}>
+                <Text style={{ fontSize: 32 }}>⏳</Text>
+                <Text style={styles.emptyText}>
+                  Сервер не отвечает. Возможно, он на паузе — подождите 30 сек и нажмите «Повторить».
+                </Text>
+                <TouchableOpacity
+                  style={styles.retryBtn}
+                  onPress={() => { setPosts([]); setOffset(0); fetchPosts(sort, 0, false); }}
+                >
+                  <Text style={styles.retryBtnText}>Повторить</Text>
+                </TouchableOpacity>
+              </View>
             ) : (
               <View style={[GlassCard, styles.emptyCard]}>
                 <Text style={{ fontSize: 32 }}>👋</Text>
@@ -315,4 +337,6 @@ const styles = StyleSheet.create({
   footerCount: { fontSize: 14, color: "#1E6FA8", fontWeight: "600" },
   emptyCard: { marginHorizontal: 16, marginTop: 40, padding: 28, borderRadius: 20, alignItems: "center", gap: 10 },
   emptyText: { fontSize: 16, color: Colors.heading, textAlign: "center", fontWeight: "500" },
+  retryBtn: { marginTop: 8, backgroundColor: "#0277BD", paddingHorizontal: 28, paddingVertical: 10, borderRadius: 20 },
+  retryBtnText: { color: "white", fontWeight: "700", fontSize: 15 },
 });
