@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
@@ -60,4 +61,31 @@ async def update_username(data: UsernameUpdate, current_user: dict = Depends(get
     else:
         db.table("users").insert({"id": current_user["id"], "name": name, "language": "ru"}).execute()
     return {"name": name}
+
+
+@router.get("/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    db = get_supabase()
+    result = db.table("users").select("name, plan, plan_expires_at").eq("id", current_user["id"]).single().execute()
+
+    row = result.data or {}
+    plan = row.get("plan", "free")
+    expires = row.get("plan_expires_at")
+
+    # Downgrade if subscription expired
+    if expires:
+        try:
+            exp_dt = datetime.fromisoformat(expires.replace("Z", "+00:00"))
+            if exp_dt < datetime.now(timezone.utc):
+                plan = "free"
+        except Exception:
+            pass
+
+    return {
+        "id": current_user["id"],
+        "email": current_user["email"],
+        "name": row.get("name", ""),
+        "plan": plan,
+        "plan_expires_at": expires,
+    }
 
