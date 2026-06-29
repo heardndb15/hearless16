@@ -9,8 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing, FontSize } from "../constants/theme";
 import { supabase } from "../services/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -154,30 +153,29 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
-        <SafeAreaView style={[styles.container, styles.center]}>
-          <ActivityIndicator size="large" color={Colors.white} />
-          <Text style={styles.loadingText}>Загрузка профиля...</Text>
-        </SafeAreaView>
-      </LinearGradient>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#1565C0" />
+        <Text style={styles.loadingText}>Загрузка профиля...</Text>
+      </View>
     );
   }
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user ? (name ? name[0].toUpperCase() : user.email?.[0].toUpperCase()) : "?"}
-            </Text>
-          </View>
-          <Text style={styles.title}>
-            {user ? "Профиль" : "Авторизация"}
+      {/* Blue header section */}
+      <View style={styles.profileHeader}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {user ? (name ? name[0].toUpperCase() : user.email?.[0].toUpperCase()) : "?"}
           </Text>
         </View>
+        <Text style={styles.title}>
+          {user ? "Профиль" : "Авторизация"}
+        </Text>
+      </View>
 
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {user ? (
           // Logged in UI
           <>
@@ -376,7 +374,7 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -384,33 +382,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  center: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   loadingText: {
     marginTop: 12,
     fontSize: FontSize.body,
-    color: Colors.white,
+    color: '#1565C0',
+  },
+  profileHeader: {
+    alignItems: "center",
+    paddingVertical: Spacing.xl,
+    backgroundColor: '#1565C0',
   },
   scrollContent: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.xxl,
-  },
-  header: {
-    alignItems: "center",
-    paddingVertical: Spacing.xl,
+    paddingTop: Spacing.md,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#0277BD",
+    backgroundColor: "rgba(255,255,255,0.25)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: Spacing.md,
     borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.8)",
+    borderColor: "rgba(255,255,255,0.6)",
   },
   avatarText: {
     fontSize: FontSize.heading,
@@ -423,30 +419,33 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
   section: {
-    backgroundColor: "rgba(255, 255, 255, 0.72)",
-    borderWidth: 1.5,
-    borderColor: "rgba(255, 255, 255, 0.6)",
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: Spacing.md,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: FontSize.subtitle,
     fontWeight: "600",
-    color: "rgba(255,255,255,0.9)",
+    color: "#1A1A2E",
     marginBottom: Spacing.sm,
   },
   emailLabel: {
     fontSize: FontSize.caption,
-    color: Colors.heading,
+    color: "#9CA3AF",
     marginBottom: Spacing.sm,
   },
   input: {
-    backgroundColor: "rgba(255,255,255,0.5)",
+    backgroundColor: '#F4F7FB',
     borderRadius: 12,
     padding: Spacing.md,
     fontSize: FontSize.body,
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
   toggleRow: {
     flexDirection: "row",
@@ -457,15 +456,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: '#F4F7FB',
     alignItems: "center",
   },
   toggleActive: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
   },
   toggleText: {
     fontSize: FontSize.body,
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
   toggleTextActive: {
     color: Colors.white,
@@ -473,7 +472,7 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     fontSize: FontSize.body,
-    color: Colors.heading,
+    color: "#1A1A2E",
     paddingVertical: Spacing.xs,
   },
   message: {
@@ -483,7 +482,7 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.xs,
   },
   saveButton: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     borderRadius: 16,
     padding: Spacing.md,
     alignItems: "center",

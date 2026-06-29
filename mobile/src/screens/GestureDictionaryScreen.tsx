@@ -10,12 +10,11 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import axios from "axios";
-import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing, FontSize } from "../constants/theme";
 import type { Gesture, RootStackParamList } from "../../../shared/types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
@@ -61,8 +60,9 @@ export default function GestureDictionaryScreen() {
   }, [navigation]);
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+    <View style={{ flex: 1, backgroundColor: '#F4F7FB' }}>
     <SafeAreaView style={styles.container}>
+      {/* Blue header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← Назад</Text>
@@ -96,7 +96,7 @@ export default function GestureDictionaryScreen() {
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color={Colors.white} style={{ marginTop: 40 }} />
+        <ActivityIndicator size="large" color="#1565C0" style={{ marginTop: 40 }} />
       ) : (
         <FlatList
           data={filtered}
@@ -162,7 +162,7 @@ export default function GestureDictionaryScreen() {
         </View>
       </Modal>
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -171,55 +171,62 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     gap: 12,
+    backgroundColor: '#1565C0',
   },
   backBtn: { padding: 4 },
   backBtnText: { fontSize: FontSize.body, color: "#ffffff", fontWeight: "600" },
   title: { fontSize: FontSize.title, fontWeight: "bold", color: "#ffffff" },
   search: {
     marginHorizontal: Spacing.md,
+    marginTop: Spacing.md,
     marginBottom: Spacing.sm,
-    backgroundColor: "rgba(255, 255, 255, 0.72)",
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: Spacing.md,
     paddingVertical: 10,
     fontSize: FontSize.body,
-    color: Colors.heading,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.6)",
+    color: "#1A1A2E",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 2,
   },
   chipsRow: { paddingHorizontal: Spacing.md, gap: 8, paddingBottom: Spacing.sm },
   chip: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.4)",
+    backgroundColor: '#F4F7FB',
   },
-  chipActive: { backgroundColor: "#0277BD", borderColor: "#0277BD" },
-  chipText: { fontSize: 12, color: "#ffffff", fontWeight: "600" },
+  chipActive: { backgroundColor: "#1565C0" },
+  chipText: { fontSize: 12, color: "#1A1A2E", fontWeight: "600" },
   chipTextActive: { color: Colors.white },
   grid: { paddingHorizontal: Spacing.md, paddingBottom: 32, gap: 12 },
   card: {
     flex: 1,
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: Spacing.md,
     alignItems: "center",
     margin: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   cardGif: { width: 100, height: 100, borderRadius: 10, marginBottom: 8 },
   cardGifPlaceholder: {
-    backgroundColor: "rgba(2,136,209,0.1)",
+    backgroundColor: "rgba(21,101,192,0.08)",
     justifyContent: "center",
     alignItems: "center",
   },
   cardGifPlaceholderText: { fontSize: 40 },
-  cardName: { fontSize: FontSize.subtitle, fontWeight: "700", color: Colors.heading, textAlign: "center" },
+  cardName: { fontSize: FontSize.subtitle, fontWeight: "700", color: "#1A1A2E", textAlign: "center" },
   diffBadge: { marginTop: 6, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3 },
   diffText: { fontSize: 11, fontWeight: "600" },
   modalBackdrop: {
@@ -228,7 +235,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalSheet: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderBottomLeftRadius: 0,
@@ -236,14 +243,19 @@ const styles = StyleSheet.create({
     padding: 28,
     alignItems: "center",
     paddingBottom: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
   },
   modalGif: { width: 200, height: 200, borderRadius: 16, marginBottom: 16 },
-  modalName: { fontSize: 28, fontWeight: "bold", color: Colors.heading, marginBottom: 4 },
+  modalName: { fontSize: 28, fontWeight: "bold", color: "#1A1A2E", marginBottom: 4 },
   modalCategory: { fontSize: FontSize.body, color: Colors.textSecondary, marginBottom: 24 },
   modalActions: { flexDirection: "row", gap: 12, width: "100%" },
   practiceBtn: {
     flex: 1,
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
@@ -251,10 +263,10 @@ const styles = StyleSheet.create({
   practiceBtnText: { color: Colors.white, fontWeight: "700", fontSize: FontSize.subtitle },
   closeBtn: {
     flex: 1,
-    backgroundColor: "rgba(13,71,161,0.1)",
+    backgroundColor: '#F4F7FB',
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
   },
-  closeBtnText: { color: Colors.heading, fontWeight: "600", fontSize: FontSize.subtitle },
+  closeBtnText: { color: "#1A1A2E", fontWeight: "600", fontSize: FontSize.subtitle },
 });

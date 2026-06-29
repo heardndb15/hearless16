@@ -11,11 +11,20 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "../services/supabase";
 import axios from "axios";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
-import { Colors, Spacing, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing } from "../constants/theme";
+
+const GlassCard = {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 16,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.07,
+  shadowRadius: 12,
+  elevation: 3,
+} as const;
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -255,7 +264,7 @@ export default function SubtitlesScreen() {
   };
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+    <View style={{flex:1, backgroundColor:'#FFFFFF'}}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTextContainer}>
@@ -557,7 +566,7 @@ export default function SubtitlesScreen() {
         </TouchableOpacity>
       )}
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

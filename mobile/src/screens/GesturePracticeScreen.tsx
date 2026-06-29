@@ -7,14 +7,13 @@ import {
   SafeAreaView,
   Animated,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import axios from "axios";
 import { supabase } from "../services/supabase";
 import Confetti from "../components/Confetti";
-import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing, FontSize } from "../constants/theme";
 import type { RootStackParamList } from "../../../shared/types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
@@ -176,7 +175,7 @@ export default function GesturePracticeScreen() {
 
   if (!permission?.granted) {
     return (
-      <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
         <SafeAreaView style={styles.container}>
           <View style={styles.permissionWrap}>
             <Text style={styles.permissionTitle}>Нет доступа к камере</Text>
@@ -185,7 +184,7 @@ export default function GesturePracticeScreen() {
             </Text>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -195,7 +194,7 @@ export default function GesturePracticeScreen() {
   const borderWidth = phase === "result" ? 4 : 0;
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
     <SafeAreaView style={styles.container}>
       <Confetti visible={showConfetti} />
 
@@ -250,7 +249,7 @@ export default function GesturePracticeScreen() {
         <View style={styles.resultSection}>
           {result.error === "no_hand_detected" ? (
             <>
-              <Text style={[styles.resultTitle, { color: "rgba(255,255,255,0.8)" }]}>
+              <Text style={[styles.resultTitle, { color: "#1A1A2E" }]}>
                 Рука не обнаружена
               </Text>
               <View style={styles.resultCard}>
@@ -309,7 +308,7 @@ export default function GesturePracticeScreen() {
         </View>
       )}
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -341,7 +340,7 @@ const compStyles = StyleSheet.create({
     flex: 1,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: '#E8EDF5',
     overflow: "hidden",
   },
   fill: {
@@ -458,15 +457,20 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: FontSize.title,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "#1A1A2E",
     textAlign: "center",
     marginBottom: Spacing.md,
   },
   resultCard: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   mainResult: {
     flexDirection: "row",
@@ -477,7 +481,7 @@ const styles = StyleSheet.create({
   resultGesture: {
     fontSize: FontSize.heading,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
   confidenceBadge: {
     borderRadius: 20,
@@ -504,7 +508,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     alignItems: "center",
   },
   tryAgainText: {
@@ -516,15 +520,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.72)",
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.6)",
+    backgroundColor: '#F4F7FB',
     alignItems: "center",
   },
   backBtnText: {
     fontSize: FontSize.subtitle,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
   practiceHint: {
     padding: Spacing.lg,
@@ -532,7 +534,7 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: FontSize.subtitle,
-    color: "rgba(255,255,255,0.85)",
+    color: "#9CA3AF",
     textAlign: "center",
   },
   permissionWrap: {
@@ -544,12 +546,12 @@ const styles = StyleSheet.create({
   permissionTitle: {
     fontSize: FontSize.title,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "#1A1A2E",
     marginBottom: Spacing.sm,
   },
   permissionText: {
     fontSize: FontSize.body,
-    color: "rgba(255,255,255,0.8)",
+    color: "#9CA3AF",
     textAlign: "center",
   },
 });

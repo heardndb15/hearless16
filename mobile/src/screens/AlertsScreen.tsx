@@ -9,9 +9,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
-import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing, FontSize } from "../constants/theme";
 import SilentSOS from "../components/SilentSOS";
 import { supabase } from "../services/supabase";
 import axios from "axios";
@@ -109,103 +108,102 @@ export default function AlertsScreen() {
     );
   }
 
-
-
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+    <View style={{ flex: 1, backgroundColor: '#F4F7FB' }}>
     <SafeAreaView style={styles.container}>
+      {/* Blue header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Алерты</Text>
-        <Text style={styles.subtitle}>Звуковые оповещения</Text>
+        <Text style={styles.title}>Звуковые оповещения</Text>
       </View>
 
-      {!isLoggedIn && (
-        <View style={styles.loginBanner}>
-          <Text style={styles.loginBannerText}>
-            🔑 Войдите в профиль, чтобы сохранять историю звуков!
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.alertsSection}>
-        <Text style={styles.sectionTitle}>Типы звуков</Text>
-        {alerts.map((alert) => (
-          <View key={alert.key} style={styles.alertRow}>
-            <Text style={styles.alertIcon}>{alert.icon}</Text>
-            <Text style={styles.alertLabel}>{alert.label}</Text>
-            <Switch
-              value={alert.enabled}
-              onValueChange={() => toggleAlert(alert.key)}
-              trackColor={{ false: "rgba(255,255,255,0.3)", true: "#0288D1" }}
-              thumbColor={alert.enabled ? Colors.button : Colors.white}
-            />
+      <View style={{ flex: 1, paddingHorizontal: Spacing.md }}>
+        {!isLoggedIn && (
+          <View style={styles.loginBanner}>
+            <Text style={styles.loginBannerText}>
+              🔑 Войдите в профиль, чтобы сохранять историю звуков!
+            </Text>
           </View>
-        ))}
-      </View>
+        )}
 
-      <View style={styles.sosRow}>
-        <SilentSOS />
-      </View>
-
-
-
-      <View style={styles.historySection}>
-        <View style={styles.historyHeader}>
-          <Text style={styles.sectionTitle}>История оповещений</Text>
-          {loading && <ActivityIndicator size="small" color={Colors.white} />}
+        <View style={styles.alertsSection}>
+          <Text style={styles.sectionTitle}>Типы звуков</Text>
+          {alerts.map((alert) => (
+            <View key={alert.key} style={styles.alertRow}>
+              <Text style={styles.alertIcon}>{alert.icon}</Text>
+              <Text style={styles.alertLabel}>{alert.label}</Text>
+              <Switch
+                value={alert.enabled}
+                onValueChange={() => toggleAlert(alert.key)}
+                trackColor={{ false: '#E8EDF5', true: '#1565C0' }}
+                thumbColor={alert.enabled ? Colors.white : Colors.white}
+              />
+            </View>
+          ))}
         </View>
-        <FlatList
-          data={history}
-          keyExtractor={(item) => item.id || Math.random().toString()}
-          renderItem={({ item }) => {
-            const config = SOUND_TYPES.find((s) => s.key === item.sound_type);
-            return (
-              <View style={styles.historyItem}>
-                <Text style={styles.historyIcon}>
-                  {config?.icon || "🔔"}
-                </Text>
-                <View>
-                  <Text style={styles.historyType}>
-                    {config?.label || item.sound_type}
+
+        <View style={styles.sosRow}>
+          <SilentSOS />
+        </View>
+
+        <View style={styles.historySection}>
+          <View style={styles.historyHeader}>
+            <Text style={styles.sectionTitle}>История оповещений</Text>
+            {loading && <ActivityIndicator size="small" color="#1565C0" />}
+          </View>
+          <FlatList
+            data={history}
+            keyExtractor={(item) => item.id || Math.random().toString()}
+            renderItem={({ item }) => {
+              const config = SOUND_TYPES.find((s) => s.key === item.sound_type);
+              return (
+                <View style={styles.historyItem}>
+                  <Text style={styles.historyIcon}>
+                    {config?.icon || "🔔"}
                   </Text>
-                  <Text style={styles.historyTime}>
-                    {new Date(item.detected_at || item.id).toLocaleString("ru-RU")}
-                  </Text>
+                  <View>
+                    <Text style={styles.historyType}>
+                      {config?.label || item.sound_type}
+                    </Text>
+                    <Text style={styles.historyTime}>
+                      {new Date(item.detected_at || item.id).toLocaleString("ru-RU")}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            );
-          }}
-        />
+              );
+            }}
+          />
+        </View>
       </View>
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.md,
   },
   header: {
-    paddingVertical: Spacing.lg,
-    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#1565C0',
   },
   title: {
-    fontSize: FontSize.heading,
+    fontSize: FontSize.title,
     fontWeight: "bold",
     color: "#ffffff",
   },
-  subtitle: {
-    fontSize: FontSize.body,
-    color: "rgba(255,255,255,0.8)",
-    marginTop: Spacing.xs,
-  },
   loginBanner: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: Spacing.md,
+    marginTop: Spacing.md,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   loginBannerText: {
     color: Colors.accent,
@@ -214,15 +212,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   alertsSection: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: Spacing.md,
     marginBottom: Spacing.md,
+    marginTop: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: FontSize.title,
     fontWeight: "600",
-    color: "#ffffff",
+    color: "#1A1A2E",
     marginBottom: Spacing.sm,
   },
   alertRow: {
@@ -230,7 +234,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.2)",
+    borderBottomColor: '#E8EDF5',
   },
   alertIcon: {
     fontSize: 24,
@@ -245,9 +249,8 @@ const styles = StyleSheet.create({
   alertLabel: {
     flex: 1,
     fontSize: FontSize.body,
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
-
   historySection: {
     flex: 1,
   },
@@ -260,10 +263,15 @@ const styles = StyleSheet.create({
   historyItem: {
     flexDirection: "row",
     alignItems: "center",
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   historyIcon: {
     fontSize: 24,
@@ -272,11 +280,11 @@ const styles = StyleSheet.create({
   historyType: {
     fontSize: FontSize.body,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
   historyTime: {
     fontSize: FontSize.caption,
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
     marginTop: 2,
   },
 });

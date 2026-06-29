@@ -4,13 +4,12 @@ import {
   RefreshControl, Alert, ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import axios from "axios";
 import { supabase } from "../services/supabase";
-import { GlassCard, Colors, GRADIENT_COLORS, GRADIENT_LOCATIONS } from "../constants/theme";
+import { Colors } from "../constants/theme";
 import type { RootStackParamList, PostResponse } from "../../../shared/types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
@@ -42,7 +41,7 @@ interface PostCardProps {
 function PostCard({ post, currentUserId, onLike, onPress, onDelete }: PostCardProps) {
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(post)}>
-      <View style={[GlassCard, styles.card]}>
+      <View style={styles.card}>
         <View style={styles.authorRow}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials(post.author.name)}</Text>
@@ -74,11 +73,11 @@ function PostCard({ post, currentUserId, onLike, onPress, onDelete }: PostCardPr
 
         <View style={styles.footer}>
           <TouchableOpacity style={styles.footerBtn} onPress={() => onLike(post.id)}>
-            <Text style={[styles.footerIcon, { color: post.liked_by_me ? "#ef4444" : "#1E6FA8" }]}>♥</Text>
+            <Text style={[styles.footerIcon, { color: post.liked_by_me ? "#ef4444" : "#9CA3AF" }]}>♥</Text>
             <Text style={styles.footerCount}>{post.likes_count}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.footerBtn} onPress={() => onPress(post)}>
-            <Text style={[styles.footerIcon, { color: "#1E6FA8" }]}>💬</Text>
+            <Text style={[styles.footerIcon, { color: "#1565C0" }]}>💬</Text>
             <Text style={styles.footerCount}>{post.comments_count}</Text>
           </TouchableOpacity>
         </View>
@@ -228,10 +227,10 @@ export default function CommunityFeedScreen() {
   }, [navigation]);
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#F4F7FB' }}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Community</Text>
+          <Text style={styles.headerTitle}>Комьюнити</Text>
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => {
@@ -274,15 +273,15 @@ export default function CommunityFeedScreen() {
           )}
           contentContainerStyle={{ paddingBottom: 20, paddingTop: 8 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="white" />
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#1565C0" />
           }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.3}
           ListEmptyComponent={
             loading ? (
-              <ActivityIndicator color="white" size="large" style={{ marginTop: 40 }} />
+              <ActivityIndicator color="#1565C0" size="large" style={{ marginTop: 40 }} />
             ) : error ? (
-              <View style={[GlassCard, styles.emptyCard]}>
+              <View style={styles.emptyCard}>
                 <Text style={{ fontSize: 32 }}>⏳</Text>
                 <Text style={styles.emptyText}>
                   Сервер не отвечает. Возможно, он на паузе — подождите 30 сек и нажмите «Повторить».
@@ -295,7 +294,7 @@ export default function CommunityFeedScreen() {
                 </TouchableOpacity>
               </View>
             ) : (
-              <View style={[GlassCard, styles.emptyCard]}>
+              <View style={styles.emptyCard}>
                 <Text style={{ fontSize: 32 }}>👋</Text>
                 <Text style={styles.emptyText}>Будьте первым — опубликуйте пост!</Text>
               </View>
@@ -303,40 +302,71 @@ export default function CommunityFeedScreen() {
           }
           ListFooterComponent={
             loading && posts.length > 0 ? (
-              <ActivityIndicator color="white" style={{ marginVertical: 16 }} />
+              <ActivityIndicator color="#1565C0" style={{ marginVertical: 16 }} />
             ) : null
           }
         />
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 12 },
-  headerTitle: { fontSize: 24, fontWeight: "700", color: "white" },
-  addBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#0277BD", alignItems: "center", justifyContent: "center" },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#1565C0',
+  },
+  headerTitle: { fontSize: 20, fontWeight: "700", color: "#ffffff" },
+  addBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
   addBtnText: { color: "white", fontSize: 24, lineHeight: 28, fontWeight: "600" },
-  sortRow: { flexDirection: "row", paddingHorizontal: 20, gap: 8, marginBottom: 4 },
-  sortBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.35)" },
-  sortBtnActive: { backgroundColor: "#0277BD" },
-  sortBtnText: { fontSize: 14, fontWeight: "600", color: Colors.heading },
+  sortRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginVertical: 10 },
+  sortBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: "#F4F7FB" },
+  sortBtnActive: { backgroundColor: "#1565C0" },
+  sortBtnText: { fontSize: 14, fontWeight: "600", color: "#1A1A2E" },
   sortBtnTextActive: { color: "white" },
-  card: { marginHorizontal: 16, marginBottom: 12, padding: 16, borderRadius: 20 },
+  card: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   authorRow: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 10 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#0277BD", alignItems: "center", justifyContent: "center" },
+  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#1565C0", alignItems: "center", justifyContent: "center" },
   avatarText: { color: "white", fontSize: 14, fontWeight: "700" },
-  authorName: { fontSize: 14, fontWeight: "600", color: Colors.heading },
-  timeText: { fontSize: 12, color: "#1E6FA8", marginTop: 1 },
-  moreText: { fontSize: 18, color: Colors.heading, letterSpacing: 1, paddingHorizontal: 4 },
-  postText: { fontSize: 15, color: Colors.heading, lineHeight: 22, marginBottom: 8 },
+  authorName: { fontSize: 14, fontWeight: "600", color: "#1A1A2E" },
+  timeText: { fontSize: 12, color: "#9CA3AF", marginTop: 1 },
+  moreText: { fontSize: 18, color: "#1A1A2E", letterSpacing: 1, paddingHorizontal: 4 },
+  postText: { fontSize: 15, color: "#1A1A2E", lineHeight: 22, marginBottom: 8 },
   postImage: { width: "100%", aspectRatio: 16 / 9, borderRadius: 12, marginBottom: 10 },
   footer: { flexDirection: "row", gap: 16, marginTop: 4 },
   footerBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
   footerIcon: { fontSize: 18 },
-  footerCount: { fontSize: 14, color: "#1E6FA8", fontWeight: "600" },
-  emptyCard: { marginHorizontal: 16, marginTop: 40, padding: 28, borderRadius: 20, alignItems: "center", gap: 10 },
-  emptyText: { fontSize: 16, color: Colors.heading, textAlign: "center", fontWeight: "500" },
-  retryBtn: { marginTop: 8, backgroundColor: "#0277BD", paddingHorizontal: 28, paddingVertical: 10, borderRadius: 20 },
+  footerCount: { fontSize: 14, color: "#9CA3AF", fontWeight: "600" },
+  emptyCard: {
+    marginHorizontal: 16,
+    marginTop: 40,
+    padding: 28,
+    borderRadius: 16,
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  emptyText: { fontSize: 16, color: "#1A1A2E", textAlign: "center", fontWeight: "500" },
+  retryBtn: { marginTop: 8, backgroundColor: "#1565C0", paddingHorizontal: 28, paddingVertical: 10, borderRadius: 20 },
   retryBtnText: { color: "white", fontWeight: "700", fontSize: 15 },
 });

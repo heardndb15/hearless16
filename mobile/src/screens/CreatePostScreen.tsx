@@ -4,13 +4,12 @@ import {
   ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { supabase } from "../services/supabase";
-import { GlassCard, Colors, GRADIENT_COLORS, GRADIENT_LOCATIONS } from "../constants/theme";
+import { Colors } from "../constants/theme";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 
@@ -96,9 +95,9 @@ export default function CreatePostScreen() {
   const canPublish = text.trim().length > 0 && !isLoading;
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <SafeAreaView style={{ flex: 1 }}>
-        {/* Header */}
+        {/* Blue header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} disabled={isLoading}>
             <Text style={[styles.cancelBtn, isLoading && { opacity: 0.4 }]}>Отмена</Text>
@@ -117,10 +116,10 @@ export default function CreatePostScreen() {
         >
           <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
             {/* Text input card */}
-            <View style={[GlassCard, styles.textCard]}>
+            <View style={styles.textCard}>
               <TextInput
                 placeholder="Что у вас нового?"
-                placeholderTextColor="#1E6FA8"
+                placeholderTextColor="#9CA3AF"
                 value={text}
                 onChangeText={setText}
                 multiline
@@ -149,7 +148,7 @@ export default function CreatePostScreen() {
               </View>
             ) : (
               <TouchableOpacity
-                style={[GlassCard, styles.addPhotoBtn]}
+                style={styles.addPhotoBtn}
                 onPress={pickImage}
                 disabled={isLoading}
               >
@@ -167,25 +166,53 @@ export default function CreatePostScreen() {
           </View>
         )}
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#1565C0',
+  },
   cancelBtn: { color: "white", fontSize: 16 },
   headerTitle: { color: "white", fontSize: 17, fontWeight: "700" },
-  publishBtn: { color: "#0277BD", fontSize: 15, fontWeight: "700", backgroundColor: "white", paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
-  textCard: { marginHorizontal: 16, marginTop: 16, padding: 16, borderRadius: 20 },
-  textInput: { fontSize: 16, color: Colors.heading, minHeight: 120, textAlignVertical: "top" },
-  charCount: { textAlign: "right", fontSize: 12, color: "#1E6FA8", marginTop: 8 },
+  publishBtn: {
+    color: "#1565C0",
+    fontSize: 15,
+    fontWeight: "700",
+    backgroundColor: "white",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+  textCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#F4F7FB',
+  },
+  textInput: { fontSize: 16, color: "#1A1A2E", minHeight: 120, textAlignVertical: "top" },
+  charCount: { textAlign: "right", fontSize: 12, color: "#9CA3AF", marginTop: 8 },
   previewWrap: { marginHorizontal: 16, marginTop: 12, borderRadius: 12, overflow: "hidden" },
   previewImage: { width: "100%", aspectRatio: 16 / 9 },
   uploadOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.55)", alignItems: "center", justifyContent: "center", gap: 10 },
   uploadText: { color: "white", fontSize: 15, fontWeight: "600" },
   removeImgBtn: { padding: 12, alignItems: "center" },
   removeImgText: { color: "#ef4444", fontSize: 14, fontWeight: "600" },
-  addPhotoBtn: { marginHorizontal: 16, marginTop: 12, padding: 18, borderRadius: 20, alignItems: "center" },
-  addPhotoText: { color: "#0277BD", fontSize: 16, fontWeight: "600" },
+  addPhotoBtn: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 18,
+    borderRadius: 16,
+    alignItems: "center",
+    backgroundColor: '#F4F7FB',
+  },
+  addPhotoText: { color: "#1565C0", fontSize: 16, fontWeight: "600" },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center", gap: 10 },
 });

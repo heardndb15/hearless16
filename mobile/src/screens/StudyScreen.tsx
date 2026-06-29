@@ -11,9 +11,8 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
-import { Colors, Spacing, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing, FontSize } from "../constants/theme";
 import { supabase } from "../services/supabase";
 import axios from "axios";
 import type { StudyLecture } from "../../../shared/types";
@@ -229,12 +228,21 @@ export default function StudyScreen() {
     );
   }
 
+  if (loading && viewMode === "list" && !lectures.length) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#1565C0" />
+        <Text style={styles.loadingText}>Загрузка лекций...</Text>
+      </View>
+    );
+  }
+
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* Blue header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Режим учебы 🎓</Text>
+        <Text style={styles.title}>Учёба</Text>
         <Text style={styles.subtitle}>Запись и ИИ-анализ лекций</Text>
       </View>
 
@@ -244,7 +252,7 @@ export default function StudyScreen() {
         <View style={{ flex: 1 }}>
           {loading ? (
             <View style={styles.center}>
-              <ActivityIndicator size="large" color={Colors.white} />
+              <ActivityIndicator size="large" color="#1565C0" />
               <Text style={styles.loadingText}>Загрузка лекций...</Text>
             </View>
           ) : lectures.length === 0 ? (
@@ -261,7 +269,7 @@ export default function StudyScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 80 }}>
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: Spacing.md }}>
               <TouchableOpacity
                 style={[styles.actionButton, { marginVertical: Spacing.md }]}
                 onPress={() => setViewMode("record")}
@@ -310,7 +318,7 @@ export default function StudyScreen() {
       )}
 
       {viewMode === "record" && (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: Spacing.md }}>
           <View style={styles.recordBox}>
             <Text style={styles.recordBoxStatus}>
               {isRecording ? "🔴 Идет запись..." : "⚪ Готов к записи"}
@@ -401,7 +409,7 @@ export default function StudyScreen() {
       )}
 
       {viewMode === "details" && selectedLecture && (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingHorizontal: Spacing.md }}>
           {/* Back button */}
           <TouchableOpacity
             style={styles.backHeader}
@@ -558,14 +566,13 @@ export default function StudyScreen() {
         </View>
       )}
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.md,
   },
   center: {
     flex: 1,
@@ -575,56 +582,63 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.white,
+    color: '#1565C0',
     marginTop: Spacing.sm,
     fontWeight: "600",
   },
   header: {
-    paddingVertical: Spacing.md,
-    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#1565C0',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#ffffff",
   },
   subtitle: {
     fontSize: 13,
     color: "rgba(255,255,255,0.8)",
-    marginTop: 4,
+    marginTop: 2,
     fontWeight: "600",
   },
   placeholderCard: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: Spacing.lg,
     marginVertical: Spacing.xl,
+    marginHorizontal: Spacing.md,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   placeholderText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
     textAlign: "center",
     marginBottom: Spacing.sm,
   },
   placeholderSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
     textAlign: "center",
     lineHeight: 18,
     marginBottom: Spacing.lg,
     fontWeight: "600",
   },
   actionButton: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#0277BD",
+    shadowColor: "#1565C0",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -636,10 +650,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   lectureCard: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: Spacing.md,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: "row",
@@ -651,7 +670,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     color: Colors.accent,
-    backgroundColor: "rgba(2,136,209,0.15)",
+    backgroundColor: "rgba(21,101,192,0.1)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -659,19 +678,19 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginBottom: 6,
   },
   cardSummary: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
     lineHeight: 18,
     fontWeight: "600",
     marginBottom: Spacing.sm,
   },
   cardFooter: {
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.4)",
+    borderTopColor: '#E8EDF5',
     paddingTop: Spacing.sm,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -688,17 +707,22 @@ const styles = StyleSheet.create({
     color: Colors.accent,
   },
   recordBox: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: Spacing.lg,
     marginVertical: Spacing.sm,
     alignItems: "center",
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   recordBoxStatus: {
     color: Colors.textSecondary,
     fontSize: 11,
     fontWeight: "bold",
-    backgroundColor: "rgba(255,255,255,0.4)",
+    backgroundColor: '#F4F7FB',
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -712,14 +736,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
   },
   transcriptText: {
-    color: Colors.heading,
+    color: "#1A1A2E",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
     lineHeight: 24,
   },
   transcriptPlaceholder: {
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
     fontSize: 13,
     fontWeight: "600",
     textAlign: "center",
@@ -731,7 +755,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
   },
   micButton: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 30,
@@ -756,28 +780,38 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   loadingBox: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: Spacing.lg,
     alignItems: "center",
     marginVertical: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   loadingBoxText: {
     fontSize: 12,
     fontWeight: "bold",
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
     marginTop: Spacing.sm,
   },
   analysisResultBox: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: Spacing.md,
     marginVertical: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   sectionHeader: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginBottom: Spacing.md,
   },
   inputLabel: {
@@ -789,25 +823,25 @@ const styles = StyleSheet.create({
   },
   titleInput: {
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
-    backgroundColor: "rgba(255,255,255,0.5)",
+    borderColor: '#E8EDF5',
+    backgroundColor: '#F4F7FB',
     borderRadius: 12,
     padding: 10,
     fontSize: 13,
     fontWeight: "700",
-    color: Colors.textPrimary,
+    color: "#1A1A2E",
     marginBottom: Spacing.md,
   },
   summaryResultText: {
     fontSize: 12,
-    color: Colors.textPrimary,
+    color: "#1A1A2E",
     fontWeight: "600",
     lineHeight: 18,
-    backgroundColor: "rgba(255,255,255,0.5)",
+    backgroundColor: '#F4F7FB',
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
+    borderColor: '#E8EDF5',
     marginBottom: Spacing.md,
   },
   metaBadgeRow: {
@@ -819,7 +853,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     color: Colors.accent,
-    backgroundColor: "rgba(2,136,209,0.15)",
+    backgroundColor: "rgba(21,101,192,0.1)",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -841,7 +875,7 @@ const styles = StyleSheet.create({
   },
   backLinkText: {
     fontSize: 12,
-    color: "rgba(255,255,255,0.85)",
+    color: "#1565C0",
     fontWeight: "bold",
   },
   backHeader: {
@@ -850,16 +884,21 @@ const styles = StyleSheet.create({
   },
   backHeaderText: {
     fontSize: 12,
-    color: "rgba(255,255,255,0.85)",
+    color: "#1565C0",
     fontWeight: "bold",
   },
   detailCard: {
     flex: 1,
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: Spacing.md,
     marginTop: Spacing.xs,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   detailDate: {
     fontSize: 10,
@@ -870,12 +909,12 @@ const styles = StyleSheet.create({
   detailTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginBottom: Spacing.md,
   },
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: '#F4F7FB',
     padding: 3,
     borderRadius: 12,
     marginBottom: Spacing.md,
@@ -887,7 +926,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   tabBtnActive: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -897,7 +936,7 @@ const styles = StyleSheet.create({
   tabBtnText: {
     fontSize: 11,
     fontWeight: "600",
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
   },
   tabBtnTextActive: {
     color: Colors.white,
@@ -915,21 +954,21 @@ const styles = StyleSheet.create({
   tabHeader: {
     fontSize: 14,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginBottom: Spacing.sm,
   },
   tabBodyText: {
     fontSize: 13,
-    color: Colors.textPrimary,
+    color: "#1A1A2E",
     lineHeight: 20,
     fontWeight: "600",
   },
   rawTranscriptText: {
-    backgroundColor: "rgba(255,255,255,0.5)",
+    backgroundColor: '#F4F7FB',
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
+    borderColor: '#E8EDF5',
   },
   highlightBulletRow: {
     flexDirection: "row",
@@ -946,14 +985,14 @@ const styles = StyleSheet.create({
   bulletText: {
     flex: 1,
     fontSize: 12,
-    color: Colors.textPrimary,
+    color: "#1A1A2E",
     lineHeight: 18,
     fontWeight: "600",
   },
   termItemCard: {
-    backgroundColor: "rgba(255,255,255,0.5)",
+    backgroundColor: '#F4F7FB',
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
+    borderColor: '#E8EDF5',
     padding: 12,
     borderRadius: 14,
     marginBottom: Spacing.sm,
@@ -961,12 +1000,12 @@ const styles = StyleSheet.create({
   termTitle: {
     fontSize: 12,
     fontWeight: "bold",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginBottom: 2,
   },
   termDefinition: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: "#9CA3AF",
     lineHeight: 16,
     fontWeight: "600",
   },
@@ -985,9 +1024,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   chatWelcomeBubble: {
-    backgroundColor: "rgba(2,136,209,0.1)",
+    backgroundColor: "rgba(21,101,192,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.5)",
+    borderColor: '#E8EDF5',
     borderRadius: 14,
     padding: 12,
     marginBottom: 4,
@@ -995,7 +1034,7 @@ const styles = StyleSheet.create({
   chatWelcomeText: {
     fontSize: 12,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#1A1A2E",
     lineHeight: 18,
   },
   chatBubble: {
@@ -1004,13 +1043,13 @@ const styles = StyleSheet.create({
     maxWidth: "85%",
   },
   chatBubbleUser: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     alignSelf: "flex-end",
   },
   chatBubbleAssistant: {
-    backgroundColor: "rgba(255,255,255,0.7)",
+    backgroundColor: '#F4F7FB',
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
+    borderColor: '#E8EDF5',
     alignSelf: "flex-start",
   },
   chatBubbleText: {
@@ -1022,7 +1061,7 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   chatBubbleTextAssistant: {
-    color: Colors.heading,
+    color: "#1A1A2E",
   },
   chatInputRow: {
     flexDirection: "row",
@@ -1030,22 +1069,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.4)",
+    borderTopColor: '#E8EDF5',
   },
   chatTextInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
-    backgroundColor: "rgba(255,255,255,0.5)",
+    borderColor: '#E8EDF5',
+    backgroundColor: '#F4F7FB',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
     fontWeight: "600",
-    color: Colors.textPrimary,
+    color: "#1A1A2E",
   },
   chatSendBtn: {
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -1053,7 +1092,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   chatSendBtnDisabled: {
-    backgroundColor: "rgba(2,136,209,0.4)",
+    backgroundColor: "rgba(21,101,192,0.4)",
   },
   chatSendBtnText: {
     color: Colors.white,

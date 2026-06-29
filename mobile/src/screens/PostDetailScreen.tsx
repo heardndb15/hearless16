@@ -12,12 +12,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import axios from "axios";
 import { supabase } from "../services/supabase";
-import { GlassCard, Colors, GRADIENT_COLORS, GRADIENT_LOCATIONS } from "../constants/theme";
+import { Colors } from "../constants/theme";
 import type { RootStackParamList, PostResponse, CommentResponse } from "../../../shared/types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
@@ -124,20 +123,25 @@ export default function PostDetailScreen() {
   );
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#F4F7FB' }}>
       <SafeAreaView style={{ flex: 1 }}>
+        {/* Blue header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.backText}>← Назад</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Пост</Text>
+          <View style={{ width: 60 }} />
+        </View>
+
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
         >
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>← Назад</Text>
-          </TouchableOpacity>
-
           <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
             {/* Post card */}
-            <View style={[GlassCard, styles.card]}>
+            <View style={styles.card}>
               <View style={styles.authorRow}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>{initials(post.author.name)}</Text>
@@ -163,7 +167,7 @@ export default function PostDetailScreen() {
                   <Text
                     style={[
                       styles.footerIcon,
-                      { color: post.liked_by_me ? "#ef4444" : "#1E6FA8" },
+                      { color: post.liked_by_me ? "#ef4444" : "#9CA3AF" },
                     ]}
                   >
                     ♥
@@ -171,7 +175,7 @@ export default function PostDetailScreen() {
                   <Text style={styles.footerCount}>{post.likes_count}</Text>
                 </TouchableOpacity>
                 <View style={styles.footerBtn}>
-                  <Text style={[styles.footerIcon, { color: "#1E6FA8" }]}>💬</Text>
+                  <Text style={[styles.footerIcon, { color: "#1565C0" }]}>💬</Text>
                   <Text style={styles.footerCount}>{post.comments_count}</Text>
                 </View>
               </View>
@@ -181,12 +185,12 @@ export default function PostDetailScreen() {
             <Text style={styles.sectionTitle}>Комментарии</Text>
 
             {loadingComments ? (
-              <ActivityIndicator color="white" style={{ marginTop: 20 }} />
+              <ActivityIndicator color="#1565C0" style={{ marginTop: 20 }} />
             ) : comments.length === 0 ? (
               <Text style={styles.emptyComments}>Комментариев пока нет</Text>
             ) : (
               comments.map((c) => (
-                <View key={c.id} style={[GlassCard, styles.commentCard]}>
+                <View key={c.id} style={styles.commentCard}>
                   <View style={styles.authorRow}>
                     <View style={[styles.avatar, styles.avatarSm]}>
                       <Text style={[styles.avatarText, { fontSize: 11 }]}>
@@ -219,9 +223,9 @@ export default function PostDetailScreen() {
             {token ? (
               <>
                 <TextInput
-                  style={[GlassCard, styles.commentInput]}
+                  style={styles.commentInput}
                   placeholder="Написать комментарий..."
-                  placeholderTextColor="#1E6FA8"
+                  placeholderTextColor="#9CA3AF"
                   value={commentText}
                   onChangeText={setCommentText}
                   multiline
@@ -244,49 +248,80 @@ export default function PostDetailScreen() {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backBtn: { paddingHorizontal: 20, paddingVertical: 12 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#1565C0',
+  },
   backText: { color: "white", fontSize: 16, fontWeight: "600" },
-  card: { marginHorizontal: 16, marginBottom: 12, padding: 16, borderRadius: 20 },
+  headerTitle: { color: "white", fontSize: 17, fontWeight: "700" },
+  card: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   authorRow: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 10 },
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarSm: { width: 32, height: 32, borderRadius: 16 },
   avatarText: { color: "white", fontSize: 13, fontWeight: "700" },
-  authorName: { fontSize: 14, fontWeight: "600", color: Colors.heading },
-  timeText: { fontSize: 12, color: "#1E6FA8", marginTop: 1 },
-  postText: { fontSize: 15, color: Colors.heading, lineHeight: 22, marginBottom: 8 },
+  authorName: { fontSize: 14, fontWeight: "600", color: "#1A1A2E" },
+  timeText: { fontSize: 12, color: "#9CA3AF", marginTop: 1 },
+  postText: { fontSize: 15, color: "#1A1A2E", lineHeight: 22, marginBottom: 8 },
   postImage: { width: "100%", aspectRatio: 16 / 9, borderRadius: 12, marginBottom: 10 },
   footer: { flexDirection: "row", gap: 16, marginTop: 4 },
   footerBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
   footerIcon: { fontSize: 18 },
-  footerCount: { fontSize: 14, color: "#1E6FA8", fontWeight: "600" },
+  footerCount: { fontSize: 14, color: "#9CA3AF", fontWeight: "600" },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "white",
+    color: "#1A1A2E",
     marginLeft: 16,
     marginBottom: 8,
     marginTop: 4,
   },
   emptyComments: {
-    color: "rgba(255,255,255,0.7)",
+    color: "#9CA3AF",
     textAlign: "center",
     marginTop: 20,
     fontSize: 14,
   },
-  commentCard: { marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 16 },
-  commentText: { fontSize: 14, color: Colors.heading, lineHeight: 20, marginTop: 2 },
+  commentCard: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  commentText: { fontSize: 14, color: "#1A1A2E", lineHeight: 20, marginTop: 2 },
   inputRow: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -294,7 +329,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.2)",
+    borderTopColor: '#E8EDF5',
+    backgroundColor: '#FFFFFF',
   },
   commentInput: {
     flex: 1,
@@ -302,14 +338,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: Colors.heading,
+    color: "#1A1A2E",
     maxHeight: 80,
+    backgroundColor: '#F4F7FB',
   },
   sendBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#0277BD",
+    backgroundColor: "#1565C0",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -317,7 +354,7 @@ const styles = StyleSheet.create({
   loginPrompt: {
     flex: 1,
     textAlign: "center",
-    color: "rgba(255,255,255,0.7)",
+    color: "#9CA3AF",
     fontSize: 14,
     paddingVertical: 12,
   },

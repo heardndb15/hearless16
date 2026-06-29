@@ -8,10 +8,9 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Colors, Spacing, FontSize, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
+import { Colors, Spacing, FontSize } from "../constants/theme";
 import type { RootStackParamList } from "../../../shared/types";
 import GestureHero from "../components/GestureHero";
 import GestureCard from "../components/GestureCard";
@@ -180,14 +179,11 @@ export default function GesturesScreen() {
   const dailyDone = Math.min(DAILY_GOAL, learned);
 
   return (
-    <LinearGradient colors={GRADIENT_COLORS} locations={GRADIENT_LOCATIONS} style={{flex:1}} start={{x:0,y:0}} end={{x:0,y:1}}>
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={[styles.header, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-          <View style={{ alignItems: "center", flex: 1 }}>
-            <Text style={styles.title}>Жестовый язык</Text>
-            <Text style={styles.subtitle}>Казахский жестовый язык (КЖЯ)</Text>
-          </View>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <SafeAreaView style={styles.container}>
+        {/* Blue header bar */}
+        <View style={styles.headerBar}>
+          <Text style={styles.headerTitle}>Жестовый язык</Text>
           <TouchableOpacity
             onPress={() => navigation.navigate("GestureDictionary")}
             style={gestDictStyles.dictBtn}
@@ -196,97 +192,100 @@ export default function GesturesScreen() {
           </TouchableOpacity>
         </View>
 
-        {!isLoggedIn && (
-          <View style={styles.loginBanner}>
-            <Text style={styles.loginBannerText}>
-              🔑 Войдите в профиль, чтобы сохранять свой прогресс обучения!
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Text style={styles.subtitle}>Казахский жестовый язык (КЖЯ)</Text>
+
+          {!isLoggedIn && (
+            <View style={styles.loginBanner}>
+              <Text style={styles.loginBannerText}>
+                🔑 Войдите в профиль, чтобы сохранять свой прогресс обучения!
+              </Text>
+            </View>
+          )}
+
+          <GestureHero
+            learned={learned}
+            total={total}
+            streak={learned > 0 ? 3 : 0}
+            practiced={practiced}
+            accuracy={accuracy}
+          />
+
+          <View style={styles.dailyGoal}>
+            <Text style={styles.dailyGoalTitle}>Цель дня: {DAILY_GOAL} жестов</Text>
+            <View style={styles.dailyProgressBg}>
+              <View
+                style={[
+                  styles.dailyProgressFill,
+                  { width: `${(dailyDone / DAILY_GOAL) * 100}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.dailyGoalCount}>
+              {dailyDone} / {DAILY_GOAL}
             </Text>
           </View>
-        )}
 
-        <GestureHero
-          learned={learned}
-          total={total}
-          streak={learned > 0 ? 3 : 0}
-          practiced={practiced}
-          accuracy={accuracy}
-        />
+          {loading && (
+            <ActivityIndicator size="small" color={Colors.accent} style={{ marginBottom: 12 }} />
+          )}
 
-        <View style={styles.dailyGoal}>
-          <Text style={styles.dailyGoalTitle}>Цель дня: {DAILY_GOAL} жестов</Text>
-          <View style={styles.dailyProgressBg}>
-            <View
-              style={[
-                styles.dailyProgressFill,
-                { width: `${(dailyDone / DAILY_GOAL) * 100}%` },
-              ]}
-            />
-          </View>
-          <Text style={styles.dailyGoalCount}>
-            {dailyDone} / {DAILY_GOAL}
-          </Text>
-        </View>
-
-        {loading && (
-          <ActivityIndicator size="small" color={Colors.accent} style={{ marginBottom: 12 }} />
-        )}
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContent}
-          style={styles.categoriesList}
-        >
-          {CATEGORIES.map((cat) => {
-            const locked = cat !== "Все" && isCategoryLocked(cat);
-            return (
-              <TouchableOpacity
-                key={cat}
-                style={[
-                  styles.categoryPill,
-                  cat === selectedCategory && styles.categoryPillActive,
-                ]}
-                onPress={() => {
-                  if (locked) {
-                    navigation.navigate("Paywall", { requiredPlan: requiredPlanForCategory(cat) });
-                    return;
-                  }
-                  setSelectedCategory(cat);
-                }}
-              >
-                <Text
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContent}
+            style={styles.categoriesList}
+          >
+            {CATEGORIES.map((cat) => {
+              const locked = cat !== "Все" && isCategoryLocked(cat);
+              return (
+                <TouchableOpacity
+                  key={cat}
                   style={[
-                    styles.categoryPillText,
-                    cat === selectedCategory && styles.categoryPillTextActive,
+                    styles.categoryPill,
+                    cat === selectedCategory && styles.categoryPillActive,
                   ]}
+                  onPress={() => {
+                    if (locked) {
+                      navigation.navigate("Paywall", { requiredPlan: requiredPlanForCategory(cat) });
+                      return;
+                    }
+                    setSelectedCategory(cat);
+                  }}
                 >
-                  {locked ? "🔒 " : ""}{cat}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                  <Text
+                    style={[
+                      styles.categoryPillText,
+                      cat === selectedCategory && styles.categoryPillTextActive,
+                    ]}
+                  >
+                    {locked ? "🔒 " : ""}{cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.grid}>
+            {filteredGestures.map((gesture) => (
+              <GestureCard
+                key={gesture.id}
+                name={gesture.name}
+                category={gesture.category}
+                status={gesture.status}
+                progress={gesture.progress}
+                onPress={() => handleGesturePress(gesture.id)}
+              />
+            ))}
+          </View>
+
+          <View style={styles.pathSection}>
+            <Text style={styles.pathTitle}>Путь обучения</Text>
+            <LearningPath steps={LEARNING_STEPS} />
+          </View>
         </ScrollView>
-
-        <View style={styles.grid}>
-          {filteredGestures.map((gesture) => (
-            <GestureCard
-              key={gesture.id}
-              name={gesture.name}
-              category={gesture.category}
-              status={gesture.status}
-              progress={gesture.progress}
-              onPress={() => handleGesturePress(gesture.id)}
-            />
-          ))}
-        </View>
-
-        <View style={styles.pathSection}>
-          <Text style={styles.pathTitle}>Путь обучения</Text>
-          <LearningPath steps={LEARNING_STEPS} />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-    </LinearGradient>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -294,12 +293,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#1565C0',
+  },
+  headerTitle: {
+    fontSize: FontSize.title,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  subtitle: {
+    fontSize: FontSize.body,
+    color: "#9CA3AF",
+    textAlign: "center",
+    paddingVertical: Spacing.sm,
+  },
   loginBanner: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   loginBannerText: {
     color: Colors.accent,
@@ -307,41 +330,31 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center",
   },
-  header: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.lg,
-    alignItems: "center",
-  },
-  title: {
-    fontSize: FontSize.heading,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-  subtitle: {
-    fontSize: FontSize.body,
-    color: "rgba(255,255,255,0.8)",
-    marginTop: Spacing.xs,
-  },
   dailyGoal: {
-    ...GlassCard,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
   dailyGoalTitle: {
     fontSize: FontSize.subtitle,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginRight: Spacing.md,
   },
   dailyProgressBg: {
     flex: 1,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: '#E8EDF5',
     overflow: "hidden",
   },
   dailyProgressFill: {
@@ -352,7 +365,7 @@ const styles = StyleSheet.create({
   dailyGoalCount: {
     fontSize: FontSize.subtitle,
     fontWeight: "600",
-    color: Colors.heading,
+    color: "#1A1A2E",
     marginLeft: Spacing.sm,
   },
   categoriesList: {
@@ -367,20 +380,17 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.4)",
+    backgroundColor: "rgba(0,0,0,0.06)",
   },
   categoryPillActive: {
-    backgroundColor: "#0277BD",
-    borderColor: "#0277BD",
+    backgroundColor: "#1565C0",
   },
   categoryPillText: {
     fontSize: FontSize.body,
-    color: "#ffffff",
+    color: "#1A1A2E",
   },
   categoryPillTextActive: {
-    color: Colors.white,
+    color: "#ffffff",
     fontWeight: "600",
   },
   grid: {
@@ -397,7 +407,7 @@ const styles = StyleSheet.create({
   pathTitle: {
     fontSize: FontSize.title,
     fontWeight: "600",
-    color: "#ffffff",
+    color: "#1A1A2E",
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.sm,
   },
@@ -405,12 +415,10 @@ const styles = StyleSheet.create({
 
 const gestDictStyles = StyleSheet.create({
   dictBtn: {
-    backgroundColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.5)",
   },
   dictBtnText: {
     color: "#ffffff",
