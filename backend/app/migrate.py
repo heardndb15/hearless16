@@ -308,6 +308,13 @@ def run_migrations() -> None:
                 failed += 1
                 break
 
-    cur.close()
+    # Signal PostgREST to reload its schema cache so new tables are immediately visible
+    try:
+        cur = conn.cursor()
+        cur.execute("NOTIFY pgrst, 'reload schema'")
+        cur.close()
+    except Exception:
+        pass
+
     conn.close()
     print(f"[migrate] Done: {ok} ok, {skipped} skipped, {failed} failed", file=sys.stderr)
