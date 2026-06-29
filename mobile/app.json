@@ -3,6 +3,7 @@
     "name": "Hearless",
     "slug": "hearless",
     "version": "1.0.0",
+    "scheme": "hearless",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
