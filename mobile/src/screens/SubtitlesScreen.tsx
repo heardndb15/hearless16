@@ -17,6 +17,11 @@ import axios from "axios";
 import { useStreamingRecording } from "../hooks/useStreamingRecording";
 import { Colors, Spacing, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from "../constants/theme";
 import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useSubscription } from "../hooks/useSubscription";
+import { useSubtitleTimer } from "../hooks/useSubtitleTimer";
+import type { RootStackParamList } from "../../../shared/types";
 
 const { width } = Dimensions.get("window");
 
@@ -81,6 +86,13 @@ function AnimatedLine({
 }
 
 export default function SubtitlesScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { plan } = useSubscription();
+  const { remainingSeconds, recordUsage, isLimitReached } = useSubtitleTimer(plan);
+
+  // Track recording duration
+  const recordingStartRef = React.useRef<number | null>(null);
+
   const {
     isRecording,
     isConnecting,
@@ -91,6 +103,16 @@ export default function SubtitlesScreen() {
     startStreaming,
     stopStreaming,
   } = useStreamingRecording();
+
+  React.useEffect(() => {
+    if (isRecording) {
+      recordingStartRef.current = Date.now();
+    } else if (recordingStartRef.current !== null) {
+      const elapsed = Math.floor((Date.now() - recordingStartRef.current) / 1000);
+      recordUsage(elapsed);
+      recordingStartRef.current = null;
+    }
+  }, [isRecording]);
 
   // Display settings — loaded from AsyncStorage
   const [fontSize, setFontSize] = useState(28);
@@ -209,6 +231,10 @@ export default function SubtitlesScreen() {
   const hasContent = rollingLines.length > 0;
 
   async function handleRecord() {
+    if (!isRecording && isLimitReached) {
+      navigation.navigate("Paywall", { requiredPlan: "basic" });
+      return;
+    }
     if (isRecording) {
       stopStreaming();
     } else {
@@ -424,6 +450,13 @@ export default function SubtitlesScreen() {
           </View>
 
           <View style={styles.controlsContainer}>
+            {plan !== "pro" && remainingSeconds !== Infinity && (
+              <Text style={styles.timerText}>
+                {isLimitReached
+                  ? "Дневной лимит исчерпан"
+                  : `Осталось: ${Math.floor(remainingSeconds / 60)} мин`}
+              </Text>
+            )}
             <View style={styles.buttonContainer}>
               {isRecording && (
                 <Animated.View
@@ -685,6 +718,12 @@ const styles = StyleSheet.create({
   controlsContainer: {
     alignItems: "center",
     paddingBottom: Spacing.lg,
+  },
+  timerText: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 13,
+    textAlign: "center",
+    marginBottom: 8,
   },
   buttonContainer: {
     position: "relative",
