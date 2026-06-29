@@ -88,11 +88,19 @@ export type RootTabParamList = {
   Community: undefined;
 };
 
+export type Plan = 'free' | 'basic' | 'pro';
+
+export interface SubscriptionInfo {
+  plan: Plan;
+  plan_expires_at: string | null;
+}
+
 export type RootStackParamList = {
   Tabs: undefined;
   GesturePractice: { gestureId: string; gestureName: string };
   GestureDictionary: undefined;
   PostDetail: { post: PostResponse };
   CreatePost: undefined;
+  Paywall: { requiredPlan?: 'basic' | 'pro' };
 };
 
