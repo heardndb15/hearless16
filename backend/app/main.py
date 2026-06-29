@@ -7,7 +7,7 @@ from fastapi.requests import Request
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from app.limiter import limiter
-from app.routes import users, subtitles, gestures, alerts, transcribe, sos, community
+from app.routes import users, subtitles, gestures, alerts, transcribe, sos, community, polar
 from app.services.whisper_service import transcribe_audio
 
 
@@ -48,6 +48,7 @@ app.include_router(alerts.router)
 app.include_router(transcribe.router)
 app.include_router(sos.router)
 app.include_router(community.router, prefix="/community")
+app.include_router(polar.router)
 
 
 @app.websocket("/ws/transcribe")
