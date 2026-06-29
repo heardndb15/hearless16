@@ -17,6 +17,8 @@ import { Colors, Spacing, GRADIENT_COLORS, GRADIENT_LOCATIONS, GlassCard } from 
 import { supabase } from "../services/supabase";
 import axios from "axios";
 import type { StudyLecture } from "../../../shared/types";
+import { useSubscription } from "../hooks/useSubscription";
+import { PremiumGate } from "../components/PremiumGate";
 
 const { width } = Dimensions.get("window");
 
@@ -25,6 +27,9 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
 const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || API_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws/transcribe";
 
 export default function StudyScreen() {
+  const { plan, loading: subscriptionLoading } = useSubscription();
+  const canViewHistory = plan === "basic" || plan === "pro";
+
   const [userId, setUserId] = useState<string | null>(null);
   const [lectures, setLectures] = useState<StudyLecture[]>([]);
   const [selectedLecture, setSelectedLecture] = useState<StudyLecture | null>(null);
@@ -65,6 +70,14 @@ export default function StudyScreen() {
       }
     });
   }, []);
+
+  // Redirect free users to record mode once subscription is known
+  useEffect(() => {
+    if (!subscriptionLoading && !canViewHistory) {
+      setViewMode("record");
+      setLoading(false);
+    }
+  }, [subscriptionLoading, canViewHistory]);
 
   async function fetchLectures(uid: string) {
     try {
@@ -227,6 +240,7 @@ export default function StudyScreen() {
 
       {/* Main switch views */}
       {viewMode === "list" && (
+        <PremiumGate requiredPlan="basic" currentPlan={plan}>
         <View style={{ flex: 1 }}>
           {loading ? (
             <View style={styles.center}>
@@ -292,6 +306,7 @@ export default function StudyScreen() {
             </ScrollView>
           )}
         </View>
+        </PremiumGate>
       )}
 
       {viewMode === "record" && (
@@ -371,15 +386,17 @@ export default function StudyScreen() {
             </View>
           )}
 
-          <TouchableOpacity
-            style={styles.backLink}
-            onPress={() => {
-              stopStreaming();
-              setViewMode("list");
-            }}
-          >
-            <Text style={styles.backLinkText}>← Отмена и возврат</Text>
-          </TouchableOpacity>
+          {canViewHistory && (
+            <TouchableOpacity
+              style={styles.backLink}
+              onPress={() => {
+                stopStreaming();
+                setViewMode("list");
+              }}
+            >
+              <Text style={styles.backLinkText}>← Отмена и возврат</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       )}
 
