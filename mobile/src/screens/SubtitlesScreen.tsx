@@ -232,7 +232,7 @@ export default function SubtitlesScreen() {
 
   async function handleRecord() {
     if (!isRecording && isLimitReached) {
-      navigation.navigate("Paywall", { requiredPlan: "basic" });
+      navigation.navigate("Paywall", { requiredPlan: plan === "free" ? "basic" : "pro" });
       return;
     }
     if (isRecording) {

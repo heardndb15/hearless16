@@ -41,6 +41,7 @@ export function useSubscription(): {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
+        invalidateSubscriptionCache();
         setToken("");
         setPlan("free");
         setLoading(false);

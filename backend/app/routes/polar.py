@@ -38,11 +38,11 @@ def _verify_webhook_signature(body: bytes, headers: dict) -> bool:
         return False
 
     signed = f"{msg_id}.{msg_ts}.{body.decode('utf-8')}"
+    raw_secret = POLAR_WEBHOOK_SECRET.removeprefix("whsec_")
     try:
-        secret_bytes = base64.b64decode(POLAR_WEBHOOK_SECRET)
+        secret_bytes = base64.b64decode(raw_secret)
     except Exception:
-        # Secret not base64 — use raw bytes
-        secret_bytes = POLAR_WEBHOOK_SECRET.encode()
+        secret_bytes = raw_secret.encode()
 
     digest = base64.b64encode(
         hmac.new(secret_bytes, signed.encode(), hashlib.sha256).digest()
