@@ -101,22 +101,15 @@ export default function CommunityFeedScreen() {
   const tokenRef = useRef<string>("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const t = session?.access_token ?? "";
-      tokenRef.current = t;
-      setCurrentUserId(session?.user?.id ?? null);
-      setToken(t);
-    });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
         tokenRef.current = "";
         setCurrentUserId(null);
         setToken("");
-      } else if (session) {
+      } else if (session?.user) {
         const t = session.access_token ?? "";
         tokenRef.current = t;
-        setCurrentUserId(session.user?.id ?? null);
+        setCurrentUserId(session.user.id);
         setToken(t);
       }
     });
