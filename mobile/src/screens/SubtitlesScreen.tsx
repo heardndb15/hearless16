@@ -26,7 +26,7 @@ const GlassCard = {
   elevation: 3,
 } as const;
 import { StatusBar } from "expo-status-bar";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSubscription } from "../hooks/useSubscription";
 import { useSubtitleTimer } from "../hooks/useSubtitleTimer";
@@ -111,7 +111,16 @@ export default function SubtitlesScreen() {
     error,
     startStreaming,
     stopStreaming,
+    warmup,
   } = useStreamingRecording();
+
+  // Pre-warm WS connection when screen comes into focus so the server
+  // is already awake by the time the user presses record.
+  useFocusEffect(
+    React.useCallback(() => {
+      warmup();
+    }, [warmup])
+  );
 
   React.useEffect(() => {
     if (isRecording) {

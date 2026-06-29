@@ -137,6 +137,32 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
     }
   }, []);
 
+  const waitForWsOpen = useCallback((ws: WebSocket, timeoutMs: number): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+      if (ws.readyState === WebSocket.OPEN) { resolve(true); return; }
+      const timeout = setTimeout(() => resolve(false), timeoutMs);
+      const check = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          clearTimeout(timeout);
+          resolve(true);
+        } else if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+          clearTimeout(timeout);
+          resolve(false);
+        } else {
+          setTimeout(check, 50);
+        }
+      };
+      check();
+    });
+  }, []);
+
+  // Pre-connect WS so the server is awake by the time user presses record.
+  const warmup = useCallback(async () => {
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    connectWs(session?.access_token || "");
+  }, [connectWs]);
+
   const startStreaming = useCallback(async () => {
     try {
       setError(null);
@@ -155,31 +181,24 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
         staysActiveInBackground: true,
       });
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || "";
-      setIsConnecting(true);
-      const ws = connectWs(token);
-      // Wait for WS to open with a 30s timeout (handles Render cold starts)
-      const connected = await new Promise<boolean>((resolve) => {
-        const timeout = setTimeout(() => resolve(false), 30000);
-        const check = () => {
-          if (ws.readyState === WebSocket.OPEN) {
-            clearTimeout(timeout);
-            resolve(true);
-          } else if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-            clearTimeout(timeout);
-            resolve(false);
-          } else {
-            setTimeout(check, 50);
-          }
-        };
-        check();
-      });
-      setIsConnecting(false);
-      if (!connected) {
-        setError("Не удалось подключиться к серверу. Попробуйте ещё раз.");
-        setIsRecording(false);
-        return;
+      let ws: WebSocket;
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        // Reuse pre-warmed connection — no wait needed
+        ws = wsRef.current;
+      } else {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token || "";
+        setIsConnecting(true);
+        ws = wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING
+          ? wsRef.current
+          : connectWs(token);
+        const connected = await waitForWsOpen(ws, 30000);
+        setIsConnecting(false);
+        if (!connected) {
+          setError("Не удалось подключиться к серверу. Попробуйте ещё раз.");
+          setIsRecording(false);
+          return;
+        }
       }
 
       const { recording } = await Audio.Recording.createAsync(
@@ -197,7 +216,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
       setError(err?.message || "Не удалось запустить запись. Проверьте настройки микрофона.");
       setIsRecording(false);
     }
-  }, [connectWs, sendChunk]);
+  }, [connectWs, sendChunk, waitForWsOpen]);
 
   const stopStreaming = useCallback(async () => {
     setIsRecording(false);
@@ -272,5 +291,6 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
     error,
     startStreaming,
     stopStreaming,
+    warmup,
   };
 }
