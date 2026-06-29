@@ -26,6 +26,10 @@ _MIGRATIONS = [
       ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ
     """,
     """
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS polar_customer_id TEXT
+    """,
+    """
     CREATE OR REPLACE FUNCTION public.handle_new_user()
     RETURNS TRIGGER AS $$
     BEGIN
