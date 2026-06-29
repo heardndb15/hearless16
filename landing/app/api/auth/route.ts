@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "google") {
       const supabase = createSupabase();
-      const origin = req.headers.get("origin") || "";
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || req.headers.get("origin") || "";
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${origin}/auth/callback?next=/dashboard` },
