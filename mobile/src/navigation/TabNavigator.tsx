@@ -1,7 +1,6 @@
 import React from "react";
-import { Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Colors } from "../constants/theme";
 import SubtitlesScreen from "../screens/SubtitlesScreen";
 import GesturesScreen from "../screens/GesturesScreen";
 import StudyScreen from "../screens/StudyScreen";
@@ -20,9 +19,9 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     Комьюнити: "👥",
   };
   return (
-    <Text style={{ fontSize: focused ? 24 : 20, opacity: focused ? 1 : 0.6 }}>
-      {icons[label] || "•"}
-    </Text>
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      <Text style={{ fontSize: focused ? 22 : 20 }}>{icons[label] || "•"}</Text>
+    </View>
   );
 }
 
@@ -32,19 +31,20 @@ export default function TabNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: 'rgba(255, 255, 255, 0.88)',
-          borderTopColor: 'rgba(255,255,255,0.5)',
-          borderTopWidth: 1.5,
-          paddingBottom: 4,
-          height: 60,
-          shadowColor: '#0288D1',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.12,
-          shadowRadius: 12,
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#E8EDF5',
+          borderTopWidth: 1,
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 4,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
           elevation: 10,
         },
-        tabBarActiveTintColor: '#0277BD',
-        tabBarInactiveTintColor: '#1E6FA8',
+        tabBarActiveTintColor: '#1565C0',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",
@@ -94,3 +94,16 @@ export default function TabNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  iconWrap: {
+    width: 48,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconWrapActive: {
+    backgroundColor: '#EBF3FF',
+  },
+});

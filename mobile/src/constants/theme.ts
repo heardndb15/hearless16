@@ -1,19 +1,18 @@
-export const GRADIENT_COLORS = ['#1565C0', '#42A5F5', '#E3F2FD'] as const;
-export const GRADIENT_LOCATIONS = [0, 0.45, 1] as const;
-
 export const Colors = {
-  background: '#E3F2FD',
-  card: 'rgba(255, 255, 255, 0.72)',
-  accent: '#0288D1',
-  button: '#0277BD',
-  heading: '#0D47A1',
-  dark: '#0A2E6E',
+  background: '#FFFFFF',
+  listBackground: '#F4F7FB',
+  card: '#FFFFFF',
+  border: '#E8EDF5',
+  accent: '#1565C0',
+  button: '#1565C0',
+  heading: '#1A1A2E',
+  secondary: '#9CA3AF',
+  dark: '#1A1A2E',
   sos: '#ef4444',
   white: '#ffffff',
   black: '#000000',
-  textPrimary: '#0D47A1',
-  textSecondary: '#1E6FA8',
-  border: 'rgba(255, 255, 255, 0.6)',
+  textPrimary: '#1A1A2E',
+  textSecondary: '#9CA3AF',
 } as const;
 
 export const Spacing = {
@@ -35,13 +34,21 @@ export const FontSize = {
   hero: 48,
 } as const;
 
-export const GlassCard = {
-  backgroundColor: 'rgba(255, 255, 255, 0.72)',
-  borderWidth: 1.5,
-  borderColor: 'rgba(255, 255, 255, 0.6)',
-  shadowColor: '#0288D1',
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.18,
-  shadowRadius: 20,
-  elevation: 4,
+export const Card = {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 16,
+  shadowColor: '#000000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.07,
+  shadowRadius: 12,
+  elevation: 3,
+} as const;
+
+export const Header = {
+  backgroundColor: '#1565C0',
+  shadowColor: '#1565C0',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.15,
+  shadowRadius: 8,
+  elevation: 6,
 } as const;

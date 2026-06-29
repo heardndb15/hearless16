@@ -31,18 +31,10 @@ export default function ProfileScreen() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen to changes — only react to explicit SIGNED_OUT to avoid spurious logouts
-    // during token refresh (Supabase can fire transient null-session events)
+    // Use onAuthStateChange as single source of truth — avoids race condition where
+    // getSession() fires before Supabase loads session from AsyncStorage (all tabs
+    // mount simultaneously in bottom tab nav). INITIAL_SESSION fires once on mount
+    // with the current session (or null), so no separate getSession() call needed.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
         setUser(null);
@@ -51,6 +43,8 @@ export default function ProfileScreen() {
       } else if (session?.user) {
         setUser(session.user);
         fetchProfile(session.user.id);
+      } else if (event === "INITIAL_SESSION") {
+        setLoading(false);
       }
     });
 
