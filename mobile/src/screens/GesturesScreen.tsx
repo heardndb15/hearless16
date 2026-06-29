@@ -18,6 +18,7 @@ import GestureCard from "../components/GestureCard";
 import LearningPath from "../components/LearningPath";
 import { supabase } from "../services/supabase";
 import axios from "axios";
+import { useSubscription } from "../hooks/useSubscription";
 
 type Status = "locked" | "not_learned" | "in_progress" | "learned";
 
@@ -65,6 +66,23 @@ const LEARNING_STEPS = [
 
 export default function GesturesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { plan } = useSubscription();
+
+  const FREE_CATEGORIES = ["Базовые"];
+  const BASIC_CATEGORIES = ["Базовые", "Семья", "Еда", "Числа"];
+  // Pro gets all categories
+
+  const isCategoryLocked = (category: string): boolean => {
+    if (plan === "pro") return false;
+    if (plan === "basic") return !BASIC_CATEGORIES.includes(category);
+    return !FREE_CATEGORIES.includes(category);
+  };
+
+  const requiredPlanForCategory = (category: string): "basic" | "pro" => {
+    if (BASIC_CATEGORIES.includes(category)) return "basic";
+    return "pro";
+  };
+
   const [selectedCategory, setSelectedCategory] = useState("Все");
   const [gestures, setGestures] = useState<GestureData[]>(MOCK_GESTURES);
   const [loading, setLoading] = useState(false);
@@ -219,25 +237,34 @@ export default function GesturesScreen() {
           contentContainerStyle={styles.categoriesContent}
           style={styles.categoriesList}
         >
-          {CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.categoryPill,
-                cat === selectedCategory && styles.categoryPillActive,
-              ]}
-              onPress={() => setSelectedCategory(cat)}
-            >
-              <Text
+          {CATEGORIES.map((cat) => {
+            const locked = cat !== "Все" && isCategoryLocked(cat);
+            return (
+              <TouchableOpacity
+                key={cat}
                 style={[
-                  styles.categoryPillText,
-                  cat === selectedCategory && styles.categoryPillTextActive,
+                  styles.categoryPill,
+                  cat === selectedCategory && styles.categoryPillActive,
                 ]}
+                onPress={() => {
+                  if (locked) {
+                    navigation.navigate("Paywall", { requiredPlan: requiredPlanForCategory(cat) });
+                    return;
+                  }
+                  setSelectedCategory(cat);
+                }}
               >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.categoryPillText,
+                    cat === selectedCategory && styles.categoryPillTextActive,
+                  ]}
+                >
+                  {locked ? "🔒 " : ""}{cat}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
         <View style={styles.grid}>
