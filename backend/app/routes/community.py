@@ -41,7 +41,7 @@ async def get_optional_user(request: Request) -> Optional[dict]:
 # ── Helper: format post row from Supabase ────────────────────────────────────
 
 def _format_post(row: dict, liked_post_ids: set) -> dict:
-    author = row.get("users") or {}
+    author = row.get("users!posts_user_id_fkey") or row.get("users") or {}
     if isinstance(author, list):
         author = author[0] if author else {}
     return {
@@ -73,7 +73,7 @@ async def list_posts(
     try:
         query = (
             db.table("posts")
-            .select("id, text, image_url, likes_count, comments_count, created_at, user_id, users(id, name)")
+            .select("id, text, image_url, likes_count, comments_count, created_at, user_id, users!posts_user_id_fkey(id, name)")
         )
         if sort == "popular":
             query = query.order("likes_count", desc=True).order("created_at", desc=True)
@@ -197,7 +197,7 @@ async def list_comments(post_id: str):
     try:
         response = (
             db.table("post_comments")
-            .select("id, text, created_at, user_id, users(id, name)")
+            .select("id, text, created_at, user_id, users!post_comments_user_id_fkey(id, name)")
             .eq("post_id", post_id)
             .order("created_at", desc=False)
             .execute()
