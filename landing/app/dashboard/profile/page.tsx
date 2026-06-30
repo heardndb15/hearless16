@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
   const [language, setLanguage] = useState<"kk" | "ru">("ru");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -19,23 +25,57 @@ export default function ProfilePage() {
     supabase.auth.getUser().then(({ data }) => {
       if (!data?.user) {
         router.push("/login");
-      } else {
-        setUser(data.user);
-        supabase
-          .from("users")
-          .select("name, language")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile) {
-              setName(profile.name || "");
-              setLanguage((profile.language as "kk" | "ru") || "ru");
-            }
-            setLoading(false);
-          });
+        return;
       }
+      setUser(data.user);
+      supabase
+        .from("users")
+        .select("name, bio, avatar_url, language")
+        .eq("id", data.user.id)
+        .single()
+        .then(({ data: profile }) => {
+          if (profile) {
+            setName(profile.name || "");
+            setBio(profile.bio || "");
+            setAvatarUrl(profile.avatar_url || "");
+            setAvatarPreview(profile.avatar_url || "");
+            setLanguage((profile.language as "kk" | "ru") || "ru");
+          }
+          setLoading(false);
+        });
     });
   }, [router]);
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setAvatarPreview(URL.createObjectURL(file));
+    setUploadingAvatar(true);
+
+    const supabase = createClient();
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${user.id}/avatar.${ext}`;
+
+    await supabase.storage.createBucket("avatars", { public: true }).catch(() => {});
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (uploadError) {
+      setMessage("Ошибка загрузки фото: " + uploadError.message);
+      setAvatarPreview(avatarUrl);
+      setUploadingAvatar(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    const busted = `${publicUrl}?t=${Date.now()}`;
+    setAvatarUrl(busted);
+    setAvatarPreview(busted);
+    setUploadingAvatar(false);
+  }
 
   async function handleSave() {
     if (!user) return;
@@ -44,9 +84,9 @@ export default function ProfilePage() {
     const supabase = createClient();
     const { error } = await supabase
       .from("users")
-      .update({ name, language })
+      .update({ name, bio, language, avatar_url: avatarUrl })
       .eq("id", user.id);
-    
+
     if (error) {
       setMessage("Ошибка сохранения: " + error.message);
     } else {
@@ -73,7 +113,6 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      {/* Header info */}
       <div className="flex flex-col gap-2">
         <h2 className="font-syne font-extrabold text-3xl text-slate-800">Настройки профиля</h2>
         <p className="text-slate-500 text-sm max-w-2xl font-medium">
@@ -82,7 +121,47 @@ export default function ProfilePage() {
       </div>
 
       <div className="max-w-xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 md:p-8 space-y-6">
-        {/* Name input */}
+
+        {/* Avatar */}
+        <div className="flex flex-col items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-white/60 shadow-md focus:outline-none"
+          >
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Аватар" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-500 text-3xl font-bold font-syne">
+                {name?.[0]?.toUpperCase() || "?"}
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {uploadingAvatar ? (
+                <svg className="w-5 h-5 text-white animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              )}
+            </div>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
+          <p className="text-xs text-slate-400 font-medium">Нажмите чтобы изменить фото</p>
+        </div>
+
+        {/* Name */}
         <div className="space-y-2 text-left">
           <label className="block font-syne text-xs font-bold text-slate-600 uppercase tracking-wider">
             Ваше имя
@@ -91,12 +170,29 @@ export default function ProfilePage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            maxLength={32}
             className="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200/60 focus:border-accent text-slate-850 text-sm font-semibold outline-none transition-colors"
             placeholder="Введите ваше имя"
           />
         </div>
 
-        {/* Language select */}
+        {/* Bio */}
+        <div className="space-y-2 text-left">
+          <label className="block font-syne text-xs font-bold text-slate-600 uppercase tracking-wider">
+            О себе
+          </label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={200}
+            rows={3}
+            className="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200/60 focus:border-accent text-slate-850 text-sm font-semibold outline-none transition-colors resize-none"
+            placeholder="Расскажите о себе..."
+          />
+          <p className="text-right text-xs text-slate-400">{bio.length}/200</p>
+        </div>
+
+        {/* Language */}
         <div className="space-y-2 text-left">
           <label className="block font-syne text-xs font-bold text-slate-600 uppercase tracking-wider">
             Язык интерфейса
@@ -118,7 +214,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Email display (read only) */}
+        {/* Email (read-only) */}
         <div className="space-y-2 text-left">
           <label className="block font-syne text-xs font-bold text-slate-400 uppercase tracking-wider">
             Email-адрес (нельзя изменить)
@@ -131,17 +227,15 @@ export default function ProfilePage() {
           />
         </div>
 
-        {/* Message notification */}
         {message && (
           <p className={`text-xs font-bold font-syne text-left ${message.includes("Ошибка") ? "text-red-500" : "text-green-600"}`}>
             {message}
           </p>
         )}
 
-        {/* Save button */}
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || uploadingAvatar}
           className="w-full py-4 rounded-xl bg-accent hover:bg-accent/90 disabled:bg-slate-350 disabled:text-slate-500 text-white font-syne font-bold text-sm tracking-wide shadow-md transition-colors duration-200"
         >
           {saving ? "Сохранение..." : "Сохранить изменения"}
@@ -149,7 +243,6 @@ export default function ProfilePage() {
 
         <hr className="border-slate-200/60" />
 
-        {/* Sign out button */}
         <button
           onClick={handleSignOut}
           className="w-full py-4 rounded-xl bg-transparent border border-red-500/30 text-red-600 hover:bg-red-500/10 transition-colors duration-200 font-syne font-bold text-sm"

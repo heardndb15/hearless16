@@ -41,7 +41,7 @@ async def update_username(data: UsernameUpdate, current_user: dict = Depends(get
 @router.get("/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    result = db.table("users").select("name, plan, plan_expires_at").eq("id", current_user["id"]).single().execute()
+    result = db.table("users").select("name, bio, avatar_url, plan, plan_expires_at").eq("id", current_user["id"]).single().execute()
 
     row = result.data or {}
     plan = row.get("plan", "free")
@@ -60,6 +60,8 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "id": current_user["id"],
         "email": current_user["email"],
         "name": row.get("name", ""),
+        "bio": row.get("bio", ""),
+        "avatar_url": row.get("avatar_url", ""),
         "plan": plan,
         "plan_expires_at": expires,
     }

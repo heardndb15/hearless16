@@ -132,10 +132,22 @@ def transcribe_openai(audio_bytes: bytes, language: str = "ru") -> str:
 
 def transcribe_audio(audio_bytes: bytes, language: str = "ru") -> str:
     try:
+        if language == "kk":
+            from app.services.freedomspeech_service import transcribe_with_freedomspeech
+            result = transcribe_with_freedomspeech(audio_bytes)
+            if result is not None:
+                return result
+
         result = transcribe_local(audio_bytes)
         if result is not None:
             return result
-        return transcribe_openai(audio_bytes, language)
+
+        from app.services.replicate_service import transcribe_with_replicate
+        replicate_result = transcribe_with_replicate(audio_bytes, language)
+        if replicate_result is not None:
+            return replicate_result
+
+        return ""
     except Exception as e:
         import sys
         print(f"Error in transcribe_audio: {e}", file=sys.stderr)
