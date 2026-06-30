@@ -40,10 +40,9 @@ async def get_optional_user(request: Request) -> Optional[dict]:
 
 # ── Helper: format post row from Supabase ────────────────────────────────────
 
-def _format_post(row: dict, liked_post_ids: set) -> dict:
-    author = row.get("users!posts_user_id_fkey") or row.get("users") or {}
-    if isinstance(author, list):
-        author = author[0] if author else {}
+def _format_post(row: dict, liked_post_ids: set, users_map: dict | None = None) -> dict:
+    user_id = row["user_id"]
+    author = (users_map or {}).get(str(user_id), {})
     return {
         "id": row["id"],
         "text": row["text"],
@@ -53,7 +52,7 @@ def _format_post(row: dict, liked_post_ids: set) -> dict:
         "liked_by_me": row["id"] in liked_post_ids,
         "created_at": str(row["created_at"]),
         "author": {
-            "id": author.get("id", row["user_id"]),
+            "id": author.get("id", user_id),
             "name": author.get("name", "Пользователь"),
             "avatar_url": None,
         },
@@ -73,7 +72,7 @@ async def list_posts(
     try:
         query = (
             db.table("posts")
-            .select("id, text, image_url, likes_count, comments_count, created_at, user_id, users!posts_user_id_fkey(id, name)")
+            .select("id, text, image_url, likes_count, comments_count, created_at, user_id")
         )
         if sort == "popular":
             query = query.order("likes_count", desc=True).order("created_at", desc=True)
@@ -83,6 +82,16 @@ async def list_posts(
         posts = response.data or []
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {str(e)}")
+
+    # Fetch author names separately to avoid PostgREST FK join issues
+    users_map: dict = {}
+    if posts:
+        user_ids = list({str(p["user_id"]) for p in posts})
+        try:
+            users_res = db.table("users").select("id, name").in_("id", user_ids).execute()
+            users_map = {str(u["id"]): u for u in (users_res.data or [])}
+        except Exception:
+            pass
 
     liked_set: set = set()
     if current_user and posts:
@@ -99,7 +108,7 @@ async def list_posts(
         except Exception:
             pass
 
-    return [_format_post(p, liked_set) for p in posts]
+    return [_format_post(p, liked_set, users_map) for p in posts]
 
 
 @router.post("/posts")
@@ -197,29 +206,39 @@ async def list_comments(post_id: str):
     try:
         response = (
             db.table("post_comments")
-            .select("id, text, created_at, user_id, users!post_comments_user_id_fkey(id, name)")
+            .select("id, text, created_at, user_id")
             .eq("post_id", post_id)
             .order("created_at", desc=False)
             .execute()
         )
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {str(e)}")
-    result = []
-    for c in (response.data or []):
-        author = c.get("users") or {}
-        if isinstance(author, list):
-            author = author[0] if author else {}
-        result.append({
+
+    comments = response.data or []
+
+    # Fetch author names separately
+    users_map: dict = {}
+    if comments:
+        user_ids = list({str(c["user_id"]) for c in comments})
+        try:
+            users_res = db.table("users").select("id, name").in_("id", user_ids).execute()
+            users_map = {str(u["id"]): u for u in (users_res.data or [])}
+        except Exception:
+            pass
+
+    return [
+        {
             "id": c["id"],
             "text": c["text"],
             "created_at": str(c["created_at"]),
             "author": {
-                "id": author.get("id", c["user_id"]),
-                "name": author.get("name", "Пользователь"),
+                "id": users_map.get(str(c["user_id"]), {}).get("id", c["user_id"]),
+                "name": users_map.get(str(c["user_id"]), {}).get("name", "Пользователь"),
                 "avatar_url": None,
             },
-        })
-    return result
+        }
+        for c in comments
+    ]
 
 
 @router.post("/posts/{post_id}/comments")
