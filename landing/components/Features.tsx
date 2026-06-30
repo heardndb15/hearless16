@@ -1,37 +1,27 @@
 "use client";
 
 import Link from "next/link";
-
-const FEATURES = [
-  { icon: "💬", title: "AI-субтитры", desc: "Речь → текст в реальном времени на казахском, русском и английском. Автоопределение языка и перевод.", color: "var(--accent)", span: "wide", href: "/subtitles" },
-  { icon: "🔔", title: "Умные оповещения", desc: "Распознаёт пожар, звонок, плач, лай, сирену, стекло. Уведомляет вибрацией и вспышкой.", color: "var(--sos)", span: "normal", href: "/alerts" },
-  { icon: "🤟", title: "Изучение жестов", desc: "Алфавит, цифры, слова. Уровни: начальный, средний, продвинутый. С AI-преподавателем.", color: "var(--purple)", span: "normal", href: "/sign-language" },
-  { icon: "🎓", title: "AI-преподаватель", desc: "Чат с ИИ, видеоразборы, тесты, анимации. Отслеживает твой прогресс и подбирает уроки.", color: "var(--purple)", span: "normal", href: "/ai-tutor" },
-  { icon: "📷", title: "Камера → Текст", desc: "Распознавание жестов через камеру в реальном времени. Мгновенная обратная связь от ИИ.", color: "var(--accent)", span: "normal", href: "/camera-to-text" },
-  { icon: "👤", title: "Текст → Жесты", desc: "Введи текст — 3D-аватар покажет его на жестовом языке. Поддержка КАЗ / РУС / ENG.", color: "var(--accent)", span: "normal", href: "/text-to-sign" },
-  { icon: "🏆", title: "Геймификация", desc: "XP, стрики, ачивки, ежедневные задания, уровни. Учиться — весело!", color: "var(--success)", span: "normal", href: "/gamification" },
-];
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function FeaturesSection() {
+  const { t } = useLanguage();
+
   return (
     <section id="features">
       <div className="container">
         <div style={{ marginBottom: 56 }}>
-          <div className="section-label">Возможности</div>
+          <div className="section-label">{t.features.label}</div>
           <h2 className="section-title">
-            Всё, что нужно для{" "}
-            <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>доступного мира</span>
+            {t.features.title}{" "}
+            <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{t.features.titleHighlight}</span>
           </h2>
-          <p className="section-subtitle">
-            Семь ключевых функций, которые превращают твой смартфон в мост между
-            миром звуков и тишины. Нажми на карточку, чтобы узнать больше.
-          </p>
+          <p className="section-subtitle">{t.features.subtitle}</p>
         </div>
 
         <div className="features-grid">
-          {FEATURES.map((feat) => (
+          {t.features.items.map((feat) => (
             <Link
-              key={feat.title}
+              key={feat.href}
               href={feat.href}
               style={{
                 gridColumn: feat.span === "wide" ? "1 / -1" : undefined,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "../lib/LanguageContext";
 
 const subtitles = [
   "Сәлеметсіз бе! Менің атым Айгүл.",
@@ -11,6 +12,7 @@ const subtitles = [
 ];
 
 export default function Hero() {
+  const { t } = useLanguage();
   const [subIndex, setSubIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -42,7 +44,7 @@ export default function Hero() {
     >
       <div className="container hero-grid">
         <div>
-          <div className="section-label">AI-платформа</div>
+          <div className="section-label">{t.hero.label}</div>
           <h1
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -53,9 +55,9 @@ export default function Hero() {
               marginBottom: 24,
             }}
           >
-            Мир звуков —
+            {t.hero.title1}
             <br />
-            <span className="gradient-text">теперь доступен каждому</span>
+            <span className="gradient-text">{t.hero.title2}</span>
           </h1>
           <p
             style={{
@@ -66,17 +68,15 @@ export default function Hero() {
               marginBottom: 36,
             }}
           >
-            Первая AI-платформа в Казахстане и Центральной Азии для глухих и
-            слабослышащих. Переводим речь в текст, распознаём звуки и учим
-            жестовому языку с помощью ИИ.
+            {t.hero.desc}
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
             <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}>
-              Начать бесплатно
+              {t.hero.cta1}
               <span style={{ fontSize: 18 }}>→</span>
             </a>
             <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>
-              Как это работает
+              {t.hero.cta2}
             </a>
           </div>
 
@@ -89,11 +89,7 @@ export default function Hero() {
               borderTop: "1px solid #BAE6FD",
             }}
           >
-            {[
-              { label: "Языков", value: "3" },
-              { label: "Режимов", value: "8" },
-              { label: "Пользователей", value: "500+" },
-            ].map((s) => (
+            {t.hero.stats.map((s) => (
               <div key={s.label}>
                 <div
                   style={{
@@ -206,7 +202,7 @@ export default function Hero() {
                 letterSpacing: "0.05em"
               }}>
                 <span style={{ display: "inline-block", width: 4, height: 4, borderRadius: "50%", background: "#4ade80" }} className="animate-pulse" />
-                🎤 ИИ Слушает
+                {t.hero.aiListening}
               </div>
             </div>
 

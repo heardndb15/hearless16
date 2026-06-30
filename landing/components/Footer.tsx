@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useLanguage } from "../lib/LanguageContext";
 
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer
       style={{
@@ -60,39 +63,12 @@ export default function Footer() {
                 maxWidth: 280,
               }}
             >
-              Первая AI-платформа в Казахстане и Центральной Азии для глухих и
-              слабослышащих людей.
+              {t.footer.desc}
             </p>
           </div>
 
           {/* Links */}
-          {[
-            {
-              title: "Продукт",
-              links: [
-                ["Возможности", "/features"],
-                ["Тарифы", "/pricing"],
-                ["О проекте", "/about"],
-                ["Блог", "/blog"],
-              ],
-            },
-            {
-              title: "Аккаунт",
-              links: [
-                ["Войти", "/login"],
-                ["Регистрация", "/register"],
-                ["Контакты", "/contact"],
-              ],
-            },
-            {
-              title: "Правовое",
-              links: [
-                ["Конфиденциальность", "#"],
-                ["Условия", "#"],
-                ["Документы", "#"],
-              ],
-            },
-          ].map((col) => (
+          {t.footer.columns.map((col) => (
             <div key={col.title}>
               <h4
                 style={{
@@ -145,7 +121,7 @@ export default function Footer() {
           }}
         >
           <div style={{ fontSize: 12, color: "#0369A1" }}>
-            © {new Date().getFullYear()} Hearless. Все права защищены.
+            © {new Date().getFullYear()} Hearless. {t.footer.copyright}
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             {["GitHub", "Telegram", "Instagram"].map((s) => (

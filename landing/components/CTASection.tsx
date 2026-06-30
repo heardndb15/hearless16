@@ -1,6 +1,10 @@
 "use client";
 
+import { useLanguage } from "../lib/LanguageContext";
+
 export default function CTASection() {
+  const { t } = useLanguage();
+
   return (
     <section
       style={{
@@ -28,35 +32,35 @@ export default function CTASection() {
       <div className="container" style={{ textAlign: "center", position: "relative" }}>
         <div className="section-label" style={{ justifyContent: "center" }}>
           <span style={{ display: "none" }} />
-          Начни сейчас
+          {t.cta.label}
           <span style={{ display: "none" }} />
         </div>
         <h2
           className="section-title"
           style={{ maxWidth: 640, margin: "0 auto 20px", color: "#0C4A6E" }}
         >
-          Готов сделать мир{" "}
-          <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>доступнее</span>?
+          {t.cta.title}{" "}
+          <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{t.cta.titleHighlight}</span>?
         </h2>
         <p
           className="section-subtitle"
           style={{ margin: "0 auto 36px", textAlign: "center", color: "#075985" }}
         >
-          Присоединяйся к сообществу Hearless. Бесплатно. Навсегда.
+          {t.cta.subtitle}
         </p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="/register"
             style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}
           >
-            Создать аккаунт
+            {t.cta.btn1}
             <span style={{ fontSize: 18 }}>→</span>
           </a>
           <a
             href="/features"
             style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}
           >
-            Все возможности
+            {t.cta.btn2}
           </a>
         </div>
 

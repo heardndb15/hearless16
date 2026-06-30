@@ -3,19 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
+import { useLanguage } from "../lib/LanguageContext";
+import type { Lang } from "../lib/translations";
 
-const FEATURE_LINKS = [
-  { label: "AI-субтитры", href: "/subtitles", icon: "💬" },
-  { label: "Умные оповещения", href: "/alerts", icon: "🔔" },
-  { label: "Изучение жестов", href: "/sign-language", icon: "🤟" },
-  { label: "AI-преподаватель", href: "/ai-tutor", icon: "🎓" },
-  { label: "Камера → Текст", href: "/camera-to-text", icon: "📷" },
-  { label: "Текст → Жесты", href: "/text-to-sign", icon: "👤" },
-  { label: "Геймификация", href: "/gamification", icon: "🏆" },
-  { label: "Community", href: "/community", icon: "🌐" },
-];
+const LANG_LABELS: Record<Lang, string> = { ru: "РУС", en: "ENG", kz: "ҚАЗ" };
 
 export default function Header() {
+  const { lang, setLang, t } = useLanguage();
   const [dropdown, setDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -26,9 +20,9 @@ export default function Header() {
     async function loadName(supabase: ReturnType<typeof createClient>, userId: string, email?: string) {
       try {
         const { data } = await supabase.from("users").select("name").eq("id", userId).single();
-        setUserName(data?.name || email?.split("@")[0] || "Аккаунт");
+        setUserName(data?.name || email?.split("@")[0] || t.nav.account);
       } catch {
-        setUserName(email?.split("@")[0] || "Аккаунт");
+        setUserName(email?.split("@")[0] || t.nav.account);
       }
     }
 
@@ -46,10 +40,10 @@ export default function Header() {
       });
       subscription = data.subscription;
     } catch {
-      // Supabase not configured — show Войти/Регистрация by default
+      // Supabase not configured
     }
     return () => subscription?.unsubscribe();
-  }, []);
+  }, [t.nav.account]);
 
   return (
     <>
@@ -62,15 +56,15 @@ export default function Header() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="nav-desktop" style={{ gap: 28, alignItems: "center", position: "relative" }}>
+          <nav className="nav-desktop" style={{ gap: 20, alignItems: "center", position: "relative" }}>
             <div style={{ position: "relative" }} onMouseEnter={() => setDropdown(true)} onMouseLeave={() => setDropdown(false)}>
               <button style={{ background: "none", border: "none", color: dropdown ? "#0EA5E9" : "#075985", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s", display: "flex", alignItems: "center", gap: 4 }}>
-                Возможности
+                {t.nav.features}
                 <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s", color: "#075985" }}>▼</span>
               </button>
               {dropdown && (
                 <div style={{ position: "absolute", top: "calc(100% + 12px)", left: -120, width: 280, background: "#FFFFFF", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(14,165,233,0.12)", borderRadius: "var(--radius)", padding: "8px", boxShadow: "0 8px 24px rgba(14,165,233,0.1)" }}>
-                  {FEATURE_LINKS.map(f => (
+                  {t.featureLinks.map(f => (
                     <Link key={f.href} href={f.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: "var(--radiusSm)", textDecoration: "none", color: "#075985", fontSize: 13, transition: "all 0.2s" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "#F0F9FF"; e.currentTarget.style.color = "#0EA5E9"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#075985"; }}>
@@ -80,9 +74,35 @@ export default function Header() {
                 </div>
               )}
             </div>
-            <Link href="/about" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>О проекте</Link>
-            <Link href="/blog" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Блог</Link>
-            <Link href="/pricing" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>Тарифы</Link>
+            <Link href="/about" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.about}</Link>
+            <Link href="/blog" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.blog}</Link>
+            <Link href="/pricing" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.pricing}</Link>
+
+            {/* Language switcher */}
+            <div style={{ display: "flex", gap: 3, background: "#F0F9FF", borderRadius: 10, padding: 3, border: "1px solid rgba(14,165,233,0.15)" }}>
+              {(["ru", "en", "kz"] as Lang[]).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  style={{
+                    padding: "4px 9px",
+                    borderRadius: 7,
+                    border: "none",
+                    background: lang === l ? "#0EA5E9" : "transparent",
+                    color: lang === l ? "#ffffff" : "#075985",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    transition: "all 0.2s",
+                    letterSpacing: "0.03em",
+                  }}
+                >
+                  {LANG_LABELS[l]}
+                </button>
+              ))}
+            </div>
+
             {userName ? (
               <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>
                 <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{userName[0].toUpperCase()}</span>
@@ -90,8 +110,8 @@ export default function Header() {
               </Link>
             ) : (
               <>
-                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD" }}>Войти</Link>
-                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>Регистрация</Link>
+                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD" }}>{t.nav.login}</Link>
+                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>{t.nav.register}</Link>
               </>
             )}
           </nav>
@@ -100,7 +120,7 @@ export default function Header() {
           <button
             className="nav-mobile-btn"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Открыть меню"
+            aria-label={t.nav.openMenu}
             style={{ background: "none", border: "1px solid rgba(14,165,233,0.2)", borderRadius: 10, width: 42, height: 42, alignItems: "center", justifyContent: "center", cursor: "pointer", flexDirection: "column", gap: 5, padding: "10px 9px" }}
           >
             <span style={{ display: "block", width: 22, height: 2, background: "#0369A1", borderRadius: 2, transition: "all 0.25s", transform: mobileOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
@@ -120,7 +140,7 @@ export default function Header() {
           <div style={{ position: "absolute", top: 64, left: 0, right: 0, background: "white", borderRadius: "0 0 24px 24px", padding: "8px 16px 24px", boxShadow: "0 16px 40px rgba(14,165,233,0.15)", maxHeight: "calc(100vh - 64px)", overflowY: "auto" }}>
             {/* Feature links */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: "8px 0" }}>
-              {FEATURE_LINKS.map(f => (
+              {t.featureLinks.map(f => (
                 <Link key={f.href} href={f.href} onClick={() => setMobileOpen(false)}
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>
                   <span style={{ fontSize: 18 }}>{f.icon}</span>
@@ -134,9 +154,34 @@ export default function Header() {
 
             {/* Pages */}
             <div style={{ display: "flex", gap: 8, padding: "4px 0 8px" }}>
-              <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>О проекте</Link>
-              <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>Блог</Link>
-              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#0EA5E9", fontSize: 14, fontWeight: 600, textAlign: "center", background: "#E0F2FE", border: "1px solid rgba(14,165,233,0.15)" }}>Тарифы</Link>
+              <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>{t.nav.about}</Link>
+              <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>{t.nav.blog}</Link>
+              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#0EA5E9", fontSize: 14, fontWeight: 600, textAlign: "center", background: "#E0F2FE", border: "1px solid rgba(14,165,233,0.15)" }}>{t.nav.pricing}</Link>
+            </div>
+
+            {/* Mobile language switcher */}
+            <div style={{ display: "flex", gap: 8, padding: "4px 0 8px" }}>
+              {(["ru", "en", "kz"] as Lang[]).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    borderRadius: 12,
+                    border: lang === l ? "1.5px solid #0EA5E9" : "1px solid rgba(14,165,233,0.15)",
+                    background: lang === l ? "#E0F2FE" : "#F8FBFF",
+                    color: lang === l ? "#0EA5E9" : "#075985",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {LANG_LABELS[l]}
+                </button>
+              ))}
             </div>
 
             {/* Auth buttons */}
@@ -147,8 +192,8 @@ export default function Header() {
                 </Link>
               ) : (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "#0369A1", border: "1.5px solid #BAE6FD", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Войти</Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Регистрация</Link>
+                  <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "#0369A1", border: "1.5px solid #BAE6FD", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.login}</Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.register}</Link>
                 </>
               )}
             </div>
