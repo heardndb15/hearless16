@@ -93,7 +93,7 @@ export default function SubtitlesPage() {
   const [aiQuery, setAiQuery] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [useAiPunctuation, setUseAiPunctuation] = useState(true);
+  const [useAiPunctuation, setUseAiPunctuation] = useState(false);
 
   // РќР°СЃС‚СЂРѕР№РєРё РґРёСЃРїР»РµСЏ (СЃРѕРІРїР°РґР°СЋС‰РёРµ СЃ РјРѕР±РёР»СЊРЅС‹Рј РєР»РёРµРЅС‚РѕРј)
   const [fontSize, setFontSize] = useState(24);
@@ -324,7 +324,7 @@ export default function SubtitlesPage() {
           await sendChunk();
           if (isMicActiveRef.current) startRecorder();
         }
-      }, 6000);
+      }, 3000);
     } catch { setIsMicActive(false); isMicActiveRef.current = false; setWhisperStatus("idle"); alert("Нет доступа к микрофону"); }
   };
 

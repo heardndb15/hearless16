@@ -4,7 +4,7 @@ const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN;
 
 async function pollPrediction(id: string): Promise<string> {
   for (let i = 0; i < 30; i++) {
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 1000));
     const res = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
       headers: { Authorization: `Bearer ${REPLICATE_TOKEN}` },
     });
