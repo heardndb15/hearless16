@@ -22,31 +22,6 @@ async def create_user(data: UserCreate, current_user: dict = Depends(get_current
     return response.data
 
 
-@router.get("/{user_id}")
-async def get_user(user_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["id"] != user_id:
-        raise HTTPException(status_code=403, detail="Доступ запрещен")
-    db = get_supabase()
-    response = db.table("users").select("*").eq("id", user_id).execute()
-    if not response.data:
-        raise HTTPException(status_code=404, detail="Пользователь не найден")
-    return response.data[0]
-
-
-@router.put("/{user_id}")
-async def update_user(user_id: str, data: UserCreate, current_user: dict = Depends(get_current_user)):
-    if current_user["id"] != user_id:
-        raise HTTPException(status_code=403, detail="Доступ запрещен")
-    db = get_supabase()
-    response = (
-        db.table("users")
-        .update(data.model_dump())
-        .eq("id", user_id)
-        .execute()
-    )
-    return response.data
-
-
 @router.patch("/me/username")
 async def update_username(data: UsernameUpdate, current_user: dict = Depends(get_current_user)):
     name = data.name.strip()
@@ -88,4 +63,29 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "plan": plan,
         "plan_expires_at": expires,
     }
+
+
+@router.get("/{user_id}")
+async def get_user(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["id"] != user_id:
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
+    db = get_supabase()
+    response = db.table("users").select("*").eq("id", user_id).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    return response.data[0]
+
+
+@router.put("/{user_id}")
+async def update_user(user_id: str, data: UserCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["id"] != user_id:
+        raise HTTPException(status_code=403, detail="Доступ запрещен")
+    db = get_supabase()
+    response = (
+        db.table("users")
+        .update(data.model_dump())
+        .eq("id", user_id)
+        .execute()
+    )
+    return response.data
 

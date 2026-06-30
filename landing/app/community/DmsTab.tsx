@@ -32,6 +32,7 @@ interface Props {
 export function DmsTab({ userId, userName, openDmWith, onClearDmWith }: Props) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConv, setActiveConv] = useState<{ id: string; name: string } | null>(null);
+  const activeConvRef = useRef<{ id: string; name: string } | null>(null);
   const [messages, setMessages] = useState<DM[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -40,11 +41,15 @@ export function DmsTab({ userId, userName, openDmWith, onClearDmWith }: Props) {
   const supabase = createClient();
 
   useEffect(() => {
+    activeConvRef.current = activeConv;
+  }, [activeConv]);
+
+  useEffect(() => {
     if (openDmWith) {
       setActiveConv(openDmWith);
       onClearDmWith?.();
     }
-  }, [openDmWith]);
+  }, [openDmWith, onClearDmWith]);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
@@ -55,7 +60,7 @@ export function DmsTab({ userId, userName, openDmWith, onClearDmWith }: Props) {
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "direct_messages",
         filter: `receiver_id=eq.${userId}`,
-      }, () => { loadConversations(); if (activeConv) loadMessages(activeConv.id); })
+      }, () => { loadConversations(); if (activeConvRef.current) loadMessages(activeConvRef.current.id); })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };

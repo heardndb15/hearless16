@@ -238,17 +238,23 @@ function UsernameModal({ onSave }: { onSave: (name: string) => void }) {
     const n = name.trim();
     if (!n || n.length > 32) return;
     setSaving(true);
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      await fetch(`${API_URL}/users/me/username`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ name: n }),
-      });
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        await fetch(`${API_URL}/users/me/username`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ name: n }),
+        });
+      }
+      onSave(n);
+    } catch {
+      // network error — still save locally so user isn't stuck
+      onSave(n);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    onSave(n);
   }
 
   return (
