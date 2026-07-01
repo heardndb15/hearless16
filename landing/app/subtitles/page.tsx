@@ -123,6 +123,13 @@ export default function SubtitlesPage() {
   // New: auto-save state
   const [sessionSaved, setSessionSaved] = useState(false);
 
+  // Screen audio capture for background subtitles
+  const [isScreenCapturing, setIsScreenCapturing] = useState(false);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const screenRecorderRef = useRef<MediaRecorder | null>(null);
+  const screenChunksRef = useRef<Blob[]>([]);
+  const screenIntervalRef = useRef<any>(null);
+
   // Map display lang labels to ISO codes for backend API
   const toLangCode = (l: string): string =>
     l === "ENG" ? "en" : l.startsWith("T") || l.startsWith("Т") || l.startsWith("Ч") ? "kk" : "ru";
@@ -338,6 +345,91 @@ export default function SubtitlesPage() {
     setInterimText("");
     diarizationStateRef.current = { current_speaker: 0, last_end: 0.0 };
     saveSession(history);
+  };
+
+  const startScreenCapture = async () => {
+    try {
+      const stream = await (navigator.mediaDevices as any).getDisplayMedia({
+        video: true,
+        audio: { echoCancellation: false, noiseSuppression: false, sampleRate: 44100 },
+      });
+
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+        alert("Аудио не найдено. Выберите вкладку и убедитесь, что включён звук.");
+        return;
+      }
+
+      // Останавливаем видео-трек — он нам не нужен
+      stream.getVideoTracks().forEach((t: MediaStreamTrack) => t.stop());
+
+      const audioStream = new MediaStream(audioTracks);
+      screenStreamRef.current = audioStream;
+      screenChunksRef.current = [];
+      setIsScreenCapturing(true);
+
+      // Открываем PiP автоматически
+      if (!document.pictureInPictureElement) {
+        setTimeout(() => togglePipSubtitles(), 300);
+      }
+
+      const startRecorder = () => {
+        const mr = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
+        mr.ondataavailable = (e: BlobEvent) => { if (e.data.size > 0) screenChunksRef.current.push(e.data); };
+        mr.start();
+        screenRecorderRef.current = mr;
+      };
+
+      const sendChunk = async () => {
+        const chunks = [...screenChunksRef.current];
+        screenChunksRef.current = [];
+        if (chunks.length === 0) return;
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, "audio.webm");
+          fd.append("language", toLangCode(lang));
+          const res = await fetch("/api/transcribe", { method: "POST", body: fd });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.text?.trim()) {
+              setHistory(prev => [...prev, data.text.trim()]);
+              setActivePipText(data.text.trim());
+            }
+          }
+        } catch {}
+      };
+
+      startRecorder();
+      screenIntervalRef.current = setInterval(async () => {
+        if (!screenStreamRef.current) {
+          clearInterval(screenIntervalRef.current);
+          return;
+        }
+        if (screenRecorderRef.current?.state === "recording") {
+          screenRecorderRef.current.stop();
+          await new Promise<void>(r => { screenRecorderRef.current!.onstop = () => r(); });
+          await sendChunk();
+          if (screenStreamRef.current) startRecorder();
+        }
+      }, 3000);
+
+      audioTracks[0].addEventListener("ended", () => stopScreenCapture());
+    } catch (err: any) {
+      if (err.name !== "NotAllowedError") {
+        alert("Не удалось захватить аудио: " + err.message);
+      }
+    }
+  };
+
+  const stopScreenCapture = () => {
+    clearInterval(screenIntervalRef.current);
+    if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
+    screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+    screenStreamRef.current = null;
+    screenRecorderRef.current = null;
+    setIsScreenCapturing(false);
   };
 
   const handleSubtitleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1461,6 +1553,34 @@ export default function SubtitlesPage() {
 
             {/* РљРЅРѕРїРєРё Р·Р°РїСѓСЃРєР° Picture-in-Picture Рё РћС‚РєСЂС‹С‚РёСЏ РўСЂР°РЅСЃРєСЂРёРїС‚Р° РїРѕРґ СЌРєСЂР°РЅРѕРј */}
             <div style={{ display: "flex", justifyContent: "flex-start", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
+              {/* Background Subtitles button */}
+              <button
+                onClick={() => isScreenCapturing ? stopScreenCapture() : startScreenCapture()}
+                className="btn"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "12px 24px",
+                  fontSize: 13,
+                  borderRadius: 50,
+                  background: isScreenCapturing ? "var(--sos)" : "var(--gradient)",
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: isScreenCapturing ? "0 4px 12px rgba(239,68,68,0.35)" : "0 4px 24px var(--accentGlow)",
+                  animation: isScreenCapturing ? "mic-pulse 1.5s infinite" : "none",
+                  fontWeight: 600,
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {isScreenCapturing
+                    ? <><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="9" y="9" width="6" height="6" fill="currentColor"/></>  
+                    : <><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></>}
+                </svg>
+                <span>{isScreenCapturing ? "⏹ Остановить фоновые субтитры" : "🎬 Фоновые субтитры"}</span>
+              </button>
+
               <button 
                 onClick={togglePipSubtitles}
                 className="btn btn-outline" 
