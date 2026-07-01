@@ -22,7 +22,7 @@ export interface StreamChunk {
   segments?: SpeakerSegment[];
 }
 
-export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
+export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?: string }) {
   const [isRecording, setIsRecording] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [streamText, setStreamText] = useState("");
@@ -255,7 +255,21 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
     recordingRef.current = null;
   }, []);
 
+  // An explicit `lang` option (e.g. a per-screen language switcher) always wins
+  // over the account's profile language, and skips the Supabase lookup entirely.
   useEffect(() => {
+    if (options?.lang) {
+      userLangRef.current = options.lang;
+      // A pre-warmed connection may already be open with the old lang baked
+      // into its URL; close it (only if idle) so the next connect picks up
+      // the new one. recordingRef is a ref, so this reads the live value.
+      if (!recordingRef.current && wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      return;
+    }
+
     const loadLang = (userId: string) => {
       supabase
         .from("users")
@@ -277,6 +291,11 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean }) {
 
     return () => {
       subscription.unsubscribe();
+    };
+  }, [options?.lang]);
+
+  useEffect(() => {
+    return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       wsRef.current?.close();
     };

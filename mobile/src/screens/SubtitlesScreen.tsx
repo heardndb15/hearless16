@@ -102,6 +102,8 @@ export default function SubtitlesScreen() {
   // Track recording duration
   const recordingStartRef = React.useRef<number | null>(null);
 
+  const [subtitleLang, setSubtitleLang] = useState<"ru" | "en">("ru");
+
   const {
     isRecording,
     isConnecting,
@@ -112,7 +114,7 @@ export default function SubtitlesScreen() {
     startStreaming,
     stopStreaming,
     warmup,
-  } = useStreamingRecording();
+  } = useStreamingRecording({ lang: subtitleLang });
 
   // Pre-warm WS connection when screen comes into focus so the server
   // is already awake by the time the user presses record.
@@ -151,6 +153,7 @@ export default function SubtitlesScreen() {
         if (typeof s.bgOpacity === "number") setBgOpacity(s.bgOpacity);
         if (s.alignment) setAlignment(s.alignment);
         if (s.speakerMode !== undefined) setSpeakerMode(s.speakerMode);
+        if (s.subtitleLang === "ru" || s.subtitleLang === "en") setSubtitleLang(s.subtitleLang);
       } catch {}
       settingsLoadedRef.current = true;
     });
@@ -161,9 +164,9 @@ export default function SubtitlesScreen() {
     if (!settingsLoadedRef.current) return;
     AsyncStorage.setItem(
       SETTINGS_KEY,
-      JSON.stringify({ fontSize, textColor, bgOpacity, alignment, speakerMode })
+      JSON.stringify({ fontSize, textColor, bgOpacity, alignment, speakerMode, subtitleLang })
     ).catch(() => {});
-  }, [fontSize, textColor, bgOpacity, alignment, speakerMode]);
+  }, [fontSize, textColor, bgOpacity, alignment, speakerMode, subtitleLang]);
 
   const [fullScreen, setFullScreen] = useState(false);
 
@@ -308,6 +311,27 @@ export default function SubtitlesScreen() {
           {showPanel && (
             <Animated.View style={[styles.settingsPanel, { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) }] }]}>
               <Text style={styles.settingsPanelTitle}>Настройки отображения</Text>
+
+              {/* Subtitle recognition language */}
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Язык распознавания</Text>
+                <View style={styles.settingOptions}>
+                  {[
+                    { code: "ru" as const, label: "Русский" },
+                    { code: "en" as const, label: "English" },
+                  ].map((l) => (
+                    <TouchableOpacity
+                      key={l.code}
+                      style={[styles.optionBtn, subtitleLang === l.code && styles.optionBtnActive]}
+                      onPress={() => setSubtitleLang(l.code)}
+                    >
+                      <Text style={[styles.optionText, subtitleLang === l.code && styles.optionTextActive]}>
+                        {l.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
 
               {/* Font Size */}
               <View style={styles.settingRow}>
