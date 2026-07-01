@@ -38,6 +38,9 @@ export default function SubtitlesDashboard() {
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
+  // Kazakh has no browser fallback, so a flaky/cold-starting WS connection is
+  // retried a couple of times instead of immediately killing the session.
+  const kkReconnectAttemptsRef = useRef(0);
 
   const getShadow = (color: string) => {
     switch (color) {
@@ -85,6 +88,12 @@ export default function SubtitlesDashboard() {
   };
 
   useEffect(() => {
+    // Wake a sleeping Render free-tier backend before the user presses record,
+    // so the Whisper WS handshake doesn't time out on a cold start.
+    const isProdHost = typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isProdHost ? "https://hearless16-1.onrender.com" : "http://localhost:8000");
+    fetch(`${apiBase}/health`).catch(() => {});
+
     const storedLang = typeof window !== "undefined" ? localStorage.getItem("sub_userLanguage") : null;
 
     const supabase = createClient();
@@ -300,12 +309,26 @@ export default function SubtitlesDashboard() {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try { mediaRecorderRef.current.stop(); } catch (e) {}
     }
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current = null;
+    }
     // Kazakh has no real browser (kk-KZ) speech recognition support and must
-    // only ever go through FreedomSpeech — don't fall back, just surface the error.
+    // only ever go through FreedomSpeech. A dropped/errored connection is
+    // often just the backend waking from an idle sleep, so retry a couple of
+    // times before giving up instead of killing the session on the first blip.
     if (userLanguage === "kk") {
+      if (isRecordingRef.current && kkReconnectAttemptsRef.current < 2) {
+        kkReconnectAttemptsRef.current += 1;
+        setAiStatus("processing");
+        setTimeout(() => {
+          if (isRecordingRef.current) startWhisperRecording();
+        }, 1500);
+        return;
+      }
       isRecordingRef.current = false;
       setIsRecording(false);
-      setTranscriptionText("Ошибка распознавания. Попробуйте ещё раз.");
+      setTranscriptionText("Не удалось подключиться к серверу распознавания. Попробуйте ещё раз.");
       setAiStatus("ready");
       return;
     }
@@ -314,6 +337,7 @@ export default function SubtitlesDashboard() {
   }
 
   async function startRecordingSession() {
+    kkReconnectAttemptsRef.current = 0;
     // Kazakh always goes through the FreedomSpeech-backed Whisper engine —
     // browser Web Speech API has no real kk-KZ support.
     if (userLanguage === "kk" || recognitionEngine === "whisper") {
