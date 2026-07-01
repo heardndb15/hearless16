@@ -1066,8 +1066,8 @@ export default function SubtitlesPage() {
         {/* Переключатель языка субтитров — всегда виден */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
           {[
-            { code: "ТљРђР—", label: "ТљРђР— 🇰🇿" },
-            { code: "Р РЈРЎ", label: "Р РЈРЎ 🇷🇺" },
+            { code: "ТљРђР—", label: "KAZ 🇰🇿" },
+            { code: "Р РЈРЎ", label: "RUS 🇷🇺" },
             { code: "ENG", label: "ENG 🇬🇧" },
           ].map(({ code, label }) => (
             <button
