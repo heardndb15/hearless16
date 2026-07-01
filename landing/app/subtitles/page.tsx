@@ -245,9 +245,11 @@ export default function SubtitlesPage() {
   // --- Р›РћР“РРљРђ Р РђР‘РћРўР« РњРРљР РћР¤РћРќРђ (WEB SPEECH API) ---
   // Load auth token for backend Whisper
   useEffect(() => {
-    createClient().auth.getSession().then(({ data: { session } }) => {
-      setToken(session?.access_token ?? "");
-    });
+    try {
+      createClient().auth.getSession().then(({ data: { session } }) => {
+        setToken(session?.access_token ?? "");
+      }).catch(() => {});
+    } catch {}
   }, []);
 
   const saveSession = async (historyArr: string[]) => {
