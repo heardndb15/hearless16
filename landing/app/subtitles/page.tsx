@@ -1217,31 +1217,37 @@ export default function SubtitlesPage() {
                 </div>
 
                 <div style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
-                  <textarea value={inputText} onChange={e => setInputText(e.target.value)} placeholder="Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚, С‡С‚РѕР±С‹ СЃС‹РјРёС‚РёСЂРѕРІР°С‚СЊ СЂРµС‡СЊ РЅР° Р»РµС‚Сѓ..." rows={2}
+                  <textarea value={inputText} onChange={e => setInputText(e.target.value)} placeholder={lang === "ҚАЗ" ? "Қазақша мәтін теріңіз..." : "Введите текст, чтобы симулировать речь на лету..."} rows={2}
                     style={{ width: "100%", padding: "16px 20px", borderRadius: "14px", border: "1px solid var(--border)", background: "var(--bgLight)", color: "var(--text)", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif", resize: "none", outline: "none", marginBottom: 16, transition: "border 0.2s" }}
                     className="focus:border-sky-500" />
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                      <button
-                        onClick={() => useWhisper ? (isMicActive ? stopWhisperRecording() : startWhisperRecording()) : toggleMicrophone()}
-                        className="btn"
-                        style={{
-                          padding: "12px 24px",
-                          fontSize: 13,
-                          borderRadius: 50,
-                          background: isMicActive ? "var(--sos)" : "var(--gradient)",
-                          color: "white",
-                          boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
-                          animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
-                          border: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {isMicActive
-                          ? (useWhisper ? "⏹ Остановить Replicate AI" : "🛑 Выключить микрофон")
-                          : (useWhisper ? "🤖 Запустить Replicate AI" : "🎙️ Включить микрофон")}
-                      </button>
+                      {lang === "ҚАЗ" ? (
+                        <div style={{ padding: "12px 20px", borderRadius: 50, background: "var(--bgLight)", border: "1px solid var(--accent)", fontSize: 13, color: "var(--accent)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>
+                          ✏️ Қазақша теріңіз
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => useWhisper ? (isMicActive ? stopWhisperRecording() : startWhisperRecording()) : toggleMicrophone()}
+                          className="btn"
+                          style={{
+                            padding: "12px 24px",
+                            fontSize: 13,
+                            borderRadius: 50,
+                            background: isMicActive ? "var(--sos)" : "var(--gradient)",
+                            color: "white",
+                            boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
+                            animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {isMicActive
+                            ? (useWhisper ? "⏹ Остановить Replicate AI" : "🛑 Выключить микрофон")
+                            : (useWhisper ? "🤖 Запустить Replicate AI" : "🎙️ Включить микрофон")}
+                        </button>
+                      )}
 
                       <button 
                         onClick={() => { if (inputText.trim()) { setHistory(h => [...h, inputText.trim()]); setInputText(""); } }}
