@@ -79,24 +79,34 @@ export default function SubtitlesDashboard() {
     setRecognitionEngine(val);
     if (typeof window !== "undefined") localStorage.setItem("sub_recognitionEngine", val);
   };
+  const changeUserLanguage = (val: "ru" | "kk") => {
+    setUserLanguage(val);
+    if (typeof window !== "undefined") localStorage.setItem("sub_userLanguage", val);
+  };
 
   useEffect(() => {
+    const storedLang = typeof window !== "undefined" ? localStorage.getItem("sub_userLanguage") : null;
+
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
         setUser(data.user);
         fetchHistory(data.user.id);
-        
-        // Fetch user language profile
-        supabase.from("users")
-          .select("language")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile?.language) {
-              setUserLanguage(profile.language);
-            }
-          });
+
+        // Account profile language is only used as the initial default —
+        // once the user picks a language via the in-panel switcher, that
+        // local choice (persisted below) always wins over the profile.
+        if (!storedLang) {
+          supabase.from("users")
+            .select("language")
+            .eq("id", data.user.id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile?.language) {
+                setUserLanguage(profile.language);
+              }
+            });
+        }
       }
     });
 
@@ -106,6 +116,7 @@ export default function SubtitlesDashboard() {
       setBgColor(localStorage.getItem("sub_bgColor") || "dark");
       setTextGlow(localStorage.getItem("sub_textGlow") !== "false");
       setRecognitionEngine((localStorage.getItem("sub_recognitionEngine") as any) || "browser");
+      if (storedLang) setUserLanguage(storedLang);
     }
 
     return () => {
@@ -591,7 +602,7 @@ export default function SubtitlesDashboard() {
             <div className="bg-white/70 backdrop-blur-xl border border-white/80 shadow-lg rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-[slide-up_0.2s_ease-out]">
               <div className="flex flex-col gap-4 w-full">
                 <h4 className="font-syne font-bold text-xs text-slate-700 uppercase tracking-wider">Настройка стиля и качества субтитров</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 w-full">
                   {/* Font Size Selector */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Размер шрифта</span>
@@ -667,6 +678,27 @@ export default function SubtitlesDashboard() {
                     >
                       {textGlow ? "✨ ВКЛЮЧЕНО" : "🔇 ВЫКЛЮЧЕНО"}
                     </button>
+                  </div>
+
+                  {/* Language Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Язык</span>
+                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                      {[
+                        { key: "ru", label: "Русский" },
+                        { key: "kk", label: "Қазақша" },
+                      ].map((l) => (
+                        <button
+                          key={l.key}
+                          onClick={() => changeUserLanguage(l.key as "ru" | "kk")}
+                          className={`flex-1 text-[9px] font-bold py-1.5 rounded transition-all ${
+                            userLanguage === l.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                          }`}
+                        >
+                          {l.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Recognition Engine Selector */}
