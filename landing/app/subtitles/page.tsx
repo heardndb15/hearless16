@@ -132,7 +132,7 @@ export default function SubtitlesPage() {
 
   // Map display lang labels to ISO codes for backend API
   const toLangCode = (l: string): string =>
-    l === "ENG" ? "en" : l.startsWith("T") || l.startsWith("Т") || l.startsWith("Ч") ? "kk" : "ru";
+    l === "ENG" ? "en" : l === "ҚАЗ" ? "kk" : "ru";
 
   // New: speaker diarization
   const [useDiarization, setUseDiarization] = useState(false);
