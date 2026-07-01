@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN;
+const FREEDOMSPEECH_API_KEY = process.env.FREEDOMSPEECH_API_KEY;
+
+// Kazakh always goes through FreedomSpeech (https://freedomspeech.kz) — no
+// Replicate fallback, since Replicate/Whisper doesn't transcribe Kazakh reliably.
+async function transcribeWithFreedomSpeech(file: File): Promise<string> {
+  if (!FREEDOMSPEECH_API_KEY) {
+    throw new Error("FreedomSpeech not configured");
+  }
+  const fd = new FormData();
+  fd.append("model", "whisper-1");
+  fd.append("language", "kk");
+  fd.append("file", file, file.name || "audio.webm");
+
+  const res = await fetch("https://freedomspeech.kz/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${FREEDOMSPEECH_API_KEY}` },
+    body: fd,
+  });
+  if (!res.ok) {
+    throw new Error(`FreedomSpeech request failed: ${res.status}`);
+  }
+  const data = await res.json();
+  return (data.text || "").trim();
+}
 
 async function pollPrediction(id: string): Promise<string> {
   for (let i = 0; i < 30; i++) {
@@ -21,10 +45,6 @@ async function pollPrediction(id: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  if (!REPLICATE_TOKEN) {
-    return NextResponse.json({ error: "Replicate not configured" }, { status: 500 });
-  }
-
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -32,6 +52,15 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: "No audio file" }, { status: 400 });
+    }
+
+    if (language === "kk") {
+      const text = await transcribeWithFreedomSpeech(file);
+      return NextResponse.json({ text });
+    }
+
+    if (!REPLICATE_TOKEN) {
+      return NextResponse.json({ error: "Replicate not configured" }, { status: 500 });
     }
 
     const buffer = await file.arrayBuffer();
@@ -71,7 +100,7 @@ export async function POST(req: NextRequest) {
     const text = await pollPrediction(prediction.id);
     return NextResponse.json({ text });
   } catch (err) {
-    console.error("Replicate transcribe error:", err);
+    console.error("Transcribe error:", err);
     return NextResponse.json({ error: "Transcription failed" }, { status: 500 });
   }
 }

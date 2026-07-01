@@ -282,7 +282,6 @@ export default function SubtitlesDashboard() {
   }
 
   function switchToFallbackRecognition() {
-    setAiStatus("fallback");
     if (wsRef.current) {
       try { wsRef.current.close(); } catch (e) {}
       wsRef.current = null;
@@ -290,11 +289,23 @@ export default function SubtitlesDashboard() {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try { mediaRecorderRef.current.stop(); } catch (e) {}
     }
+    // Kazakh has no real browser (kk-KZ) speech recognition support and must
+    // only ever go through FreedomSpeech — don't fall back, just surface the error.
+    if (userLanguage === "kk") {
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      setTranscriptionText("Ошибка распознавания. Попробуйте ещё раз.");
+      setAiStatus("ready");
+      return;
+    }
+    setAiStatus("fallback");
     startBrowserRecognition();
   }
 
   async function startRecordingSession() {
-    if (recognitionEngine === "whisper") {
+    // Kazakh always goes through the FreedomSpeech-backed Whisper engine —
+    // browser Web Speech API has no real kk-KZ support.
+    if (userLanguage === "kk" || recognitionEngine === "whisper") {
       await startWhisperRecording();
     } else {
       await startBrowserRecognition();
@@ -665,17 +676,23 @@ export default function SubtitlesDashboard() {
                       {[
                         { key: "browser", label: "Браузер" },
                         { key: "whisper", label: "Whisper ИИ" }
-                      ].map((eng) => (
-                        <button
-                          key={eng.key}
-                          onClick={() => changeRecognitionEngine(eng.key as any)}
-                          className={`flex-1 text-[9px] font-bold py-1.5 rounded transition-all ${
-                            recognitionEngine === eng.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
-                          }`}
-                        >
-                          {eng.label}
-                        </button>
-                      ))}
+                      ].map((eng) => {
+                        const isActive = userLanguage === "kk" ? eng.key === "whisper" : recognitionEngine === eng.key;
+                        const disabled = userLanguage === "kk" && eng.key === "browser";
+                        return (
+                          <button
+                            key={eng.key}
+                            onClick={() => !disabled && changeRecognitionEngine(eng.key as any)}
+                            disabled={disabled}
+                            title={disabled ? "Для казахского доступен только Whisper ИИ (FreedomSpeech)" : undefined}
+                            className={`flex-1 text-[9px] font-bold py-1.5 rounded transition-all ${
+                              isActive ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                            } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                          >
+                            {eng.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

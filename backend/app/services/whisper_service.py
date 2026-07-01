@@ -133,10 +133,10 @@ def transcribe_openai(audio_bytes: bytes, language: str = "ru") -> str:
 def transcribe_audio(audio_bytes: bytes, language: str = "ru") -> str:
     try:
         if language == "kk":
+            # Kazakh always goes through FreedomSpeech — no local/Replicate
+            # fallback, since neither transcribes Kazakh reliably.
             from app.services.freedomspeech_service import transcribe_with_freedomspeech
-            result = transcribe_with_freedomspeech(audio_bytes)
-            if result is not None:
-                return result
+            return transcribe_with_freedomspeech(audio_bytes) or ""
 
         result = transcribe_local(audio_bytes)
         if result is not None:
@@ -235,6 +235,17 @@ def transcribe_with_diarization(
     """
     if session_state is None:
         session_state = {"current_speaker": 0, "last_end": 0.0}
+
+    if language == "kk":
+        # Kazakh always goes through FreedomSpeech, which has no diarization —
+        # return it as a single speaker segment, same shape as the no-local-model path below.
+        from app.services.freedomspeech_service import transcribe_with_freedomspeech
+        text = transcribe_with_freedomspeech(audio_bytes) or ""
+        speaker = session_state["current_speaker"]
+        return {
+            "text": text,
+            "segments": [{"text": text, "speaker": speaker, "start": 0.0, "end": 0.0}],
+        }
 
     model = get_local_whisper()
     if model is None:

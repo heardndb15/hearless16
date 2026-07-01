@@ -272,9 +272,11 @@ export default function SubtitlesPage() {
       isMicActiveRef.current = true;
       audioChunksRef.current = [];
 
-      // Browser SpeechRecognition runs in parallel for real-time interim display
+      // Browser SpeechRecognition runs in parallel for real-time interim display —
+      // skipped for Kazakh, which has no real kk-KZ support and must go through
+      // FreedomSpeech only.
       const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognitionAPI) {
+      if (SpeechRecognitionAPI && langRef.current !== "ҚАЗ") {
         const interimRec = new SpeechRecognitionAPI();
         interimRec.continuous = true;
         interimRec.interimResults = true;
