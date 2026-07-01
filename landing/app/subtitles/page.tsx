@@ -972,6 +972,49 @@ export default function SubtitlesPage() {
 
   return (
     <div style={{ minHeight: "100vh" }}>
+      {/* =====  LANGUAGE SWITCHER — fixed top right ===== */}
+      <div style={{
+        position: "fixed",
+        top: 72,
+        right: 20,
+        zIndex: 9999,
+        display: "flex",
+        gap: 6,
+        background: "rgba(255,255,255,0.92)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderRadius: 50,
+        padding: "6px 10px",
+        boxShadow: "0 4px 20px rgba(14,165,233,0.18)",
+        border: "1px solid rgba(14,165,233,0.15)",
+      }}>
+        {([
+          { code: "ҚАЗ", label: "KAZ 🇰🇿" },
+          { code: "РУС", label: "RUS 🇷🇺" },
+          { code: "ENG", label: "ENG 🇬🇧" },
+        ] as { code: string; label: string }[]).map(({ code, label }) => (
+          <button
+            key={code}
+            onClick={() => handleLangChange(code)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 50,
+              border: "none",
+              background: lang === code ? "linear-gradient(135deg,#38BDF8,#0EA5E9)" : "transparent",
+              color: lang === code ? "#fff" : "#0369A1",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 700,
+              fontSize: 12,
+              cursor: "pointer",
+              transition: "all 0.2s",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* РЎРєСЂС‹С‚С‹Рµ СЌР»РµРјРµРЅС‚С‹ РґР»СЏ СЂРµР°Р»РёР·Р°С†РёРё PiP С…Р°РєР° С‡РµСЂРµР· Canvas */}
       <canvas ref={pipCanvasRef} width="800" height="240" style={{ display: "none" }} />
       <video ref={pipVideoRef} style={{ display: "none" }} playsInline muted />
