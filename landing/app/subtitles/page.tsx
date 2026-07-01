@@ -980,6 +980,35 @@ export default function SubtitlesPage() {
             {mode === "speech" ? (
               // --- Р Р•Р–РРњ 1: РўР РђРќРЎРљР РР‘РђР¦РРЇ Р Р•Р§Р (Р”РРљРўРћР’РљРђ) ---
               <div>
+                {/* Переключатель языка субтитров */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                  {[
+                    { code: "ТљРђР—", label: "ТљРђР— 🇰🇿" },
+                    { code: "Р РЈРЎ", label: "Р РЈРЎ 🇷🇺" },
+                    { code: "ENG", label: "ENG 🇬🇧" },
+                  ].map(({ code, label }) => (
+                    <button
+                      key={code}
+                      onClick={() => handleLangChange(code)}
+                      style={{
+                        padding: "10px 22px",
+                        borderRadius: 50,
+                        border: lang === code ? "none" : "1.5px solid var(--border)",
+                        background: lang === code ? "var(--gradient)" : "var(--bgCard)",
+                        color: lang === code ? "white" : "var(--textSecondary)",
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        boxShadow: lang === code ? "0 4px 16px var(--accentGlow)" : "none",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="glass-display" style={{
                   background: "var(--bgCard)",
                   borderRadius: "24px",
