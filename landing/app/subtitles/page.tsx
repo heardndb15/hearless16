@@ -54,14 +54,14 @@ function parseVTT(content: string): SubtitleSegment[] {
   return result;
 }
 
-// 1. Р”РµРјРѕ-С„СЂР°Р·С‹ РґР»СЏ СЂРµР¶РёРјР° РґРёРєС‚РѕРІРєРё
+// 1. Демо-фразы для режима диктовки
 const PHRASES: Record<string, string[]> = {
   "ҚАЗ": ["Сәлем, қаліңіз қалай?", "Менің атым Әліхан.", "Сізге көмек қажет пе?", "Рахмет! Сау болыңыз."],
   "РУС": ["Привет, как дела?", "Меня зовут Алихан.", "Вам нужна помощь?", "Спасибо! До свидания."],
   "ENG": ["Hello, how are you?", "My name is Alikhan.", "Do you need help?", "Thank you! Goodbye."],
 };
 
-// 2. РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРЅС‹Рµ СЃСѓР±С‚РёС‚СЂС‹ РґР»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРѕРЅРЅРѕРіРѕ РІРёРґРµРѕ
+// 2. Синхронизированные субтитры для демонстрационного видео
 const DEMO_VIDEO_SUBTITLES = [
   { start: 0, end: 3, text: "Introducing Chromecast." },
   { start: 3, end: 6, text: "The easiest way to enjoy online video and music on your TV." },
@@ -77,7 +77,7 @@ const SPEAKER_BG = ["rgba(14,165,233,0.10)", "rgba(16,185,129,0.10)", "rgba(245,
 const SPEAKER_LABELS = ["Говорящий 1", "Говорящий 2", "Говорящий 3", "Говорящий 4"];
 
 export default function SubtitlesPage() {
-  const [mode, setMode] = useState<"speech" | "video">("speech"); // "speech" (РґРёРєС‚РѕРІРєР°) РёР»Рё "video" (РІРёРґРµРѕ)
+  const [mode, setMode] = useState<"speech" | "video">("speech"); // "speech" (диктовка) или "video" (видео)
   const [lang, setLang] = useState("РУС");
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [chars, setChars] = useState(0);
@@ -88,20 +88,20 @@ export default function SubtitlesPage() {
   const recognitionRef = useRef<any>(null);
   const isDemo = inputText.trim() === "" && !isMicActive;
 
-  // РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ Replicate AI
+  // Состояния для Replicate AI
   const [aiSummary, setAiSummary] = useState("");
   const [aiQuery, setAiQuery] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [useAiPunctuation, setUseAiPunctuation] = useState(false);
 
-  // РќР°СЃС‚СЂРѕР№РєРё РґРёСЃРїР»РµСЏ (СЃРѕРІРїР°РґР°СЋС‰РёРµ СЃ РјРѕР±РёР»СЊРЅС‹Рј РєР»РёРµРЅС‚РѕРј)
+  // Настройки дисплея (совпадающие с мобильным клиентом)
   const [fontSize, setFontSize] = useState(24);
   const [textColor, setTextColor] = useState("#22d3ee");
   const [bgOpacity, setBgOpacity] = useState(0.85);
   const [alignment, setAlignment] = useState<"center" | "left">("center");
 
-  // РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ РїР»РµРµСЂР° РІРёРґРµРѕ
+  // Состояния для плеера видео
   const [videoSrc, setVideoSrc] = useState("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4");
   const [videoSubtitle, setVideoSubtitle] = useState("");
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -142,23 +142,23 @@ export default function SubtitlesPage() {
   const [speakerSegments, setSpeakerSegments] = useState<SpeakerSegment[]>([]);
   const diarizationStateRef = useRef({ current_speaker: 0, last_end: 0.0 });
 
-  //РЎРѕСЃС‚РѕСЏРЅРёСЏ РґР»СЏ РїР»Р°РІР°СЋС‰РµРіРѕ РѕРєРЅР° (Picture-in-Picture)
+  //Состояния для плавающего окна (Picture-in-Picture)
   const [isPipActive, setIsPipActive] = useState(false);
   const [activePipText, setActivePipText] = useState("");
   const lastSubUpdateTimeRef = useRef<number>(Date.now());
 
-  // Р РµС„РµСЂРµРЅСЃС‹ РґР»СЏ РІРёРґРµРѕ Рё РІРµР±-Р°СѓРґРёРѕ
+  // Референсы для видео и веб-аудио
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationRef = useRef<number | null>(null);
 
-  // Р РµС„РµСЂРµРЅСЃС‹ РґР»СЏ Picture-in-Picture
+  // Референсы для Picture-in-Picture
   const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const pipVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  // --- Р­Р¤Р¤Р•РљРў Р”Р›РЇ Р Р•Р–РРњРђ Р”РРљРўРћР’РљР ---
+  // --- ЭФФЕКТ ДЛЯ Р Р•Р–РРњРђ Р”РРљРўРћР’РљР ---
   useEffect(() => {
     if (mode !== "speech" || !isDemo) return;
     const current = PHRASES[lang][phraseIdx];
@@ -193,56 +193,56 @@ export default function SubtitlesPage() {
     }
   };
 
-  // РњРµС‚РѕРґ РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕР№ РїСѓРЅРєС‚СѓР°С†РёРё С„СЂР°Р·С‹
+  // Метод для автоматической пунктуации фразы
   const getPunctuationWithAI = async (rawText: string) => {
-    const prompt = "РўС‹ вЂ” AI-СЂРµРґР°РєС‚РѕСЂ. РўРІРѕСЏ Р·Р°РґР°С‡Р° вЂ” СЂР°СЃСЃС‚Р°РІРёС‚СЊ Р·РЅР°РєРё РїСЂРµРїРёРЅР°РЅРёСЏ, РёСЃРїСЂР°РІРёС‚СЊ Р·Р°РіР»Р°РІРЅС‹Рµ Р±СѓРєРІС‹ Рё РјРµР»РєРёРµ РѕРїРµС‡Р°С‚РєРё РІ РїСЂРµРґР»РѕР¶РµРЅРЅРѕРј С‚РµРєСЃС‚Рµ СЂР°СЃРїРѕР·РЅР°РЅРЅРѕР№ СЂСѓСЃСЃРєРѕР№, РєР°Р·Р°С…СЃРєРѕР№ РёР»Рё Р°РЅРіР»РёР№СЃРєРѕР№ СЂРµС‡Рё. Р’РµСЂРЅРё РўРћР›Р¬РљРћ РёСЃРїСЂР°РІР»РµРЅРЅС‹Р№ С‚РµРєСЃС‚, Р±РµР· РєР°РєРёС…-Р»РёР±Рѕ РІРІРѕРґРЅС‹С… СЃР»РѕРІ РёР»Рё РєР°РІС‹С‡РµРє.";
+    const prompt = "Ты — AI-редактор. Твоя задача — расставить знаки препинания, исправить заглавные буквы и мелкие опечатки в предложенном тексте распознанной русской, казахской или английской речи. Верни ТОЛЬКО исправленный текст, без каких-либо вводных слов или кавычек.";
     const cleaned = await callReplicateAI(prompt, rawText);
     return cleaned || rawText;
   };
 
-  // Р“РµРЅРµСЂР°С†РёСЏ РєРѕРЅСЃРїРµРєС‚Р°
+  // Генерация конспекта
   const generateSummary = async () => {
     const fullTranscript = [...history, displayText].filter(Boolean).join("\n");
     if (!fullTranscript.trim()) {
-      alert("РСЃС‚РѕСЂРёСЏ С‚СЂР°РЅСЃРєСЂРёРїС‚Р° РїСѓСЃС‚Р°. РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РЅР°РіРѕРІРѕСЂРёС‚Рµ РёР»Рё РІРІРµРґРёС‚Рµ С‚РµРєСЃС‚ СЃРЅР°С‡Р°Р»Р°.");
+      alert("РСЃС‚РѕСЂРёСЏ транскрипта пуста. Пожалуйста, наговорите или введите текст сначала.");
       return;
     }
     
     setIsAiLoading(true);
-    const prompt = "РўС‹ вЂ” РїСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅС‹Р№ Р°СЃСЃРёСЃС‚РµРЅС‚ РїРѕ РґРѕСЃС‚СѓРїРЅРѕСЃС‚Рё. РЎРґРµР»Р°Р№ РєСЂР°С‚РєРѕРµ РєРѕРЅСЃРїРµРєС‚РёСЂРѕРІР°РЅРёРµ (РІ РІРёРґРµ С‚РµР·РёСЃРѕРІ Рё bullet points РЅР° СЂСѓСЃСЃРєРѕРј СЏР·С‹РєРµ) РґР»СЏ РїСЂРµРґР»РѕР¶РµРЅРЅРѕРіРѕ С‚СЂР°РЅСЃРєСЂРёРїС‚Р°. Р’С‹РґРµР»Рё РіР»Р°РІРЅС‹Рµ РјС‹СЃР»Рё, СЂРµС€РµРЅРёСЏ Рё РєР»СЋС‡РµРІС‹Рµ С„Р°РєС‚С‹.";
+    const prompt = "Ты — профессиональный ассистент по доступности. Сделай краткое конспектирование (в виде тезисов и bullet points на русском языке) для предложенного транскрипта. Выдели главные мысли, решения и ключевые факты.";
     const result = await callReplicateAI(prompt, fullTranscript);
     if (result) {
       setAiSummary(result);
     } else {
-      alert("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РєРѕРЅСЃРїРµРєС‚. РџСЂРѕРІРµСЂСЊС‚Рµ СЃРѕРµРґРёРЅРµРЅРёРµ СЃ РёРЅС‚РµСЂРЅРµС‚РѕРј РёР»Рё РЅР°СЃС‚СЂРѕР№РєРё РєР»СЋС‡Р°.");
+      alert("Не удалось сгенерировать конспект. Проверьте соединение с интернетом или настройки ключа.");
     }
     setIsAiLoading(false);
   };
 
-  // Р§Р°С‚ СЃ AI РїРѕ СЃРѕРґРµСЂР¶Р°РЅРёСЋ
+  // Чат с AI по содержанию
   const askAiAboutTranscript = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiQuery.trim()) return;
     
     const fullTranscript = [...history, displayText].filter(Boolean).join("\n");
     if (!fullTranscript.trim()) {
-      alert("РСЃС‚РѕСЂРёСЏ РїСѓСЃС‚Р°. Р—Р°РґР°РІР°С‚СЊ РІРѕРїСЂРѕСЃС‹ РїРѕРєР° РЅРµ РїРѕ С‡РµРјСѓ.");
+      alert("РСЃС‚РѕСЂРёСЏ пуста. Задавать вопросы пока не по чему.");
       return;
     }
     
     setIsAiLoading(true);
-    setAiResponse("AI РґСѓРјР°РµС‚...");
-    const prompt = `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ Р·Р°РґР°РµС‚ РІРѕРїСЂРѕСЃ: "${aiQuery}". РћС‚РІРµС‚СЊ РЅР° РЅРµРіРѕ РєРѕСЂРѕС‚РєРѕ Рё СЃРѕРґРµСЂР¶Р°С‚РµР»СЊРЅРѕ, РѕСЃРЅРѕРІС‹РІР°СЏСЃСЊ РёСЃРєР»СЋС‡РёС‚РµР»СЊРЅРѕ РЅР° СЃРѕРґРµСЂР¶Р°РЅРёРё РїСЂРµРґР»РѕР¶РµРЅРЅРѕРіРѕ С‚СЂР°РЅСЃРєСЂРёРїС‚Р°. Р•СЃР»Рё РІ С‚РµРєСЃС‚Рµ РЅРµС‚ РѕС‚РІРµС‚Р° РЅР° СЌС‚РѕС‚ РІРѕРїСЂРѕСЃ, С‚Р°Рє Рё СЃРєР°Р¶Рё.`;
+    setAiResponse("AI думает...");
+    const prompt = `Пользователь задает вопрос: "${aiQuery}". Ответь на него коротко и содержательно, основываясь исключительно на содержании предложенного транскрипта. Если в тексте нет ответа на этот вопрос, так и скажи.`;
     const result = await callReplicateAI(prompt, fullTranscript);
     if (result) {
       setAiResponse(result);
     } else {
-      setAiResponse("РћС€РёР±РєР° РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РѕС‚РІРµС‚Р° РѕС‚ AI.");
+      setAiResponse("Ошибка при получении ответа от AI.");
     }
     setIsAiLoading(false);
   };
 
-  // --- Р›РћР“РРљРђ Р РђР‘РћРўР« РњРРљР РћР¤РћРќРђ (WEB SPEECH API) ---
+  // --- Р›РћР“РРљРђ РАБОТЫ РњРРљР РћР¤РћРќРђ (WEB SPEECH API) ---
   // Load auth token for backend Whisper
   useEffect(() => {
     try {
@@ -278,7 +278,7 @@ export default function SubtitlesPage() {
         const interimRec = new SpeechRecognitionAPI();
         interimRec.continuous = true;
         interimRec.interimResults = true;
-        const lc = toLangCode(lang);
+        const lc = toLangCode(langRef.current);
         interimRec.lang = lc === "en" ? "en-US" : lc === "kk" ? "kk-KZ" : "ru-RU";
         interimRec.onresult = (event: any) => {
           let interim = "";
@@ -304,7 +304,7 @@ export default function SubtitlesPage() {
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
-          fd.append("language", toLangCode(lang));
+          fd.append("language", toLangCode(langRef.current));
           const res = await fetch("/api/transcribe", {
             method: "POST",
             body: fd,
@@ -330,8 +330,8 @@ export default function SubtitlesPage() {
         if (mediaRecorderRef.current?.state === "recording") {
           mediaRecorderRef.current.stop();
           await new Promise<void>(r => { mediaRecorderRef.current!.onstop = () => r(); });
-          await sendChunk();
           if (isMicActiveRef.current) startRecorder();
+          sendChunk();
         }
       }, 3000);
     } catch { setIsMicActive(false); isMicActiveRef.current = false; setWhisperStatus("idle"); alert("Нет доступа к микрофону"); }
@@ -391,7 +391,7 @@ export default function SubtitlesPage() {
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
-          fd.append("language", toLangCode(lang));
+          fd.append("language", toLangCode(langRef.current));
           const res = await fetch("/api/transcribe", { method: "POST", body: fd });
           if (res.ok) {
             const data = await res.json();
@@ -466,29 +466,57 @@ export default function SubtitlesPage() {
     }, 100);
   };
 
-  // Р РµС„ РґР»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ СЃС‚Р°С‚СѓСЃР° Р·Р°РїРёСЃРё Р±РµР· Р·Р°РјС‹РєР°РЅРёР№ РІ РєРѕР»Р±РµРєР°С… Speech API
+  // Реф для отслеживания статуса записи без замыканий в колбеках Speech API
   const isMicActiveRef = useRef(false);
   useEffect(() => {
     isMicActiveRef.current = isMicActive;
   }, [isMicActive]);
 
+  // Ref for current language so in-flight recording callbacks (created via
+  // stale closures across renders) always pick up the latest choice.
+  const langRef = useRef(lang);
+  useEffect(() => {
+    langRef.current = lang;
+  }, [lang]);
+
+  // Browser Web Speech API has no kk-KZ support in practice — Kazakh always
+  // goes through Replicate/Whisper, which transcribes it correctly.
+  useEffect(() => {
+    if (lang === "ҚАЗ" && !useWhisper) setUseWhisper(true);
+  }, [lang, useWhisper]);
+
   const handleLangChange = (newLang: string) => {
+    const wasWhisper = useWhisper;
+    const forceWhisper = newLang === "ҚАЗ";
+    const nowWhisper = wasWhisper || forceWhisper;
+
+    langRef.current = newLang;
     setLang(newLang);
     setPhraseIdx(0);
     setChars(0);
-    
-    if (isMicActiveRef.current) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
+    if (forceWhisper) setUseWhisper(true);
+
+    if (!isMicActiveRef.current) return;
+
+    if (wasWhisper && nowWhisper) {
+      // Recording keeps running uninterrupted; the next chunk already
+      // picks up langRef.current, so no restart (and no audio gap) needed.
+      return;
+    }
+
+    if (wasWhisper) {
+      stopWhisperRecording();
+    } else {
+      if (recognitionRef.current) recognitionRef.current.stop();
       setIsMicActive(false);
       isMicActiveRef.current = false;
       setInterimText("");
-      
-      setTimeout(() => {
-        toggleMicrophone();
-      }, 400);
     }
+
+    setTimeout(() => {
+      if (nowWhisper) startWhisperRecording();
+      else toggleMicrophone();
+    }, 400);
   };
 
   const toggleMicrophone = () => {
@@ -506,7 +534,7 @@ export default function SubtitlesPage() {
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Рљ СЃРѕР¶Р°Р»РµРЅРёСЋ, Web Speech API (СЂР°СЃРїРѕР·РЅР°РІР°РЅРёРµ СЂРµС‡Рё) РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ РІР°С€РёРј Р±СЂР°СѓР·РµСЂРѕРј. РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РёСЃРїРѕР»СЊР·СѓР№С‚Рµ Google Chrome РёР»Рё Microsoft Edge.");
+      alert("К сожалению, Web Speech API (распознавание речи) не поддерживается вашим браузером. Пожалуйста, используйте Google Chrome или Microsoft Edge.");
       return;
     }
 
@@ -516,13 +544,13 @@ export default function SubtitlesPage() {
       recognition.interimResults = true;
 
       let recognitionLang = "ru-RU";
-      if (lang === "ҚАЗ") recognitionLang = "kk-KZ";
-      else if (lang === "ENG") recognitionLang = "en-US";
+      if (langRef.current === "ҚАЗ") recognitionLang = "kk-KZ";
+      else if (langRef.current === "ENG") recognitionLang = "en-US";
       recognition.lang = recognitionLang;
 
       recognition.onstart = () => {
         setIsMicActive(true);
-        setInterimText("РЎР»СѓС€Р°СЋ РІР°СЃ...");
+        setInterimText("Слушаю вас...");
         runSpeechAudioSimulation();
       };
 
@@ -544,13 +572,13 @@ export default function SubtitlesPage() {
           if (useAiPunctuation) {
             setHistory((prev) => {
               const updated = [...prev, textToProcess];
-              const targetIdx = updated.length - 1; // Р—Р°РїРѕРјРёРЅР°РµРј С‚РѕС‡РЅС‹Р№ РёРЅРґРµРєСЃ С„СЂР°Р·С‹
+              const targetIdx = updated.length - 1; // Запоминаем точный индекс фразы
               
               getPunctuationWithAI(textToProcess).then((punctuatedText) => {
                 if (punctuatedText && punctuatedText !== textToProcess) {
                   setHistory((currentHistory) => {
                     const nextHistory = [...currentHistory];
-                    // РћР±РЅРѕРІР»СЏРµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё РЅР° СЌС‚РѕРј РёРЅРґРµРєСЃРµ РІСЃРµ РµС‰Рµ Р»РµР¶РёС‚ РёСЃС…РѕРґРЅС‹Р№ СЃС‹СЂРѕР№ С‚РµРєСЃС‚
+                    // Обновляем только если на этом индексе все еще лежит исходный сырой текст
                     if (nextHistory[targetIdx] === textToProcess) {
                       nextHistory[targetIdx] = punctuatedText;
                     }
@@ -570,26 +598,26 @@ export default function SubtitlesPage() {
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
         
-        // РћС‚РєР»СЋС‡Р°РµРј РјРёРєСЂРѕС„РѕРЅ С‚РѕР»СЊРєРѕ РїСЂРё С„Р°С‚Р°Р»СЊРЅС‹С… РѕС€РёР±РєР°С… РґРѕСЃС‚СѓРїР° РёР»Рё РѕР±РѕСЂСѓРґРѕРІР°РЅРёСЏ
+        // Отключаем микрофон только при фатальных ошибках доступа или оборудования
         if (event.error === "not-allowed" || event.error === "audio-capture") {
           if (event.error === "not-allowed") {
-            alert("Р”РѕСЃС‚СѓРї Рє РјРёРєСЂРѕС„РѕРЅСѓ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ. РџРѕР¶Р°Р»СѓР№СЃС‚Р°, СЂР°Р·СЂРµС€РёС‚Рµ РґРѕСЃС‚СѓРї РІ РЅР°СЃС‚СЂРѕР№РєР°С… Р±СЂР°СѓР·РµСЂР°.");
+            alert("Доступ к микрофону заблокирован. Пожалуйста, разрешите доступ в настройках браузера.");
           } else {
-            alert("РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±РЅР°СЂСѓР¶РёС‚СЊ РјРёРєСЂРѕС„РѕРЅ. РџСЂРѕРІРµСЂСЊС‚Рµ РїРѕРґРєР»СЋС‡РµРЅРёРµ СѓСЃС‚СЂРѕР№СЃС‚РІР°.");
+            alert("Не удалось обнаружить микрофон. Проверьте подключение устройства.");
           }
           setIsMicActive(false);
           setInterimText("");
         }
-        // РћС€РёР±РєРё С‚РёС€РёРЅС‹ (no-speech) РёР»Рё СЃР±СЂРѕСЃР° (aborted) РёРіРЅРѕСЂРёСЂСѓРµРј, onend СЃРґРµР»Р°РµС‚ РјСЏРіРєРёР№ РїРµСЂРµР·Р°РїСѓСЃРє
+        // Ошибки тишины (no-speech) или сброса (aborted) игнорируем, onend сделает мягкий перезапуск
       };
 
       recognition.onend = () => {
-        // Р•СЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р¶РёРјР°Р» РєРЅРѕРїРєСѓ РІС‹РєР»СЋС‡РµРЅРёСЏ, РїРµСЂРµР·Р°РїСѓСЃРєР°РµРј Р·Р°РїРёСЃСЊ
+        // Если пользователь не нажимал кнопку выключения, перезапускаем запись
         if (isMicActiveRef.current) {
           try {
             recognition.start();
           } catch (e) {
-            console.warn("РџРѕРїС‹С‚РєР° Р°РІС‚Рѕ-РїРµСЂРµР·Р°РїСѓСЃРєР° SpeechRecognition РїРѕСЃР»Рµ onend:", e);
+            console.warn("Попытка авто-перезапуска SpeechRecognition после onend:", e);
           }
         } else {
           setIsMicActive(false);
@@ -615,13 +643,13 @@ export default function SubtitlesPage() {
     };
   }, []);
 
-  // Р­С„С„РµРєС‚ РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ С‚РµРєСЃС‚Р° СЃСѓР±С‚РёС‚СЂРѕРІ РґР»СЏ PiP-РѕРєРЅР° СЃ С‚Р°Р№Рј-Р°СѓС‚РѕРј РѕС‡РёСЃС‚РєРё РІ 8 СЃРµРєСѓРЅРґ
+  // Эффект для формирования текста субтитров для PiP-окна с тайм-аутом очистки в 8 секунд
   useEffect(() => {
     let text = "";
     if (mode === "speech") {
       if (isMicActive) {
         const lastPhrase = history[history.length - 1] || "";
-        const cleanInterim = (interimText && interimText !== "РЎР»СѓС€Р°СЋ РІР°СЃ...") ? interimText : "";
+        const cleanInterim = (interimText && interimText !== "Слушаю вас...") ? interimText : "";
         if (cleanInterim) {
           text = lastPhrase ? `${lastPhrase}\n${cleanInterim}` : cleanInterim;
         } else {
@@ -636,7 +664,7 @@ export default function SubtitlesPage() {
 
     setActivePipText(text);
 
-    if (text && text !== "РЎР»СѓС€Р°СЋ РІР°СЃ..." && text !== "РћР¶РёРґР°РЅРёРµ РЅР°С‡Р°Р»Р° РґРёРєС‚РѕРІРєРё...") {
+    if (text && text !== "Слушаю вас..." && text !== "Ожидание начала диктовки...") {
       lastSubUpdateTimeRef.current = Date.now();
       const timer = setTimeout(() => {
         setActivePipText("");
@@ -645,11 +673,11 @@ export default function SubtitlesPage() {
     }
   }, [displayText, interimText, videoSubtitle, history, isMicActive, mode]);
 
-  // Р­С„С„РµРєС‚ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё СЃСѓР±С‚РёС‚СЂРѕРІ РїР»РµРµСЂР° СЃ РІРІРѕРґРѕРј РјРёРєСЂРѕС„РѕРЅР° РїСЂРё РІРєР»СЋС‡РµРЅРЅРѕР№ Р·Р°РїРёСЃРё РІ СЂРµР¶РёРјРµ РІРёРґРµРѕ
+  // Эффект для синхронизации субтитров плеера с вводом микрофона при включенной записи в режиме видео
   useEffect(() => {
     if (mode === "video" && isMicActive) {
       const lastPhrase = history[history.length - 1] || "";
-      const cleanInterim = (interimText && interimText !== "РЎР»СѓС€Р°СЋ РІР°СЃ...") ? interimText : "";
+      const cleanInterim = (interimText && interimText !== "Слушаю вас...") ? interimText : "";
       const text = cleanInterim
         ? (lastPhrase ? `${lastPhrase}\n${cleanInterim}` : cleanInterim)
         : lastPhrase;
@@ -660,7 +688,7 @@ export default function SubtitlesPage() {
   // --- BROADCAST CHANNEL РЎРРќРҐР РћРќРР—РђР¦РРЇ ---
   const channelRef = useRef<BroadcastChannel | null>(null);
 
-  // Р РµС„ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РїРѕСЃР»РµРґРЅРµРіРѕ Р°РєС‚СѓР°Р»СЊРЅРѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ (РІРѕ РёР·Р±РµР¶Р°РЅРёРµ stale closures)
+  // Реф для хранения последнего актуального состояния (во избежание stale closures)
   const stateRef = useRef({
     mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse
   });
@@ -671,7 +699,7 @@ export default function SubtitlesPage() {
     };
   }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse]);
 
-  // Р¤СѓРЅРєС†РёСЏ РґР»СЏ РѕС‚РїСЂР°РІРєРё РїРѕР»РЅРѕРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+  // Функция для отправки полного состояния
   const sendStateToChannel = () => {
     if (channelRef.current) {
       const s = stateRef.current;
@@ -702,7 +730,7 @@ export default function SubtitlesPage() {
     }
   };
 
-  // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєР°РЅР°Р»Р° Рё СЃР»СѓС€Р°С‚РµР»РµР№
+  // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ канала и слушателей
   useEffect(() => {
     if (typeof window !== "undefined") {
       const channel = new BroadcastChannel("hearless-subtitles");
@@ -721,7 +749,7 @@ export default function SubtitlesPage() {
 
       channel.addEventListener("message", handleMessage);
 
-      // РЎСЂР°Р·Сѓ С€Р»РµРј СЃС‚Р°С‚СѓСЃ РїСЂРё РјРѕРЅС‚РёСЂРѕРІР°РЅРёРё
+      // Сразу шлем статус при монтировании
       sendStateToChannel();
 
       return () => {
@@ -731,21 +759,21 @@ export default function SubtitlesPage() {
     }
   }, []);
 
-  // РћС‚РїСЂР°РІРєР° СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСЂРё Р»СЋР±РѕРј РёР·РјРµРЅРµРЅРёРё
+  // Отправка состояния при любом изменении
   useEffect(() => {
     sendStateToChannel();
   }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse]);
 
-  // --- РРќРР¦РРђР›РР—РђР¦РРЇ Р РћР‘Р РђР‘РћРўРљРђ Р’Р•Р‘-РђРЈР”РРћ Р”Р›РЇ Р’РР—РЈРђР›РР—РђР¦РР ---
+  // --- РРќРР¦РРђР›РР—РђР¦РРЇ Р ОБРАБОТКА ВЕБ-РђРЈР”РРћ ДЛЯ Р’РР—РЈРђР›РР—РђР¦РР ---
   const initAudioAnalyser = (videoEl: HTMLVideoElement) => {
     if (audioSourceConnected || typeof window === "undefined") return;
     try {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContextClass();
       const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 32; // РќРµР±РѕР»СЊС€РѕР№ СЂР°Р·РјРµСЂ РґР»СЏ 5 СЃС‚РѕР»Р±РёРєРѕРІ
+      analyser.fftSize = 32; // Небольшой размер для 5 столбиков
 
-      // РЎРѕР·РґР°РµРј РёСЃС‚РѕС‡РЅРёРє Р·РІСѓРєР° РёР· РІРёРґРµРѕ (С‚СЂРµР±СѓРµС‚ crossOrigin="anonymous" РґР»СЏ CORS РёСЃС‚РѕС‡РЅРёРєРѕРІ)
+      // Создаем источник звука из видео (требует crossOrigin="anonymous" для CORS источников)
       const source = audioCtx.createMediaElementSource(videoEl);
       source.connect(analyser);
       analyser.connect(audioCtx.destination);
@@ -755,20 +783,20 @@ export default function SubtitlesPage() {
       sourceRef.current = source;
       setAudioSourceConnected(true);
       
-      // Р—Р°РїСѓСЃРє С†РёРєР»Р° Р°РЅРёРјР°С†РёРё
+      // Запуск цикла анимации
       updateFrequencyBars(analyser);
     } catch (err) {
-      console.warn("Web Audio API РѕРіСЂР°РЅРёС‡РµРЅРѕ РїРѕР»РёС‚РёРєРѕР№ CORS РґР»СЏ СЌС‚РѕРіРѕ РІРёРґРµРѕ. Р—Р°РїСѓСЃРєР°РµС‚СЃСЏ СЃРёРјСѓР»СЏС†РёСЏ Р°СѓРґРёРѕ-РІРѕР»РЅС‹.", err);
+      console.warn("Web Audio API ограничено политикой CORS для этого видео. Запускается симуляция аудио-волны.", err);
       runAudioSimulation();
     }
   };
 
-  // Р¦РёРєР» С‡С‚РµРЅРёСЏ С‡Р°СЃС‚РѕС‚ СЃ РјРёРєСЂРѕС„РѕРЅР°/Р°СѓРґРёРѕРґРѕСЂРѕР¶РєРё РІРёРґРµРѕ
+  // Цикл чтения частот с микрофона/аудиодорожки видео
   const updateFrequencyBars = (analyser: AnalyserNode) => {
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     const render = () => {
       analyser.getByteFrequencyData(dataArray);
-      // РњР°РїРїРёРј РґР°РЅРЅС‹Рµ С‡Р°СЃС‚РѕС‚ РІ РІС‹СЃРѕС‚С‹ СЃС‚РѕР»Р±РёРєРѕРІ (5 С€С‚СѓРє)
+      // Маппим данные частот в высоты столбиков (5 штук)
       const mapped = [
         Math.max(4, Math.round(dataArray[1] / 6)),
         Math.max(4, Math.round(dataArray[3] / 5)),
@@ -782,7 +810,7 @@ export default function SubtitlesPage() {
     render();
   };
 
-  // РЎРёРјСѓР»СЏС†РёСЏ СЃРїРµРєС‚СЂР° РїСЂРё CORS РѕРіСЂР°РЅРёС‡РµРЅРёСЏС…
+  // Симуляция спектра при CORS ограничениях
   const runAudioSimulation = () => {
     const render = () => {
       if (videoElementRef.current && !videoElementRef.current.paused) {
@@ -794,20 +822,20 @@ export default function SubtitlesPage() {
           Math.max(4, Math.round(Math.random() * 16)),
         ]);
       } else {
-        setFrequencyData([4, 4, 4, 4, 4]); // РЎР±СЂРѕСЃ РІ С‚РёС€РёРЅСѓ РїСЂРё РїР°СѓР·Рµ
+        setFrequencyData([4, 4, 4, 4, 4]); // Сброс в тишину при паузе
       }
       animationRef.current = requestAnimationFrame(render);
     };
     render();
   };
 
-  // --- РћР‘Р РђР‘РћРўРљРђ РР—РњР•РќР•РќРР™ Р’РР”Р•Рћ ---
+  // --- ОБРАБОТКА РР—РњР•РќР•РќРР™ Р’РР”Р•Рћ ---
   const handleTimeUpdate = () => {
     const video = videoElementRef.current;
     if (!video) return;
     const time = video.currentTime;
 
-    // Р•СЃР»Рё РјРёРєСЂРѕС„РѕРЅ Р°РєС‚РёРІРµРЅ, СЃСѓР±С‚РёС‚СЂС‹ РіРµРЅРµСЂРёСЂСѓСЋС‚СЃСЏ РјРёРєСЂРѕС„РѕРЅРѕРј, Р° РЅРµ С„Р°Р№Р»РѕРј СЃСѓР±С‚РёС‚СЂРѕРІ
+    // Если микрофон активен, субтитры генерируются микрофоном, а не файлом субтитров
     if (isMicActive) {
       if (channelRef.current) {
         channelRef.current.postMessage({
@@ -821,13 +849,13 @@ export default function SubtitlesPage() {
       return;
     }
 
-    // РС‰РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ Р±Р»РѕРє СЃСѓР±С‚РёС‚СЂРѕРІ РґР»СЏ РґРµРјРѕ-РІРёРґРµРѕ
+    // РС‰РµРј соответствующий блок субтитров для демо-видео
     const isDemoVideo = videoSrc === "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
     const subtitleSource = userSubtitles.length > 0 ? userSubtitles : (isDemoVideo ? DEMO_VIDEO_SUBTITLES : []);
     const subtitleText = subtitleSource.find(sub => time >= sub.start && time <= sub.end)?.text || "";
     setVideoSubtitle(subtitleText);
 
-    // РћС‚РїСЂР°РІР»СЏРµРј РІСЂРµРјСЏ Рё Р°РєС‚РёРІРЅС‹Р№ СЃСѓР±С‚РёС‚СЂ РІ РєР°РЅР°Р»
+    // Отправляем время и активный субтитр в канал
     if (channelRef.current) {
       channelRef.current.postMessage({
         type: "time-update",
@@ -842,25 +870,25 @@ export default function SubtitlesPage() {
   const handlePlayPause = (playing: boolean) => {
     setIsVideoPlaying(playing);
     if (playing && videoElementRef.current) {
-      // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј Р°СѓРґРёРѕР°РЅР°Р»РёР·Р°С‚РѕСЂ РїСЂРё РїРµСЂРІРѕРј РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёРё
+      // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј аудиоанализатор при первом воспроизведении
       initAudioAnalyser(videoElementRef.current);
     }
   };
 
-  // Р—Р°РіСЂСѓР·РєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРіРѕ РІРёРґРµРѕ
+  // Загрузка пользовательского видео
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
       setVideoSrc(url);
       setVideoSubtitle("");
-      setAudioSourceConnected(false); // РЎР±СЂР°СЃС‹РІР°РµРј Р°РЅР°Р»РёР·Р°С‚РѕСЂ РґР»СЏ РЅРѕРІРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°
+      setAudioSourceConnected(false); // Сбрасываем анализатор для нового источника
     }
   };
 
-  // --- Р›РћР“РРљРђ РџР›РђР’РђР®Р©Р•Р“Рћ РћРљРќРђ (PICTURE IN PICTURE) ---
+  // --- Р›РћР“РРљРђ ПЛАВАЮЩЕГО ОКНА (PICTURE IN PICTURE) ---
   
-  // РђРІС‚РѕРїРµСЂРµРЅРѕСЃ СЃР»РѕРІ РґР»СЏ СЂРёСЃРѕРІР°РЅРёСЏ РЅР° Canvas (СЃ РїРѕРґРґРµСЂР¶РєРѕР№ \n Рё Р°РІС‚РѕРїРµСЂРµРЅРѕСЃР° РґР»РёРЅРЅС‹С… СЃС‚СЂРѕРє)
+  // Автоперенос слов для рисования на Canvas (с поддержкой \n и автопереноса длинных строк)
   const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
     const manualLines = text.split("\n");
     const lines: string[] = [];
@@ -891,33 +919,33 @@ export default function SubtitlesPage() {
     });
   };
 
-  // РћС‚СЂРёСЃРѕРІРєР° СЃСѓР±С‚РёС‚СЂРѕРІ РЅР° Canvas
+  // Отрисовка субтитров на Canvas
   const drawPipSubtitles = () => {
     const canvas = pipCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // РћС‡РёСЃС‚РєР° Рё Р·Р°Р»РёРІРєР° С‚РµРјРЅРѕРіРѕ С„РѕРЅР° (РІС‹СЃРѕРєРѕРєРѕРЅС‚СЂР°СЃС‚РЅР°СЏ РїРѕРґР»РѕР¶РєР°)
+    // Очистка и заливка темного фона (высококонтрастная подложка)
     ctx.fillStyle = "rgba(9, 13, 22, 0.95)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Р”РѕР±Р°РІР»СЏРµРј РєСЂР°СЃРёРІСѓСЋ РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅСѓСЋ СЂР°РјРєСѓ РґР»СЏ СЌСЃС‚РµС‚РёРєРё
+    // Добавляем красивую полупрозрачную рамку для эстетики
     ctx.strokeStyle = "rgba(34, 211, 238, 0.3)";
     ctx.lineWidth = 6;
     ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
 
-    // РћС‚СЂРёСЃРѕРІРєР° С‚РµРєСЃС‚Р° СЃСѓР±С‚РёС‚СЂРѕРІ
+    // Отрисовка текста субтитров
     ctx.fillStyle = textColor;
     ctx.font = "bold 32px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const text = activePipText || (isMicActive ? "РЎР»СѓС€Р°СЋ РІР°СЃ..." : "РћР¶РёРґР°РЅРёРµ Р·РІСѓРєРѕРІРѕРіРѕ РїРѕС‚РѕРєР°...");
+    const text = activePipText || (isMicActive ? "Слушаю вас..." : "Ожидание звукового потока...");
     wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, 42);
   };
 
-  // РџРµСЂРµРєР»СЋС‡РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ Picture-in-Picture
+  // Переключение состояния Picture-in-Picture
   const togglePipSubtitles = async () => {
     const pipVideo = pipVideoRef.current;
     const canvas = pipCanvasRef.current;
@@ -928,10 +956,10 @@ export default function SubtitlesPage() {
       setIsPipActive(false);
     } else {
       try {
-        // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј СЃС‚Р°СЂС‚РѕРІС‹Р№ РєР°РґСЂ
+        // Отрисовываем стартовый кадр
         drawPipSubtitles();
 
-        // Р—Р°С…РІР°С‚С‹РІР°РµРј РІРёРґРµРѕРїРѕС‚РѕРє СЃ Canvas (10 РєР°РґСЂРѕРІ РІ СЃРµРєСѓРЅРґСѓ РґР»СЏ СЌРєРѕРЅРѕРјРёРё СЂРµСЃСѓСЂСЃРѕРІ)
+        // Захватываем видеопоток с Canvas (10 кадров в секунду для экономии ресурсов)
         const stream = (canvas as any).captureStream(10);
         pipVideo.srcObject = stream;
 
@@ -939,25 +967,25 @@ export default function SubtitlesPage() {
         await pipVideo.requestPictureInPicture();
         setIsPipActive(true);
 
-        // РћС‚СЃР»РµР¶РёРІР°РµРј Р·Р°РєСЂС‹С‚РёРµ РѕРєРЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј РІСЂСѓС‡РЅСѓСЋ
+        // Отслеживаем закрытие окна пользователем вручную
         pipVideo.addEventListener("leavepictureinpicture", () => {
           setIsPipActive(false);
         }, { once: true });
       } catch (err) {
-        console.error("РћС€РёР±РєР° Р·Р°РїСѓСЃРєР° Picture-in-Picture: ", err);
-        alert("Р РµР¶РёРј РљР°СЂС‚РёРЅРєР°-РІ-РєР°СЂС‚РёРЅРєРµ РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ РІР°С€РёРј Р±СЂР°СѓР·РµСЂРѕРј РёР»Рё Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ.");
+        console.error("Ошибка запуска Picture-in-Picture: ", err);
+        alert("Режим Картинка-в-картинке не поддерживается вашим браузером или заблокирован.");
       }
     }
   };
 
-  // Р РµР°РєС‚РёРІРЅС‹Р№ РїРµСЂРµСЂРµРЅРґРµСЂ РїР»Р°РІР°СЋС‰РµРіРѕ РѕРєРЅР° РїСЂРё РёР·РјРµРЅРµРЅРёРё С‚РµРєСЃС‚Р° РёР»Рё С†РІРµС‚Р°
+  // Реактивный перерендер плавающего окна при изменении текста или цвета
   useEffect(() => {
     if (isPipActive) {
       drawPipSubtitles();
     }
   }, [activePipText, textColor, isPipActive, mode, isMicActive]);
 
-  // РћС‡РёСЃС‚РєР° Р°РЅРёРјР°С†РёРё РїСЂРё СЂР°Р·РјРѕРЅС‚РёСЂРѕРІР°РЅРёРё
+  // Очистка анимации при размонтировании
   useEffect(() => {
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -972,54 +1000,11 @@ export default function SubtitlesPage() {
 
   return (
     <div style={{ minHeight: "100vh" }}>
-      {/* =====  LANGUAGE SWITCHER — fixed top right ===== */}
-      <div style={{
-        position: "fixed",
-        top: 72,
-        right: 20,
-        zIndex: 9999,
-        display: "flex",
-        gap: 6,
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: 50,
-        padding: "6px 10px",
-        boxShadow: "0 4px 20px rgba(14,165,233,0.18)",
-        border: "1px solid rgba(14,165,233,0.15)",
-      }}>
-        {([
-          { code: "ҚАЗ", label: "KAZ 🇰🇿" },
-          { code: "РУС", label: "RUS 🇷🇺" },
-          { code: "ENG", label: "ENG 🇬🇧" },
-        ] as { code: string; label: string }[]).map(({ code, label }) => (
-          <button
-            key={code}
-            onClick={() => handleLangChange(code)}
-            style={{
-              padding: "6px 14px",
-              borderRadius: 50,
-              border: "none",
-              background: lang === code ? "linear-gradient(135deg,#38BDF8,#0EA5E9)" : "transparent",
-              color: lang === code ? "#fff" : "#0369A1",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 700,
-              fontSize: 12,
-              cursor: "pointer",
-              transition: "all 0.2s",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* РЎРєСЂС‹С‚С‹Рµ СЌР»РµРјРµРЅС‚С‹ РґР»СЏ СЂРµР°Р»РёР·Р°С†РёРё PiP С…Р°РєР° С‡РµСЂРµР· Canvas */}
+      {/* Скрытые элементы для реализации PiP хака через Canvas */}
       <canvas ref={pipCanvasRef} width="800" height="240" style={{ display: "none" }} />
       <video ref={pipVideoRef} style={{ display: "none" }} playsInline muted />
 
-      {/* РЎС‚РёР»Рё Р·РІСѓРєРѕРІРѕР№ РІРѕР»РЅС‹ */}
+      {/* Стили звуковой волны */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes soundBar {
           0%, 100% { height: 4px; }
@@ -1055,15 +1040,15 @@ export default function SubtitlesPage() {
 
       <div style={{ padding: "120px 24px 60px", maxWidth: 960, margin: "0 auto" }}>
         <Link href="/" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 24, fontWeight: 600, transition: "color 0.2s" }}>
-          в†ђ РќР° РіР»Р°РІРЅСѓСЋ
+          ← На главную
         </Link>
-        <div className="section-label">Р”РѕСЃС‚СѓРїРЅРѕСЃС‚СЊ РјРµРґРёР°</div>
-        <h1 className="section-title">AI-СЃСѓР±С‚РёС‚СЂС‹ РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё</h1>
+        <div className="section-label">Доступность медиа</div>
+        <h1 className="section-title">AI-субтитры в реальном времени</h1>
         <p className="section-subtitle" style={{ maxWidth: 650, marginBottom: 40 }}>
-          РўСЂР°РЅСЃРєСЂРёР±РёСЂСѓР№С‚Рµ СѓСЃС‚РЅСѓСЋ СЂРµС‡СЊ РёР»Рё СЃРјРѕС‚СЂРёС‚Рµ РІРёРґРµРѕСЂРѕР»РёРєРё СЃ РјРіРЅРѕРІРµРЅРЅРѕР№ РіРµРЅРµСЂР°С†РёРµР№ РІС‹СЃРѕРєРѕРєРѕРЅС‚СЂР°СЃС‚РЅС‹С… СЃСѓР±С‚РёС‚СЂРѕРІ.
+          Транскрибируйте устную речь или смотрите видеоролики с мгновенной генерацией высококонтрастных субтитров.
         </p>
 
-        {/* РџРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ СЂРµР¶РёРјРѕРІ */}
+        {/* Переключатель режимов */}
         <div style={{
           display: "inline-flex",
           background: "var(--bgCard)",
@@ -1087,7 +1072,7 @@ export default function SubtitlesPage() {
               transition: "all 0.2s ease"
             }}
           >
-            рџ—ЈпёЏ Р РµР¶РёРј РґРёРєС‚РѕРІРєРё
+            🗣️ Режим диктовки
           </button>
           <button
             onClick={() => setMode("video")}
@@ -1104,7 +1089,7 @@ export default function SubtitlesPage() {
               transition: "all 0.2s ease"
             }}
           >
-            рџЋ¬ Р’РёРґРµРѕ Рё Р¤РёР»СЊРјС‹
+            🎬 Видео и Фильмы
           </button>
         </div>
 
@@ -1140,7 +1125,7 @@ export default function SubtitlesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 24, alignItems: "start" }} className="grid-cols-1 lg:grid-cols-[1fr_280px]">
           
           {/* ==========================================
-              Р›Р•Р’Р«Р™ Р‘Р›РћРљ: Р­РљР РђРќ Р Р’Р’РћР”
+              ЛЕВЫЙ БЛОК: ЭКРАН Р ВВОД
              ========================================== */}
           <div>
             {mode === "speech" ? (
@@ -1162,7 +1147,7 @@ export default function SubtitlesPage() {
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                     <span style={{ fontSize: 11, color: "var(--textMuted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>
-                      {isDemo ? "Р”РµРјРѕ-РїРѕС‚РѕРє СЂРµС‡Рё" : "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёР№ С‚РµРєСЃС‚"}
+                      {isDemo ? "Демо-поток речи" : "Пользовательский текст"}
                     </span>
                     <div className="soundwave-indicator">
                       {frequencyData.map((height, i) => (
@@ -1253,7 +1238,7 @@ export default function SubtitlesPage() {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
                     <span style={{ fontSize: 11, color: "var(--textMuted)" }}>
-                      РЇР·С‹Рє: {lang} вЂў Р Р°Р·РјРµСЂ: {fontSize}px
+                      Язык: {lang} • Размер: {fontSize}px
                     </span>
                     <span style={{ fontSize: 11, color: "var(--textMuted)" }}>
                       Hearless v1.0
@@ -1268,31 +1253,25 @@ export default function SubtitlesPage() {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                      {lang === "ҚАЗ" ? (
-                        <div style={{ padding: "12px 20px", borderRadius: 50, background: "var(--bgLight)", border: "1px solid var(--accent)", fontSize: 13, color: "var(--accent)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>
-                          ✏️ Қазақша теріңіз
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => useWhisper ? (isMicActive ? stopWhisperRecording() : startWhisperRecording()) : toggleMicrophone()}
-                          className="btn"
-                          style={{
-                            padding: "12px 24px",
-                            fontSize: 13,
-                            borderRadius: 50,
-                            background: isMicActive ? "var(--sos)" : "var(--gradient)",
-                            color: "white",
-                            boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
-                            animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
-                            border: "none",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {isMicActive
-                            ? (useWhisper ? "⏹ Остановить Replicate AI" : "🛑 Выключить микрофон")
-                            : (useWhisper ? "🤖 Запустить Replicate AI" : "🎙️ Включить микрофон")}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => useWhisper ? (isMicActive ? stopWhisperRecording() : startWhisperRecording()) : toggleMicrophone()}
+                        className="btn"
+                        style={{
+                          padding: "12px 24px",
+                          fontSize: 13,
+                          borderRadius: 50,
+                          background: isMicActive ? "var(--sos)" : "var(--gradient)",
+                          color: "white",
+                          boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
+                          animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {isMicActive
+                          ? (useWhisper ? "⏹ Остановить Replicate AI" : "🛑 Выключить микрофон")
+                          : (useWhisper ? "🤖 Запустить Replicate AI" : "🎙️ Включить микрофон")}
+                      </button>
 
                       <button 
                         onClick={() => { if (inputText.trim()) { setHistory(h => [...h, inputText.trim()]); setInputText(""); } }}
@@ -1306,7 +1285,7 @@ export default function SubtitlesPage() {
                           cursor: isMicActive ? "not-allowed" : "pointer"
                         }}
                       >
-                        Р”РѕР±Р°РІРёС‚СЊ РІ РёСЃС‚РѕСЂРёСЋ в†’
+                        Добавить в историю →
                       </button>
 
                       <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer", userSelect: "none" }}>
@@ -1316,7 +1295,7 @@ export default function SubtitlesPage() {
                           onChange={(e) => setUseAiPunctuation(e.target.checked)}
                           style={{ accentColor: "var(--accent)" }}
                         />
-                        <span style={{ fontWeight: 600 }}>AI-РџСѓРЅРєС‚СѓР°С†РёСЏ рџљЂ</span>
+                        <span style={{ fontWeight: 600 }}>AI-Пунктуация 🚀</span>
                       </label>
                     </div>
 
@@ -1325,8 +1304,9 @@ export default function SubtitlesPage() {
                       <span style={{ padding: "6px 14px", borderRadius: 30, background: useWhisper ? "rgba(14,165,233,0.12)" : "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
                         {useWhisper ? (whisperStatus === "processing" ? "⏳ Обработка..." : "🤖 Replicate AI") : "Web Speech API"}
                       </span>
-                      <button onClick={() => { if (!isMicActive) setUseWhisper(v => !v); }} disabled={isMicActive}
-                        style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(14,165,233,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer" }}>
+                      <button onClick={() => { if (!isMicActive && lang !== "ҚАЗ") setUseWhisper(v => !v); }} disabled={isMicActive || lang === "ҚАЗ"}
+                        title={lang === "ҚАЗ" ? "Для казахского доступен только Replicate AI" : undefined}
+                        style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(14,165,233,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: (isMicActive || lang === "ҚАЗ") ? "default" : "pointer", opacity: lang === "ҚАЗ" ? 0.6 : 1 }}>
                         {useWhisper ? "→ Web Speech" : "→ Replicate AI"}
                       </button>
                       {useWhisper && (
@@ -1343,7 +1323,7 @@ export default function SubtitlesPage() {
                 </div>
 
                 {/* ==========================================
-                    РџРђРќР•Р›Р¬ AI-РђРЎРЎРРЎРўР•РќРўРђ (GEMINI)
+                    ПАНЕЛЬ AI-РђРЎРЎРРЎРўР•РќРўРђ (GEMINI)
                    ========================================== */}
                 <div style={{
                   background: "var(--bgCard)",
@@ -1354,10 +1334,10 @@ export default function SubtitlesPage() {
                   marginTop: 24,
                 }}>
                   <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                    вњЁ AI-РђСЃСЃРёСЃС‚РµРЅС‚ Replicate
+                    ✨ AI-Ассистент Replicate
                   </h3>
                   <p style={{ fontSize: 13, color: "var(--textSecondary)", marginBottom: 16 }}>
-                    РСЃРїРѕР»СЊР·СѓР№С‚Рµ РёРЅС‚РµР»Р»РµРєС‚ Replicate РґР»СЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РєРѕРЅСЃРїРµРєС‚РёСЂРѕРІР°РЅРёСЏ Р±РµСЃРµРґС‹ РёР»Рё РѕС‚РІРµС‚РѕРІ РЅР° РІРѕРїСЂРѕСЃС‹ РїРѕ СЃРѕРґРµСЂР¶Р°РЅРёСЋ.
+                    РСЃРїРѕР»СЊР·СѓР№С‚Рµ интеллект Replicate для автоматического конспектирования беседы или ответов на вопросы по содержанию.
                   </p>
 
                   <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
@@ -1374,7 +1354,7 @@ export default function SubtitlesPage() {
                         cursor: isAiLoading ? "not-allowed" : "pointer"
                       }}
                     >
-                      {isAiLoading ? "РћР±СЂР°Р±РѕС‚РєР°..." : "рџ“ќ РЎРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РєРѕРЅСЃРїРµРєС‚"}
+                      {isAiLoading ? "Обработка..." : "📝 Сгенерировать конспект"}
                     </button>
                     
                     <button 
@@ -1389,11 +1369,11 @@ export default function SubtitlesPage() {
                         background: "transparent"
                       }}
                     >
-                      РћС‡РёСЃС‚РёС‚СЊ AI
+                      Очистить AI
                     </button>
                   </div>
 
-                  {/* Р’С‹РІРѕРґ РљРѕРЅСЃРїРµРєС‚Р° */}
+                  {/* Вывод Конспекта */}
                   {aiSummary && (
                     <div style={{ 
                       background: "rgba(14, 165, 233, 0.05)", 
@@ -1402,7 +1382,7 @@ export default function SubtitlesPage() {
                       padding: 16, 
                       marginBottom: 20 
                     }}>
-                      <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--accent)" }}>рџ“ќ РљСЂР°С‚РєРёРµ С‚РµР·РёСЃС‹ (AI-РљРѕРЅСЃРїРµРєС‚):</h4>
+                      <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--accent)" }}>📝 Краткие тезисы (AI-Конспект):</h4>
                       <div style={{ 
                         fontSize: 13, 
                         lineHeight: 1.6, 
@@ -1414,13 +1394,13 @@ export default function SubtitlesPage() {
                     </div>
                   )}
 
-                  {/* Р§Р°С‚ СЃ Р°СЃСЃРёСЃС‚РµРЅС‚РѕРј */}
+                  {/* Чат с ассистентом */}
                   <form onSubmit={askAiAboutTranscript} style={{ display: "flex", gap: 8 }}>
                     <input 
                       type="text" 
                       value={aiQuery} 
                       onChange={(e) => setAiQuery(e.target.value)}
-                      placeholder="РЎРїСЂРѕСЃРёС‚Рµ AI (РЅР°РїСЂРёРјРµСЂ: 'Рћ С‡РµРј С€Р»Р° СЂРµС‡СЊ РІРЅР°С‡Р°Р»Рµ?')..."
+                      placeholder="Спросите AI (например: 'О чем шла речь вначале?')..."
                       disabled={isAiLoading}
                       style={{ 
                         flex: 1, 
@@ -1444,11 +1424,11 @@ export default function SubtitlesPage() {
                         cursor: isAiLoading ? "not-allowed" : "pointer"
                       }}
                     >
-                      РЎРїСЂРѕСЃРёС‚СЊ
+                      Спросить
                     </button>
                   </form>
 
-                  {/* РћС‚РІРµС‚ РЅР° РІРѕРїСЂРѕСЃ */}
+                  {/* Ответ на вопрос */}
                   {aiResponse && (
                     <div style={{ 
                       background: "rgba(14, 165, 233, 0.08)", 
@@ -1460,13 +1440,13 @@ export default function SubtitlesPage() {
                       lineHeight: 1.5,
                       color: "var(--text)"
                     }}>
-                      <strong>РћС‚РІРµС‚ AI:</strong> {aiResponse}
+                      <strong>Ответ AI:</strong> {aiResponse}
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              // --- Р Р•Р–РРњ 2: РЎРЈР‘РўРРўР Р« Р”Р›РЇ Р’РР”Р•Рћ Р РљРРќРћ ---
+              // --- Р Р•Р–РРњ 2: РЎРЈР‘РўРРўР Р« ДЛЯ Р’РР”Р•Рћ Р РљРРќРћ ---
               <div>
                 <div style={{ 
                   position: "relative", 
@@ -1479,7 +1459,7 @@ export default function SubtitlesPage() {
                   boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                   marginBottom: 24
                 }}>
-                  {/* РџР»РµРµСЂ РІРёРґРµРѕ */}
+                  {/* Плеер видео */}
                   <video 
                     ref={videoElementRef}
                     src={videoSrc}
@@ -1491,7 +1471,7 @@ export default function SubtitlesPage() {
                     style={{ width: "100%", height: "100%", display: "block" }}
                   />
 
-                  {/* РћРІРµСЂР»РµР№ СЃСѓР±С‚РёС‚СЂРѕРІ (РґРёРЅР°РјРёС‡РµСЃРєРё СѓРїСЂР°РІР»СЏРµРјС‹Р№ РЅР°СЃС‚СЂРѕР№РєР°РјРё) */}
+                  {/* Оверлей субтитров (динамически управляемый настройками) */}
                   {videoSubtitle && (
                     <div style={{ 
                       position: "absolute", 
@@ -1525,12 +1505,12 @@ export default function SubtitlesPage() {
                   )}
                 </div>
 
-                {/* РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёРґРµРѕ-СЂРµР¶РёРјРѕРј */}
+                {/* Панель управления видео-режимом */}
                 <div style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
                     <div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Р—Р°РіСЂСѓР·РёС‚Рµ СЃРІРѕРµ РІРёРґРµРѕ</h3>
-                      <p style={{ fontSize: 12, color: "var(--textSecondary)" }}>РџРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ С„РѕСЂРјР°С‚С‹ MP4, WebM (С„Р°Р№Р»С‹ РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ Р»РѕРєР°Р»СЊРЅРѕ).</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>Загрузите свое видео</h3>
+                      <p style={{ fontSize: 12, color: "var(--textSecondary)" }}>Поддерживаются форматы MP4, WebM (файлы обрабатываются локально).</p>
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <label className="btn btn-outline" style={{ padding: "10px 16px", fontSize: 12, borderRadius: 10, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -1554,9 +1534,9 @@ export default function SubtitlesPage() {
                   </div>
 
                   <div style={{ display: "flex", gap: 12, borderTop: "1px solid var(--border)", paddingTop: 16, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-                    {/* Р—РІСѓРєРѕРІР°СЏ РІРѕР»РЅР° РІРёРґРµРѕ */}
+                    {/* Звуковая волна видео */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 12, color: "var(--textSecondary)", fontWeight: 500 }}>РђСѓРґРёРѕРґРѕСЂРѕР¶РєР°:</span>
+                      <span style={{ fontSize: 12, color: "var(--textSecondary)", fontWeight: 500 }}>Аудиодорожка:</span>
                       <div className="soundwave-indicator">
                         {frequencyData.map((height, i) => (
                           <div key={i} className="sound-bar" style={{ height, background: isVideoPlaying ? textColor : "var(--border)" }} />
@@ -1564,7 +1544,7 @@ export default function SubtitlesPage() {
                       </div>
                     </div>
 
-                    {/* Р’С‹Р±РѕСЂ РґРµР№СЃС‚РІРёР№ РІ РІРёРґРµРѕ-СЂРµР¶РёРјРµ */}
+                    {/* Выбор действий в видео-режиме */}
                     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                       <button 
                         onClick={toggleMicrophone}
@@ -1582,7 +1562,7 @@ export default function SubtitlesPage() {
                           fontWeight: 600
                         }}
                       >
-                        {isMicActive ? "рџ›‘ Р’С‹РєР»СЋС‡РёС‚СЊ Р°РІС‚Рѕ-СЃСѓР±С‚РёС‚СЂС‹" : "рџЋ™пёЏ Р’РєР»СЋС‡РёС‚СЊ Р°РІС‚Рѕ-СЃСѓР±С‚РёС‚СЂС‹ (РјРёРєСЂРѕС„РѕРЅ)"}
+                        {isMicActive ? "🛑 Выключить авто-субтитры" : "🎙️ Включить авто-субтитры (микрофон)"}
                       </button>
 
                       <button 
@@ -1594,7 +1574,7 @@ export default function SubtitlesPage() {
                         }}
                         style={{ padding: "8px 16px", fontSize: 11, borderRadius: 8, borderColor: "var(--border)", color: "var(--text)", background: "transparent", cursor: "pointer" }}
                       >
-                        РЎР±СЂРѕСЃРёС‚СЊ Рє РґРµРјРѕ-РІРёРґРµРѕ
+                        Сбросить к демо-видео
                       </button>
                     </div>
                   </div>
@@ -1602,7 +1582,7 @@ export default function SubtitlesPage() {
               </div>
             )}
 
-            {/* РљРЅРѕРїРєРё Р·Р°РїСѓСЃРєР° Picture-in-Picture Рё РћС‚РєСЂС‹С‚РёСЏ РўСЂР°РЅСЃРєСЂРёРїС‚Р° РїРѕРґ СЌРєСЂР°РЅРѕРј */}
+            {/* Кнопки запуска Picture-in-Picture и Открытия Транскрипта под экраном */}
             <div style={{ display: "flex", justifyContent: "flex-start", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
               {/* Background Subtitles button */}
               <button
@@ -1651,7 +1631,7 @@ export default function SubtitlesPage() {
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   <rect x="13" y="13" width="7" height="7"/>
                 </svg>
-                <span>{isPipActive ? "Р—Р°РєСЂС‹С‚СЊ РїР»Р°РІР°СЋС‰РµРµ РѕРєРЅРѕ" : "РћС‚РєСЂС‹С‚СЊ РІ РїР»Р°РІР°СЋС‰РµРј РѕРєРЅРµ (PiP)"}</span>
+                <span>{isPipActive ? "Закрыть плавающее окно" : "Открыть в плавающем окне (PiP)"}</span>
               </button>
 
               <Link 
@@ -1676,22 +1656,22 @@ export default function SubtitlesPage() {
                   <polyline points="15 3 21 3 21 9"/>
                   <line x1="10" y1="14" x2="21" y2="3"/>
                 </svg>
-                <span>РћС‚РєСЂС‹С‚СЊ С‚СЂР°РЅСЃРєСЂРёРїС‚ РЅР° РІРµСЃСЊ СЌРєСЂР°РЅ</span>
+                <span>Открыть транскрипт на весь экран</span>
               </Link>
             </div>
           </div>
 
           {/* ==========================================
-              РџР РђР’Р«Р™ Р‘Р›РћРљ: РќРђРЎРўР РћР™РљР РЎРўРР›Р•Р™
+              ПРАВЫЙ БЛОК: РќРђРЎРўР РћР™РљР РЎРўРР›Р•Р™
              ========================================== */}
           <div style={{ background: "var(--bgCard)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
             <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>
-              РќР°СЃС‚СЂРѕР№РєРё СЃСѓР±С‚РёС‚СЂРѕРІ
+              Настройки субтитров
             </h3>
 
-            {/* Р’С‹Р±РѕСЂ СЏР·С‹РєР° РёСЃС‚РѕС‡РЅРёРєР° */}
+            {/* Выбор языка источника */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>РЇР·С‹Рє РёСЃС‚РѕС‡РЅРёРєР°</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Язык источника</label>
               <div style={{ display: "flex", gap: 6 }}>
                 {["ҚАЗ", "РУС", "ENG"].map(l => (
                   <button key={l} onClick={() => handleLangChange(l)}
@@ -1702,10 +1682,10 @@ export default function SubtitlesPage() {
               </div>
             </div>
 
-            {/* Р’С‹Р±РѕСЂ РґРІРёР¶РєР° СЂР°СЃРїРѕР·РЅР°РІР°РЅРёСЏ (С‚РѕР»СЊРєРѕ РґР»СЏ РІРёРґРµРѕ) */}
+            {/* Выбор движка распознавания (только для видео) */}
             {mode === "video" && (
               <div style={{ marginBottom: 20 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Р”РІРёР¶РѕРє РР</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Движок РР</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <button 
                     onClick={() => setIsApiConnecting(false)}
@@ -1723,12 +1703,12 @@ export default function SubtitlesPage() {
                       paddingLeft: 16 
                     }}
                   >
-                    РРјРёС‚Р°С†РёСЏ (РЎРёРЅС…СЂРѕРЅРЅРѕ)
+                    РРјРёС‚Р°С†РёСЏ (Синхронно)
                   </button>
                   <button 
                     onClick={() => {
                       setIsApiConnecting(true);
-                      alert("РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє FastAPI СЃРµСЂРІРµСЂСѓ СЃСѓР±С‚РёС‚СЂРѕРІ /ws/transcribe. Р”Р»СЏ СЂР°Р±РѕС‚С‹ РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё СѓР±РµРґРёС‚РµСЃСЊ, С‡С‚Рѕ Р±СЌРєРµРЅРґ Р·Р°РїСѓС‰РµРЅ.");
+                      alert("Подключение к FastAPI серверу субтитров /ws/transcribe. Для работы в реальном времени убедитесь, что бэкенд запущен.");
                     }}
                     style={{ 
                       width: "100%", 
@@ -1744,15 +1724,15 @@ export default function SubtitlesPage() {
                       paddingLeft: 16 
                     }}
                   >
-                    API РЎРµСЂРІРµСЂ Hearless
+                    API Сервер Hearless
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Р Р°Р·РјРµСЂ С€СЂРёС„С‚Р° */}
+            {/* Размер шрифта */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Р Р°Р·РјРµСЂ С‚РµРєСЃС‚Р°</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Размер текста</label>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                 {[18, 22, 24, 28].map((sz) => (
                   <button key={sz} onClick={() => setFontSize(sz)}
@@ -1763,15 +1743,15 @@ export default function SubtitlesPage() {
               </div>
             </div>
 
-            {/* Р¦РІРµС‚ С‚РµРєСЃС‚Р° */}
+            {/* Цвет текста */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Р¦РІРµС‚ СЃСѓР±С‚РёС‚СЂРѕРІ</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Цвет субтитров</label>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6 }}>
                 {[
-                  { code: "#ffffff", name: "Р‘РµР»С‹Р№" },
-                  { code: "#fdeb47", name: "Р–РµР»С‚С‹Р№" },
-                  { code: "#22d3ee", name: "Р¦РёР°РЅ" },
-                  { code: "#4ade80", name: "Р—РµР»РµРЅС‹Р№" }
+                  { code: "#ffffff", name: "Белый" },
+                  { code: "#fdeb47", name: "Желтый" },
+                  { code: "#22d3ee", name: "Циан" },
+                  { code: "#4ade80", name: "Зеленый" }
                 ].map((c) => (
                   <button key={c.code} onClick={() => setTextColor(c.code)}
                     style={{ padding: "8px 0", borderRadius: 12, border: textColor === c.code ? "2px solid var(--accent)" : "1px solid var(--border)", background: "rgba(15, 23, 42, 0.95)", color: c.code, fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
@@ -1781,14 +1761,14 @@ export default function SubtitlesPage() {
               </div>
             </div>
 
-            {/* РЎС‚РёР»СЊ С„РѕРЅР° */}
+            {/* Стиль фона */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Р—Р°РґРЅРёР№ С„РѕРЅ РґРёСЃРїР»РµСЏ</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Задний фон дисплея</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
-                  { opacity: 0.85, label: "РЎРїР»РѕС€РЅРѕР№ С‚РµРјРЅС‹Р№" },
-                  { opacity: 0.5, label: "РџРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№" },
-                  { opacity: 0, label: "Р‘РµР· С„РѕРЅР°" }
+                  { opacity: 0.85, label: "Сплошной темный" },
+                  { opacity: 0.5, label: "Полупрозрачный" },
+                  { opacity: 0, label: "Без фона" }
                 ].map((bg) => (
                   <button key={bg.opacity} onClick={() => setBgOpacity(bg.opacity)}
                     style={{ width: "100%", padding: "10px", borderRadius: 12, border: bgOpacity === bg.opacity ? "none" : "1px solid var(--border)", background: bgOpacity === bg.opacity ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: bgOpacity === bg.opacity ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s", textAlign: "left", paddingLeft: 16 }}>
@@ -1798,13 +1778,13 @@ export default function SubtitlesPage() {
               </div>
             </div>
 
-            {/* Р’С‹СЂР°РІРЅРёРІР°РЅРёРµ */}
+            {/* Выравнивание */}
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Р’С‹СЂР°РІРЅРёРІР°РЅРёРµ С‚РµРєСЃС‚Р°</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "var(--textSecondary)", display: "block", marginBottom: 8 }}>Выравнивание текста</label>
               <div style={{ display: "flex", gap: 6 }}>
                 {[
-                  { key: "center", label: "Р¦РµРЅС‚СЂ" },
-                  { key: "left", label: "РџРѕ Р»РµРІРѕРјСѓ РєСЂР°СЋ" }
+                  { key: "center", label: "Центр" },
+                  { key: "left", label: "По левому краю" }
                 ].map((align) => (
                   <button key={align.key} onClick={() => setAlignment(align.key as any)}
                     style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: alignment === align.key ? "none" : "1px solid var(--border)", background: alignment === align.key ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: alignment === align.key ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
@@ -1816,10 +1796,10 @@ export default function SubtitlesPage() {
           </div>
         </div>
 
-        {/* РСЃС‚РѕСЂРёСЏ СЃРµСЃСЃРёРё РґРёРєС‚РѕРІРєРё */}
+        {/* РСЃС‚РѕСЂРёСЏ сессии диктовки */}
         {mode === "speech" && history.length > 0 && (
           <div style={{ marginTop: 40 }}>
-            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "white", marginBottom: 16 }}>РСЃС‚РѕСЂРёСЏ СЃРµСЃСЃРёРё</h3>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "white", marginBottom: 16 }}>РСЃС‚РѕСЂРёСЏ сессии</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {history.map((h, i) => (
                 <div key={i} style={{ padding: "16px 20px", borderRadius: "14px", background: "var(--bgCard)", border: "1px solid var(--border)", fontSize: 14, color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1831,13 +1811,13 @@ export default function SubtitlesPage() {
           </div>
         )}
 
-        {/* РћРїРёСЃР°РЅРёРµ С‚РµС…РЅРѕР»РѕРіРёР№ */}
+        {/* Описание технологий */}
         <div style={{ marginTop: 64, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20 }}>
           {[
-            { title: "Р РµР¶РёРј РљР°СЂС‚РёРЅРєР°-РІ-РєР°СЂС‚РёРЅРєРµ", desc: "Р—Р°РїСѓСЃС‚РёС‚Рµ РІСЃРµРіРґР° РЅР°С…РѕРґСЏС‰РёР№СЃСЏ РїРѕРІРµСЂС… РѕРєРѕРЅ РїР»Р°РІР°СЋС‰РёР№ РІРёРґР¶РµС‚ Рё РїРµСЂРµС‚Р°С‰РёС‚Рµ РµРіРѕ РЅР° YouTube РёР»Рё Netflix, С‡С‚РѕР±С‹ СЃРјРѕС‚СЂРµС‚СЊ С„РёР»СЊРјС‹ СЃ СЃСѓР±С‚РёС‚СЂР°РјРё." },
-            { title: "Р РµР°РєС‚РёРІРЅР°СЏ Р°СѓРґРёРѕ-РІРѕР»РЅР°", desc: "Р”Р°С‚С‡РёРє СЃРїРµРєС‚СЂР° Web Audio API Р°РЅР°Р»РёР·РёСЂСѓРµС‚ Р·РІСѓРєРѕРІС‹Рµ С‡Р°СЃС‚РѕС‚С‹ РІРёРґРµРѕСЂРѕР»РёРєР° РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё." },
-            { title: "Р“РёР±РєР°СЏ Р°РґР°РїС‚Р°С†РёСЏ РїРѕРґ РіР»Р°Р·Р°", desc: "РњРµРЅСЏР№С‚Рµ РєРѕРЅС‚СЂР°СЃС‚РЅРѕСЃС‚СЊ, СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р° Рё С†РІРµС‚РѕРІС‹Рµ РїР°Р»РёС‚СЂС‹ СЃСѓР±С‚РёС‚СЂРѕРІ РїСЂСЏРјРѕ РІРѕ РІСЂРµРјСЏ РїСЂРѕСЃРјРѕС‚СЂР° С„РёР»СЊРјР°." },
-            { title: "РџСЂСЏРјРѕР№ РєРѕРЅРЅРµРєС‚ Рє FastAPI", desc: "РџРµСЂРµРєР»СЋС‡РёС‚РµСЃСЊ РІ СЂРµР¶РёРј API РґР»СЏ РёРЅС‚РµРіСЂР°С†РёРё СЃ РІР°С€РёРј Whisper WebSocket СЃРµСЂРІРµСЂРѕРј." },
+            { title: "Режим Картинка-в-картинке", desc: "Запустите всегда находящийся поверх окон плавающий виджет и перетащите его на YouTube или Netflix, чтобы смотреть фильмы с субтитрами." },
+            { title: "Реактивная аудио-волна", desc: "Датчик спектра Web Audio API анализирует звуковые частоты видеоролика в реальном времени." },
+            { title: "Гибкая адаптация под глаза", desc: "Меняйте контрастность, размер шрифта и цветовые палитры субтитров прямо во время просмотра фильма." },
+            { title: "Прямой коннект к FastAPI", desc: "Переключитесь в режим API для интеграции с вашим Whisper WebSocket сервером." },
           ].map(d => (
             <div key={d.title} style={{ background: "var(--bgCard)", borderRadius: "20px", padding: "28px 24px", border: "1px solid var(--border)", boxShadow: "var(--shadow)", transition: "transform 0.2s" }} className="hover:-translate-y-1">
               <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 750, color: "var(--text)", marginBottom: 8 }}>{d.title}</h3>
