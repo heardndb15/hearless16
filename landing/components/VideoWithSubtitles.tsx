@@ -1,6 +1,6 @@
 "use client";
 
-import { useSubtitles, SubtitleMap } from "@/hooks/useSubtitles";
+import { useSubtitles, SubtitleMap } from "../hooks/useSubtitles";
 
 // Replace with your own subtitles or load via fetch() from /public/subtitles/*.json
 const SUBTITLES: SubtitleMap = {
