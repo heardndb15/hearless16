@@ -10,6 +10,11 @@ interface SubtitleHistoryItem {
   created_at: string;
 }
 
+const WINDOW_TIMESLICE_MS = 500;
+const WINDOW_INTERVAL_MS = 3000;
+const WINDOW_OVERLAP_MS = 1000;
+const WINDOW_CHUNK_COUNT = (WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS) / WINDOW_TIMESLICE_MS;
+
 export default function SubtitlesDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [history, setHistory] = useState<SubtitleHistoryItem[]>([]);
@@ -48,6 +53,7 @@ export default function SubtitlesDashboard() {
   const screenStreamRef = useRef<MediaStream | null>(null);
   const screenRecorderRef = useRef<MediaRecorder | null>(null);
   const screenChunksRef = useRef<Blob[]>([]);
+  const screenHeaderChunkRef = useRef<Blob | null>(null);
   const screenIntervalRef = useRef<any>(null);
 
   // Picture-in-Picture floating captions (draws transcriptionText onto a
@@ -432,10 +438,6 @@ export default function SubtitlesDashboard() {
     }
   }
 
-  // Capture tab/screen audio (not the mic) and transcribe it every 3s via
-  // the existing /api/transcribe route — for watching a video elsewhere and
-  // seeing captions. Mutually exclusive with mic recording (see the JSX
-  // `disabled` guards on both buttons).
   async function startBackgroundCapture() {
     try {
       const stream = await (navigator.mediaDevices as any).getDisplayMedia({
@@ -456,20 +458,38 @@ export default function SubtitlesDashboard() {
       const audioStream = new MediaStream(audioTracks);
       screenStreamRef.current = audioStream;
       screenChunksRef.current = [];
+      screenHeaderChunkRef.current = null;
       setIsBackgroundCapturing(true);
 
-      const startRecorder = () => {
-        const mr = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
-        mr.ondataavailable = (e: BlobEvent) => { if (e.data.size > 0) screenChunksRef.current.push(e.data); };
-        mr.start();
-        screenRecorderRef.current = mr;
+      // A single continuous recorder (never stopped mid-session) emits a
+      // small blob every WINDOW_TIMESLICE_MS. The very first blob carries
+      // the WebM header required to decode any blob built from these chunks
+      // as a standalone file; later chunks are independent clusters that
+      // decode fine appended after that header even with older ones dropped.
+      const mr = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
+      mr.ondataavailable = (e: BlobEvent) => {
+        if (e.data.size === 0) return;
+        if (!screenHeaderChunkRef.current) {
+          screenHeaderChunkRef.current = e.data;
+        } else {
+          screenChunksRef.current.push(e.data);
+          if (screenChunksRef.current.length > WINDOW_CHUNK_COUNT) {
+            screenChunksRef.current = screenChunksRef.current.slice(-WINDOW_CHUNK_COUNT);
+          }
+        }
       };
+      mr.start(WINDOW_TIMESLICE_MS);
+      screenRecorderRef.current = mr;
 
-      const sendChunk = async () => {
-        const chunks = [...screenChunksRef.current];
-        screenChunksRef.current = [];
-        if (chunks.length === 0) return;
-        const blob = new Blob(chunks, { type: "audio/webm" });
+      // Every WINDOW_INTERVAL_MS, send header + the last WINDOW_CHUNK_COUNT
+      // chunks (~WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS of audio). Consecutive
+      // sends overlap by WINDOW_OVERLAP_MS, so a word split by the old hard
+      // 3s boundary now lands whole inside at least one request.
+      const sendWindow = async () => {
+        const header = screenHeaderChunkRef.current;
+        if (!header || screenChunksRef.current.length === 0) return;
+        const windowChunks = screenChunksRef.current.slice(-WINDOW_CHUNK_COUNT);
+        const blob = new Blob([header, ...windowChunks], { type: "audio/webm" });
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
@@ -482,19 +502,7 @@ export default function SubtitlesDashboard() {
         } catch {}
       };
 
-      startRecorder();
-      screenIntervalRef.current = setInterval(async () => {
-        if (!screenStreamRef.current) {
-          clearInterval(screenIntervalRef.current);
-          return;
-        }
-        if (screenRecorderRef.current?.state === "recording") {
-          screenRecorderRef.current.stop();
-          await new Promise<void>(r => { screenRecorderRef.current!.onstop = () => r(); });
-          await sendChunk();
-          if (screenStreamRef.current) startRecorder();
-        }
-      }, 3000);
+      screenIntervalRef.current = setInterval(sendWindow, WINDOW_INTERVAL_MS);
 
       audioTracks[0].addEventListener("ended", () => stopBackgroundCapture());
     } catch (err: any) {
@@ -512,6 +520,9 @@ export default function SubtitlesDashboard() {
     if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
     screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     screenStreamRef.current = null;
+    screenRecorderRef.current = null;
+    screenChunksRef.current = [];
+    screenHeaderChunkRef.current = null;
     setIsBackgroundCapturing(false);
   }
 
