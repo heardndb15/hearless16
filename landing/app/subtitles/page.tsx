@@ -6,6 +6,11 @@ import { createClient } from "../../lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 
+const WINDOW_TIMESLICE_MS = 500;
+const WINDOW_INTERVAL_MS = 3000;
+const WINDOW_OVERLAP_MS = 1000;
+const WINDOW_CHUNK_COUNT = (WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS) / WINDOW_TIMESLICE_MS;
+
 interface SubtitleSegment { start: number; end: number; text: string; }
 
 function parseSRT(content: string): SubtitleSegment[] {
@@ -128,6 +133,7 @@ export default function SubtitlesPage() {
   const screenStreamRef = useRef<MediaStream | null>(null);
   const screenRecorderRef = useRef<MediaRecorder | null>(null);
   const screenChunksRef = useRef<Blob[]>([]);
+  const screenHeaderChunkRef = useRef<Blob | null>(null);
   const screenIntervalRef = useRef<any>(null);
 
   // Map display lang labels to ISO codes for backend API
@@ -371,6 +377,7 @@ export default function SubtitlesPage() {
       const audioStream = new MediaStream(audioTracks);
       screenStreamRef.current = audioStream;
       screenChunksRef.current = [];
+      screenHeaderChunkRef.current = null;
       setIsScreenCapturing(true);
 
       // Открываем PiP автоматически
@@ -378,18 +385,35 @@ export default function SubtitlesPage() {
         setTimeout(() => togglePipSubtitles(), 300);
       }
 
-      const startRecorder = () => {
-        const mr = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
-        mr.ondataavailable = (e: BlobEvent) => { if (e.data.size > 0) screenChunksRef.current.push(e.data); };
-        mr.start();
-        screenRecorderRef.current = mr;
+      // A single continuous recorder (never stopped mid-session) emits a
+      // small blob every WINDOW_TIMESLICE_MS. The very first blob carries
+      // the WebM header required to decode any blob built from these chunks
+      // as a standalone file; later chunks are independent clusters that
+      // decode fine appended after that header even with older ones dropped.
+      const mr = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
+      mr.ondataavailable = (e: BlobEvent) => {
+        if (e.data.size === 0) return;
+        if (!screenHeaderChunkRef.current) {
+          screenHeaderChunkRef.current = e.data;
+        } else {
+          screenChunksRef.current.push(e.data);
+          if (screenChunksRef.current.length > WINDOW_CHUNK_COUNT) {
+            screenChunksRef.current = screenChunksRef.current.slice(-WINDOW_CHUNK_COUNT);
+          }
+        }
       };
+      mr.start(WINDOW_TIMESLICE_MS);
+      screenRecorderRef.current = mr;
 
-      const sendChunk = async () => {
-        const chunks = [...screenChunksRef.current];
-        screenChunksRef.current = [];
-        if (chunks.length === 0) return;
-        const blob = new Blob(chunks, { type: "audio/webm" });
+      // Every WINDOW_INTERVAL_MS, send header + the last WINDOW_CHUNK_COUNT
+      // chunks (~WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS of audio). Consecutive
+      // sends overlap by WINDOW_OVERLAP_MS, so a word split by the old hard
+      // 3s boundary now lands whole inside at least one request.
+      const sendWindow = async () => {
+        const header = screenHeaderChunkRef.current;
+        if (!header || screenChunksRef.current.length === 0) return;
+        const windowChunks = screenChunksRef.current.slice(-WINDOW_CHUNK_COUNT);
+        const blob = new Blob([header, ...windowChunks], { type: "audio/webm" });
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
@@ -405,19 +429,7 @@ export default function SubtitlesPage() {
         } catch {}
       };
 
-      startRecorder();
-      screenIntervalRef.current = setInterval(async () => {
-        if (!screenStreamRef.current) {
-          clearInterval(screenIntervalRef.current);
-          return;
-        }
-        if (screenRecorderRef.current?.state === "recording") {
-          screenRecorderRef.current.stop();
-          await new Promise<void>(r => { screenRecorderRef.current!.onstop = () => r(); });
-          await sendChunk();
-          if (screenStreamRef.current) startRecorder();
-        }
-      }, 3000);
+      screenIntervalRef.current = setInterval(sendWindow, WINDOW_INTERVAL_MS);
 
       audioTracks[0].addEventListener("ended", () => stopScreenCapture());
     } catch (err: any) {
@@ -433,6 +445,8 @@ export default function SubtitlesPage() {
     screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     screenStreamRef.current = null;
     screenRecorderRef.current = null;
+    screenChunksRef.current = [];
+    screenHeaderChunkRef.current = null;
     setIsScreenCapturing(false);
   };
 
