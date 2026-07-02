@@ -290,6 +290,10 @@ _MIGRATIONS = [
     """DO $$ BEGIN
       ALTER PUBLICATION supabase_realtime ADD TABLE direct_messages;
     EXCEPTION WHEN OTHERS THEN NULL; END $$""",
+    # ── SOS feature removed ──────────────────────────────────────────────────
+    # Indexes and RLS policies on sos_events drop automatically with the table;
+    # nothing else has a foreign key into it.
+    """DROP TABLE IF EXISTS sos_events""",
 ]
 
 

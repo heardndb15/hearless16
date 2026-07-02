@@ -37,20 +37,6 @@ class TranscriptionRequest(BaseModel):
     audio_data: Optional[str] = None
 
 
-class SilentSOSCreate(BaseModel):
-    user_id: str
-    lat: float
-    lng: float
-    timestamp: str
-
-
-class SOSAlertCreate(BaseModel):
-    user_id: str
-    lat: float
-    lng: float
-    timestamp: str
-
-
 class LectureSaveRequest(BaseModel):
     user_id: str
     title: str

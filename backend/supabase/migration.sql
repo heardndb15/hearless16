@@ -61,25 +61,12 @@ CREATE TABLE IF NOT EXISTS sound_alerts (
   detected_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- SOS события
-CREATE TABLE IF NOT EXISTS sos_events (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('silent', 'normal')),
-  lat DOUBLE PRECISION,
-  lng DOUBLE PRECISION,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  resolved_at TIMESTAMPTZ
-);
-
 -- Индексы для быстрого поиска
 CREATE INDEX IF NOT EXISTS idx_subtitles_user ON subtitles_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_subtitles_created ON subtitles_history(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_gestures_category ON gestures(category);
 CREATE INDEX IF NOT EXISTS idx_alerts_user ON sound_alerts(user_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_detected ON sound_alerts(detected_at DESC);
-CREATE INDEX IF NOT EXISTS idx_sos_user ON sos_events(user_id);
-CREATE INDEX IF NOT EXISTS idx_sos_created ON sos_events(created_at DESC);
 
 -- Вставка начальных жестов
 INSERT INTO gestures (name, category, difficulty) VALUES
@@ -111,7 +98,6 @@ ALTER TABLE public.subtitles_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gestures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sound_alerts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.sos_events ENABLE ROW LEVEL SECURITY;
 
 -- 1. Политики для таблицы пользователей (users)
 DROP POLICY IF EXISTS "Allow users to read their own profile" ON public.users;
@@ -168,17 +154,6 @@ CREATE POLICY "Allow users to read their own sound alerts"
 DROP POLICY IF EXISTS "Allow users to insert their own sound alerts" ON public.sound_alerts;
 CREATE POLICY "Allow users to insert their own sound alerts"
   ON public.sound_alerts FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = user_id);
-
--- 6. Политики для SOS событий (sos_events)
-DROP POLICY IF EXISTS "Allow users to read their own sos events" ON public.sos_events;
-CREATE POLICY "Allow users to read their own sos events"
-  ON public.sos_events FOR SELECT TO authenticated
-  USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Allow users to insert their own sos events" ON public.sos_events;
-CREATE POLICY "Allow users to insert their own sos events"
-  ON public.sos_events FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
 
