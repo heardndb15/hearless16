@@ -16,7 +16,8 @@ async function transcribeWithFreedomSpeech(file: File): Promise<string> {
 
   const res = await fetch("https://freedomspeech.kz/v1/audio/transcriptions", {
     method: "POST",
-    headers: { Authorization: `Bearer ${FREEDOMSPEECH_API_KEY}` },
+    // FreedomSpeech authenticates via X-API-Key, not Authorization: Bearer.
+    headers: { "X-API-Key": FREEDOMSPEECH_API_KEY },
     body: fd,
   });
   if (!res.ok) {
