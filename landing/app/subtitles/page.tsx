@@ -11,6 +11,9 @@ const WINDOW_INTERVAL_MS = 3000;
 const WINDOW_OVERLAP_MS = 1000;
 const WINDOW_CHUNK_COUNT = (WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS) / WINDOW_TIMESLICE_MS;
 
+const STALE_AFTER_MS = 8000;
+const STALE_ALPHA = 0.4;
+
 interface SubtitleSegment { start: number; end: number; text: string; }
 
 function parseSRT(content: string): SubtitleSegment[] {
@@ -135,6 +138,9 @@ export default function SubtitlesPage() {
   const screenChunksRef = useRef<Blob[]>([]);
   const screenHeaderChunkRef = useRef<Blob | null>(null);
   const screenIntervalRef = useRef<any>(null);
+  const lastNonEmptyTextAtRef = useRef<number>(0);
+  const [isTextStale, setIsTextStale] = useState(false);
+  const staleCheckIntervalRef = useRef<any>(null);
 
   // Map display lang labels to ISO codes for backend API
   const toLangCode = (l: string): string =>
@@ -379,6 +385,8 @@ export default function SubtitlesPage() {
       screenChunksRef.current = [];
       screenHeaderChunkRef.current = null;
       setIsScreenCapturing(true);
+      lastNonEmptyTextAtRef.current = Date.now();
+      setIsTextStale(false);
 
       // Открываем PiP автоматически
       if (!document.pictureInPictureElement) {
@@ -424,12 +432,17 @@ export default function SubtitlesPage() {
             if (data.text?.trim()) {
               setHistory(prev => [...prev, data.text.trim()]);
               setActivePipText(data.text.trim());
+              lastNonEmptyTextAtRef.current = Date.now();
+              setIsTextStale(false);
             }
           }
         } catch {}
       };
 
       screenIntervalRef.current = setInterval(sendWindow, WINDOW_INTERVAL_MS);
+      staleCheckIntervalRef.current = setInterval(() => {
+        if (Date.now() - lastNonEmptyTextAtRef.current > STALE_AFTER_MS) setIsTextStale(true);
+      }, 1000);
 
       audioTracks[0].addEventListener("ended", () => stopScreenCapture());
     } catch (err: any) {
@@ -441,6 +454,7 @@ export default function SubtitlesPage() {
 
   const stopScreenCapture = () => {
     clearInterval(screenIntervalRef.current);
+    clearInterval(staleCheckIntervalRef.current);
     if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
     screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     screenStreamRef.current = null;
@@ -448,6 +462,7 @@ export default function SubtitlesPage() {
     screenChunksRef.current = [];
     screenHeaderChunkRef.current = null;
     setIsScreenCapturing(false);
+    setIsTextStale(false);
   };
 
   const handleSubtitleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -953,12 +968,14 @@ export default function SubtitlesPage() {
 
     // Отрисовка текста субтитров
     ctx.fillStyle = textColor;
+    ctx.globalAlpha = isTextStale ? STALE_ALPHA : 1;
     ctx.font = "bold 32px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     const text = activePipText || (isMicActive ? "Слушаю вас..." : "Ожидание звукового потока...");
     wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, 42);
+    ctx.globalAlpha = 1;
   };
 
   // Переключение состояния Picture-in-Picture
@@ -999,7 +1016,7 @@ export default function SubtitlesPage() {
     if (isPipActive) {
       drawPipSubtitles();
     }
-  }, [activePipText, textColor, isPipActive, mode, isMicActive]);
+  }, [activePipText, textColor, isPipActive, mode, isMicActive, isTextStale]);
 
   // Очистка анимации при размонтировании
   useEffect(() => {
