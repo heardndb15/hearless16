@@ -321,12 +321,18 @@ export default function CommunityPage() {
   }, []);
 
   const fetchPosts = useCallback(async (newSort: "new" | "popular", newOffset: number, append: boolean) => {
+    // Superseding an in-flight request (e.g. the anonymous fetch fired before
+    // the Supabase session loads, replaced once the auth token arrives) must
+    // not let that older request's abort clobber this newer call's state —
+    // tag the abort reason so the older call's catch can recognize and
+    // silently skip itself instead of overwriting fetchError/loading.
     if (loadingRef.current) {
-      abortRef.current?.abort();
+      abortRef.current?.abort("superseded");
       loadingRef.current = false;
     }
-    abortRef.current = new AbortController();
-    const timeout = setTimeout(() => abortRef.current?.abort(), 20000);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const timeout = setTimeout(() => controller.abort("timeout"), 20000);
     loadingRef.current = true;
     setLoading(true);
     setFetchError("");
@@ -334,23 +340,25 @@ export default function CommunityPage() {
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const params = new URLSearchParams({ sort: newSort, limit: "20", offset: String(newOffset) });
-      const res = await fetch(`${API_URL}/community/posts?${params}`, { headers, signal: abortRef.current.signal });
+      const res = await fetch(`${API_URL}/community/posts?${params}`, { headers, signal: controller.signal });
       clearTimeout(timeout);
       if (!res.ok) throw new Error(`Ошибка сервера (${res.status})`);
       const data: Post[] = await res.json();
       setPosts((prev) => append ? [...prev, ...data] : data);
       setHasMore(data.length === 20);
       setOffset(newOffset + data.length);
+      loadingRef.current = false;
+      setLoading(false);
     } catch (e: unknown) {
       clearTimeout(timeout);
-      if (e instanceof Error && e.name === "AbortError") {
+      if (e === "superseded") return; // a newer call already took over — don't touch shared state
+      if (e === "timeout" || (e instanceof DOMException && e.name === "AbortError")) {
         setFetchError("Сервер не отвечает. Возможно, он на паузе — подождите 30 сек и нажмите «Повторить».");
       } else if (e instanceof Error) {
         setFetchError(e.message || "Не удалось загрузить посты. Проверьте подключение.");
       } else {
         setFetchError("Не удалось загрузить посты. Проверьте подключение.");
       }
-    } finally {
       loadingRef.current = false;
       setLoading(false);
     }
