@@ -50,6 +50,14 @@ export default function SubtitlesDashboard() {
   const screenChunksRef = useRef<Blob[]>([]);
   const screenIntervalRef = useRef<any>(null);
 
+  // Picture-in-Picture floating captions (draws transcriptionText onto a
+  // hidden canvas, streams that canvas into a hidden <video>, and requests
+  // PiP on it — the only way to get arbitrary styled text into a real PiP
+  // window, which only accepts <video> elements).
+  const [isPipActive, setIsPipActive] = useState(false);
+  const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pipVideoRef = useRef<HTMLVideoElement | null>(null);
+
   const getShadow = (color: string) => {
     switch (color) {
       case "yellow": return "0 0 20px rgba(253, 224, 71, 0.45), 0 0 4px rgba(253, 224, 71, 0.8)";
@@ -497,12 +505,100 @@ export default function SubtitlesDashboard() {
   }
 
   function stopBackgroundCapture() {
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture().catch(() => {});
+    }
     clearInterval(screenIntervalRef.current);
     if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
     screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     screenStreamRef.current = null;
     setIsBackgroundCapturing(false);
   }
+
+  // Word-wraps text onto a canvas, centered both horizontally and vertically
+  // around (x, y) within maxWidth, one line per lineHeight px.
+  const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+    const manualLines = text.split("\n");
+    const lines: string[] = [];
+
+    manualLines.forEach((mLine) => {
+      const words = mLine.split(" ");
+      let line = "";
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + " ";
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+    });
+
+    const totalHeight = lines.length * lineHeight;
+    let startY = y - totalHeight / 2 + lineHeight / 2;
+
+    lines.forEach((l) => {
+      ctx.fillText(l.trim(), x, startY);
+      startY += lineHeight;
+    });
+  };
+
+  function drawPipSubtitles() {
+    const canvas = pipCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const bgFill = bgColor === "dark" ? "rgba(15, 23, 42, 0.8)" : bgColor === "semi" ? "rgba(0, 0, 0, 0.4)" : null;
+    if (bgFill) {
+      ctx.fillStyle = bgFill;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    const fontPx = fontSize === "sm" ? 18 : fontSize === "lg" ? 30 : fontSize === "xl" ? 38 : 24;
+    ctx.fillStyle = getColorCode(textColor);
+    ctx.font = `bold ${fontPx}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const text = transcriptionText || "Ожидание звукового потока...";
+    wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, fontPx + 10);
+  }
+
+  async function togglePipSubtitles() {
+    const pipVideo = pipVideoRef.current;
+    const canvas = pipCanvasRef.current;
+    if (!pipVideo || !canvas) return;
+
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      setIsPipActive(false);
+    } else {
+      try {
+        drawPipSubtitles();
+        const stream = (canvas as any).captureStream(10);
+        pipVideo.srcObject = stream;
+        await pipVideo.play();
+        await pipVideo.requestPictureInPicture();
+        setIsPipActive(true);
+        pipVideo.addEventListener("leavepictureinpicture", () => {
+          setIsPipActive(false);
+        }, { once: true });
+      } catch (err) {
+        console.error("Ошибка запуска Picture-in-Picture: ", err);
+        alert("Режим Картинка-в-картинке не поддерживается вашим браузером или заблокирован.");
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (isPipActive) drawPipSubtitles();
+  }, [transcriptionText, textColor, bgColor, fontSize, isPipActive]);
 
   // Save current speech transcript to database
   async function handleSaveDialogue() {
@@ -552,6 +648,8 @@ export default function SubtitlesDashboard() {
 
   return (
     <div className="space-y-6 relative">
+      <canvas ref={pipCanvasRef} width="800" height="240" style={{ display: "none" }} />
+      <video ref={pipVideoRef} style={{ display: "none" }} playsInline muted />
       {/* Screen Header */}
       <div className="flex flex-col gap-1 text-left">
         <h2 className="font-syne font-extrabold text-3xl tracking-tight" style={{ color: "var(--text)" }}>AI Субтитры</h2>
@@ -889,6 +987,18 @@ export default function SubtitlesDashboard() {
               >
                 {isBackgroundCapturing ? "⏹ Остановить фоновые субтитры" : "🎬 Фоновые субтитры"}
               </button>
+              {isBackgroundCapturing && (
+                <button
+                  onClick={togglePipSubtitles}
+                  className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border ${
+                    isPipActive
+                      ? "bg-accent/15 border-accent/20 text-accent"
+                      : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {isPipActive ? "Закрыть PiP" : "Открыть в PiP"}
+                </button>
+              )}
             </div>
 
             {/* Right Section: Settings and utility keys */}
