@@ -141,6 +141,7 @@ export default function SubtitlesPage() {
   const lastNonEmptyTextAtRef = useRef<number>(0);
   const [isTextStale, setIsTextStale] = useState(false);
   const staleCheckIntervalRef = useRef<any>(null);
+  const [screenCaptureText, setScreenCaptureText] = useState("");
 
   // Map display lang labels to ISO codes for backend API
   const toLangCode = (l: string): string =>
@@ -387,6 +388,7 @@ export default function SubtitlesPage() {
       setIsScreenCapturing(true);
       lastNonEmptyTextAtRef.current = Date.now();
       setIsTextStale(false);
+      setScreenCaptureText("");
 
       // Открываем PiP автоматически
       if (!document.pictureInPictureElement) {
@@ -432,6 +434,7 @@ export default function SubtitlesPage() {
             if (data.text?.trim()) {
               setHistory(prev => [...prev, data.text.trim()]);
               setActivePipText(data.text.trim());
+              setScreenCaptureText(data.text.trim());
               lastNonEmptyTextAtRef.current = Date.now();
               setIsTextStale(false);
             }
@@ -463,6 +466,7 @@ export default function SubtitlesPage() {
     screenHeaderChunkRef.current = null;
     setIsScreenCapturing(false);
     setIsTextStale(false);
+    setScreenCaptureText("");
   };
 
   const handleSubtitleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -973,7 +977,9 @@ export default function SubtitlesPage() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const text = activePipText || (isMicActive ? "Слушаю вас..." : "Ожидание звукового потока...");
+    const text = isScreenCapturing
+      ? (screenCaptureText || "Ожидание звукового потока...")
+      : (activePipText || (isMicActive ? "Слушаю вас..." : "Ожидание звукового потока..."));
     wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, 42);
     ctx.globalAlpha = 1;
   };
@@ -1016,7 +1022,7 @@ export default function SubtitlesPage() {
     if (isPipActive) {
       drawPipSubtitles();
     }
-  }, [activePipText, textColor, isPipActive, mode, isMicActive, isTextStale]);
+  }, [activePipText, textColor, isPipActive, mode, isMicActive, isTextStale, screenCaptureText, isScreenCapturing]);
 
   // Очистка анимации при размонтировании
   useEffect(() => {
@@ -1288,6 +1294,7 @@ export default function SubtitlesPage() {
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                       <button
                         onClick={() => useWhisper ? (isMicActive ? stopWhisperRecording() : startWhisperRecording()) : toggleMicrophone()}
+                        disabled={isScreenCapturing}
                         className="btn"
                         style={{
                           padding: "12px 24px",
@@ -1298,7 +1305,8 @@ export default function SubtitlesPage() {
                           boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
                           animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
                           border: "none",
-                          cursor: "pointer",
+                          cursor: isScreenCapturing ? "default" : "pointer",
+                          opacity: isScreenCapturing ? 0.5 : 1,
                         }}
                       >
                         {isMicActive
@@ -1579,18 +1587,20 @@ export default function SubtitlesPage() {
 
                     {/* Выбор действий в видео-режиме */}
                     <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                      <button 
+                      <button
                         onClick={toggleMicrophone}
+                        disabled={isScreenCapturing}
                         className="btn"
-                        style={{ 
-                          padding: "8px 16px", 
-                          fontSize: 11, 
+                        style={{
+                          padding: "8px 16px",
+                          fontSize: 11,
                           borderRadius: 8,
                           background: isMicActive ? "var(--sos)" : "var(--gradient)",
                           color: "white",
                           boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "none",
                           animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
-                          cursor: "pointer",
+                          cursor: isScreenCapturing ? "default" : "pointer",
+                          opacity: isScreenCapturing ? 0.5 : 1,
                           border: "none",
                           fontWeight: 600
                         }}
@@ -1620,6 +1630,7 @@ export default function SubtitlesPage() {
               {/* Background Subtitles button */}
               <button
                 onClick={() => isScreenCapturing ? stopScreenCapture() : startScreenCapture()}
+                disabled={isMicActive}
                 className="btn"
                 style={{
                   display: "inline-flex",
@@ -1631,7 +1642,8 @@ export default function SubtitlesPage() {
                   background: isScreenCapturing ? "var(--sos)" : "var(--gradient)",
                   color: "white",
                   border: "none",
-                  cursor: "pointer",
+                  cursor: isMicActive ? "default" : "pointer",
+                  opacity: isMicActive ? 0.5 : 1,
                   boxShadow: isScreenCapturing ? "0 4px 12px rgba(239,68,68,0.35)" : "0 4px 24px var(--accentGlow)",
                   animation: isScreenCapturing ? "mic-pulse 1.5s infinite" : "none",
                   fontWeight: 600,
