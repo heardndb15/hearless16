@@ -14,6 +14,8 @@ const WINDOW_TIMESLICE_MS = 500;
 const WINDOW_INTERVAL_MS = 3000;
 const WINDOW_OVERLAP_MS = 1000;
 const WINDOW_CHUNK_COUNT = (WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS) / WINDOW_TIMESLICE_MS;
+const STALE_AFTER_MS = 8000;
+const STALE_ALPHA = 0.4;
 
 export default function SubtitlesDashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -55,6 +57,9 @@ export default function SubtitlesDashboard() {
   const screenChunksRef = useRef<Blob[]>([]);
   const screenHeaderChunkRef = useRef<Blob | null>(null);
   const screenIntervalRef = useRef<any>(null);
+  const lastNonEmptyTextAtRef = useRef<number>(0);
+  const [isTextStale, setIsTextStale] = useState(false);
+  const staleCheckIntervalRef = useRef<any>(null);
 
   // Picture-in-Picture floating captions (draws transcriptionText onto a
   // hidden canvas, streams that canvas into a hidden <video>, and requests
@@ -460,6 +465,8 @@ export default function SubtitlesDashboard() {
       screenChunksRef.current = [];
       screenHeaderChunkRef.current = null;
       setIsBackgroundCapturing(true);
+      lastNonEmptyTextAtRef.current = Date.now();
+      setIsTextStale(false);
 
       // A single continuous recorder (never stopped mid-session) emits a
       // small blob every WINDOW_TIMESLICE_MS. The very first blob carries
@@ -497,12 +504,19 @@ export default function SubtitlesDashboard() {
           const res = await fetch("/api/transcribe", { method: "POST", body: fd });
           if (res.ok) {
             const data = await res.json();
-            if (data.text?.trim()) setTranscriptionText(data.text.trim());
+            if (data.text?.trim()) {
+              setTranscriptionText(data.text.trim());
+              lastNonEmptyTextAtRef.current = Date.now();
+              setIsTextStale(false);
+            }
           }
         } catch {}
       };
 
       screenIntervalRef.current = setInterval(sendWindow, WINDOW_INTERVAL_MS);
+      staleCheckIntervalRef.current = setInterval(() => {
+        if (Date.now() - lastNonEmptyTextAtRef.current > STALE_AFTER_MS) setIsTextStale(true);
+      }, 1000);
 
       audioTracks[0].addEventListener("ended", () => stopBackgroundCapture());
     } catch (err: any) {
@@ -517,6 +531,7 @@ export default function SubtitlesDashboard() {
       document.exitPictureInPicture().catch(() => {});
     }
     clearInterval(screenIntervalRef.current);
+    clearInterval(staleCheckIntervalRef.current);
     if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
     screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     screenStreamRef.current = null;
@@ -524,6 +539,7 @@ export default function SubtitlesDashboard() {
     screenChunksRef.current = [];
     screenHeaderChunkRef.current = null;
     setIsBackgroundCapturing(false);
+    setIsTextStale(false);
   }
 
   // Word-wraps text onto a canvas, centered both horizontally and vertically
@@ -573,12 +589,14 @@ export default function SubtitlesDashboard() {
 
     const fontPx = fontSize === "sm" ? 18 : fontSize === "lg" ? 30 : fontSize === "xl" ? 38 : 24;
     ctx.fillStyle = getColorCode(textColor);
+    ctx.globalAlpha = isTextStale ? STALE_ALPHA : 1;
     ctx.font = `bold ${fontPx}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     const text = transcriptionText || "Ожидание звукового потока...";
     wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, fontPx + 10);
+    ctx.globalAlpha = 1;
   }
 
   async function togglePipSubtitles() {
@@ -609,7 +627,7 @@ export default function SubtitlesDashboard() {
 
   useEffect(() => {
     if (isPipActive) drawPipSubtitles();
-  }, [transcriptionText, textColor, bgColor, fontSize, isPipActive]);
+  }, [transcriptionText, textColor, bgColor, fontSize, isPipActive, isTextStale]);
 
   // Save current speech transcript to database
   async function handleSaveDialogue() {
