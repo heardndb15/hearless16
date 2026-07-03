@@ -46,8 +46,13 @@ export default function SubtitlesDashboard() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   // Kazakh has no browser fallback, so a flaky/cold-starting WS connection is
-  // retried a couple of times instead of immediately killing the session.
+  // retried instead of immediately killing the session. Render's free tier
+  // can take 30-60s to wake a sleeping instance (heavy deps like
+  // faster-whisper/mediapipe), so the budget below is sized for a real cold
+  // start, not just a network blip.
   const kkReconnectAttemptsRef = useRef(0);
+  const KK_MAX_RECONNECT_ATTEMPTS = 15;
+  const KK_RECONNECT_DELAY_MS = 3000;
 
   // Background (tab/screen audio) capture — a separate path from the mic
   // recording above, for watching video elsewhere with subtitles.
@@ -345,12 +350,17 @@ export default function SubtitlesDashboard() {
     // often just the backend waking from an idle sleep, so retry a couple of
     // times before giving up instead of killing the session on the first blip.
     if (userLanguage === "kk") {
-      if (isRecordingRef.current && kkReconnectAttemptsRef.current < 2) {
+      if (isRecordingRef.current && kkReconnectAttemptsRef.current < KK_MAX_RECONNECT_ATTEMPTS) {
         kkReconnectAttemptsRef.current += 1;
         setAiStatus("processing");
+        setTranscriptionText(
+          kkReconnectAttemptsRef.current > 2
+            ? "Сервер просыпается, это может занять до минуты..."
+            : ""
+        );
         setTimeout(() => {
           if (isRecordingRef.current) startWhisperRecording();
-        }, 1500);
+        }, KK_RECONNECT_DELAY_MS);
         return;
       }
       isRecordingRef.current = false;
