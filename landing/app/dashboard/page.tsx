@@ -17,6 +17,28 @@ const WINDOW_CHUNK_COUNT = (WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS) / WINDOW_TIM
 const STALE_AFTER_MS = 8000;
 const STALE_ALPHA = 0.4;
 
+// Client-side port of backend/app/services/whisper_service.py's
+// merge_transcripts: stitches two overlapping transcript chunks by finding
+// the longest suffix of oldText that matches a prefix of newText, since
+// consecutive background-capture windows share ~1s of audio and would
+// otherwise duplicate a word or two at the seam.
+function mergeTranscripts(oldText: string, newText: string): string {
+  const oldWords = oldText.trim().split(/\s+/).filter(Boolean);
+  const newWords = newText.trim().split(/\s+/).filter(Boolean);
+  if (oldWords.length === 0) return newText;
+  if (newWords.length === 0) return oldText;
+
+  const maxOverlap = Math.min(oldWords.length, newWords.length);
+  let overlapLen = 0;
+  for (let i = 1; i <= maxOverlap; i++) {
+    if (oldWords.slice(-i).join(" ") === newWords.slice(0, i).join(" ")) overlapLen = i;
+  }
+  if (overlapLen > 0) {
+    return [...oldWords.slice(0, -overlapLen), ...newWords].join(" ");
+  }
+  return oldText.trim() + " " + newText.trim();
+}
+
 export default function SubtitlesDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [history, setHistory] = useState<SubtitleHistoryItem[]>([]);
@@ -475,6 +497,7 @@ export default function SubtitlesDashboard() {
       screenChunksRef.current = [];
       screenHeaderChunkRef.current = null;
       setIsBackgroundCapturing(true);
+      setTranscriptionText("");
       lastNonEmptyTextAtRef.current = Date.now();
       setIsTextStale(false);
 
@@ -515,7 +538,8 @@ export default function SubtitlesDashboard() {
           if (res.ok) {
             const data = await res.json();
             if (data.text?.trim()) {
-              setTranscriptionText(data.text.trim());
+              const newText = data.text.trim();
+              setTranscriptionText(prev => mergeTranscripts(prev, newText));
               lastNonEmptyTextAtRef.current = Date.now();
               setIsTextStale(false);
             }
