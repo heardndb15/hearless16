@@ -128,14 +128,28 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                     if chunk_counter % 2 == 0:
                         from app.services.whisper_service import transcribe_with_diarization, pcm_to_wav_bytes
                         wav_bytes = pcm_to_wav_bytes(bytes(pcm_buffer))
+                        sliding_window = len(pcm_buffer) >= 256000
 
-                        # If buffer exceeds 8 seconds, we commit the stable part and slide the window
-                        # 8 seconds at 16kHz 16-bit mono PCM is 16000 * 2 * 8 = 256000 bytes
-                        if len(pcm_buffer) >= 256000:
+                        # Every diarization call is serialized behind diarize_lock, so one
+                        # slow/hung call (e.g. a lagging FreedomSpeech request for Kazakh)
+                        # would otherwise stall every later chunk in this session forever.
+                        # Bound it and just skip this chunk's update on timeout/failure.
+                        try:
                             async with diarize_lock:
-                                diarize_result = await asyncio.to_thread(
-                                    transcribe_with_diarization, wav_bytes, lang, diarize_state
+                                diarize_result = await asyncio.wait_for(
+                                    asyncio.to_thread(
+                                        transcribe_with_diarization, wav_bytes, lang, diarize_state
+                                    ),
+                                    timeout=12.0,
                                 )
+                        except Exception as e:
+                            import sys
+                            print(f"PCM diarization failed/timed out: {e}", file=sys.stderr)
+                            if sliding_window:
+                                pcm_buffer = pcm_buffer[-64000:]
+                            continue
+
+                        if sliding_window:
                             # Slide window: keep the last 2 seconds (16000 * 2 * 2 = 64000 bytes) for context overlap
                             pcm_buffer = pcm_buffer[-64000:]
                             from app.services.whisper_service import merge_transcripts
@@ -143,10 +157,6 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                             interim_text = ""
                             interim_segments = []
                         else:
-                            async with diarize_lock:
-                                diarize_result = await asyncio.to_thread(
-                                    transcribe_with_diarization, wav_bytes, lang, diarize_state
-                                )
                             interim_text = diarize_result["text"]
                             interim_segments = diarize_result["segments"]
 

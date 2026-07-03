@@ -16,6 +16,13 @@ def transcribe_with_freedomspeech(audio_bytes: bytes) -> str | None:
         client = OpenAI(
             api_key=FREEDOMSPEECH_API_KEY,
             base_url=f"{FREEDOMSPEECH_BASE_URL}/v1",
+            # Without an explicit timeout the SDK's default can leave a hung
+            # freedomspeech.kz request open for minutes, and since every
+            # /ws/transcribe chunk for a session is serialized behind
+            # diarize_lock, one slow request freezes all subsequent Kazakh
+            # subtitles for that session. Fail fast instead.
+            timeout=8.0,
+            max_retries=0,
             default_headers={
                 # FreedomSpeech authenticates via X-API-Key, not the
                 # OpenAI-style Authorization: Bearer header the SDK sends.
