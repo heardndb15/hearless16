@@ -17,6 +17,28 @@ const WINDOW_CHUNK_COUNT = (WINDOW_INTERVAL_MS + WINDOW_OVERLAP_MS) / WINDOW_TIM
 const STALE_AFTER_MS = 8000;
 const STALE_ALPHA = 0.4;
 
+// Client-side port of backend/app/services/whisper_service.py's
+// merge_transcripts: stitches two overlapping transcript chunks by finding
+// the longest suffix of oldText that matches a prefix of newText, since
+// consecutive background-capture windows share ~1s of audio and would
+// otherwise duplicate a word or two at the seam.
+function mergeTranscripts(oldText: string, newText: string): string {
+  const oldWords = oldText.trim().split(/\s+/).filter(Boolean);
+  const newWords = newText.trim().split(/\s+/).filter(Boolean);
+  if (oldWords.length === 0) return newText;
+  if (newWords.length === 0) return oldText;
+
+  const maxOverlap = Math.min(oldWords.length, newWords.length);
+  let overlapLen = 0;
+  for (let i = 1; i <= maxOverlap; i++) {
+    if (oldWords.slice(-i).join(" ") === newWords.slice(0, i).join(" ")) overlapLen = i;
+  }
+  if (overlapLen > 0) {
+    return [...oldWords.slice(0, -overlapLen), ...newWords].join(" ");
+  }
+  return oldText.trim() + " " + newText.trim();
+}
+
 export default function SubtitlesDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [history, setHistory] = useState<SubtitleHistoryItem[]>([]);
@@ -475,6 +497,7 @@ export default function SubtitlesDashboard() {
       screenChunksRef.current = [];
       screenHeaderChunkRef.current = null;
       setIsBackgroundCapturing(true);
+      setTranscriptionText("");
       lastNonEmptyTextAtRef.current = Date.now();
       setIsTextStale(false);
 
@@ -515,7 +538,8 @@ export default function SubtitlesDashboard() {
           if (res.ok) {
             const data = await res.json();
             if (data.text?.trim()) {
-              setTranscriptionText(data.text.trim());
+              const newText = data.text.trim();
+              setTranscriptionText(prev => mergeTranscripts(prev, newText));
               lastNonEmptyTextAtRef.current = Date.now();
               setIsTextStale(false);
             }
@@ -604,7 +628,7 @@ export default function SubtitlesDashboard() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const text = transcriptionText || "Ожидание звукового потока...";
+    const text = rollingLines.slice(-2).join(" ") || "Ожидание звукового потока...";
     wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, fontPx + 10);
     ctx.globalAlpha = 1;
   }
@@ -758,7 +782,7 @@ export default function SubtitlesDashboard() {
             {/* Subtitles Area (Netflix Screen) */}
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto z-10 my-4 max-w-4xl mx-auto w-full px-4 custom-scrollbar">
               <div className="min-h-full flex flex-col justify-end">
-                {isRecording ? (
+                {(isRecording || isBackgroundCapturing) ? (
                   rollingLines.length > 0 ? (
                     <div className={`transition-all duration-300 w-full ${
                       bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-[2px]" : ""
@@ -805,10 +829,10 @@ export default function SubtitlesDashboard() {
                   ) : (
                     <div className="my-auto space-y-4 animate-pulse text-center w-full">
                       <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
-                        🎙️
+                        {isRecording ? "🎙️" : "🎬"}
                       </div>
                       <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
-                        Говорите, ИИ расшифровывает...
+                        {isRecording ? "Говорите, ИИ расшифровывает..." : "Слушаем звук вкладки, ИИ расшифровывает..."}
                       </p>
                     </div>
                   )
@@ -827,7 +851,7 @@ export default function SubtitlesDashboard() {
             </div>
 
             {/* Live Audio Level Waveform (Flickering light) */}
-            {isRecording && (
+            {(isRecording || isBackgroundCapturing) && (
               <div className="absolute bottom-6 right-8 flex gap-1 items-end h-8 pointer-events-none z-10 opacity-75">
                 {[...Array(6)].map((_, i) => {
                   const animDelay = (i * 0.15).toFixed(2);
@@ -1042,7 +1066,7 @@ export default function SubtitlesDashboard() {
 
             {/* Right Section: Settings and utility keys */}
             <div className="flex items-center gap-3">
-              {transcriptionText.trim() && !isRecording && (
+              {transcriptionText.trim() && !isRecording && !isBackgroundCapturing && (
                 <button
                   onClick={handleSaveDialogue}
                   className="px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-syne font-bold text-xs shadow-sm transition-all flex items-center gap-1.5"
