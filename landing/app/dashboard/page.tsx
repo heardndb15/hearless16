@@ -782,7 +782,7 @@ export default function SubtitlesDashboard() {
             {/* Subtitles Area (Netflix Screen) */}
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto z-10 my-4 max-w-4xl mx-auto w-full px-4 custom-scrollbar">
               <div className="min-h-full flex flex-col justify-end">
-                {isRecording ? (
+                {(isRecording || isBackgroundCapturing) ? (
                   rollingLines.length > 0 ? (
                     <div className={`transition-all duration-300 w-full ${
                       bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-[2px]" : ""
@@ -829,10 +829,10 @@ export default function SubtitlesDashboard() {
                   ) : (
                     <div className="my-auto space-y-4 animate-pulse text-center w-full">
                       <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
-                        🎙️
+                        {isRecording ? "🎙️" : "🎬"}
                       </div>
                       <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
-                        Говорите, ИИ расшифровывает...
+                        {isRecording ? "Говорите, ИИ расшифровывает..." : "Слушаем звук вкладки, ИИ расшифровывает..."}
                       </p>
                     </div>
                   )
@@ -851,7 +851,7 @@ export default function SubtitlesDashboard() {
             </div>
 
             {/* Live Audio Level Waveform (Flickering light) */}
-            {isRecording && (
+            {(isRecording || isBackgroundCapturing) && (
               <div className="absolute bottom-6 right-8 flex gap-1 items-end h-8 pointer-events-none z-10 opacity-75">
                 {[...Array(6)].map((_, i) => {
                   const animDelay = (i * 0.15).toFixed(2);
