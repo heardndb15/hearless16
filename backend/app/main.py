@@ -78,17 +78,34 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
             return
     # Guest mode: no token → transcription allowed but auto-save skipped on backend
 
-    # Check if a transcription model or API key is available
-    from app.services.whisper_service import get_local_whisper
+    # Check if a transcription model or API key is available.
+    # Kazakh only ever goes through FreedomSpeech (see transcribe_audio), so it
+    # must never touch get_local_whisper(): that call is a synchronous,
+    # blocking faster-whisper model load/download from the HF Hub on first
+    # use, which freezes the whole event loop for every connection on this
+    # worker — on Render's free tier that "first use" is every cold start,
+    # and it used to run unconditionally even for lang=kk, which doesn't need
+    # it at all and would time out the WS handshake while it downloaded.
     from app.config import OPENAI_API_KEY, REPLICATE_API_TOKEN, FREEDOMSPEECH_API_KEY
 
-    if get_local_whisper() is None and not OPENAI_API_KEY and not REPLICATE_API_TOKEN and not FREEDOMSPEECH_API_KEY:
-        await websocket.send_json({
-            "type": "error",
-            "message": "No transcription engine configured on backend. Local Whisper is missing and OPENAI_API_KEY is not set."
-        })
-        await websocket.close()
-        return
+    if lang == "kk":
+        if not FREEDOMSPEECH_API_KEY:
+            await websocket.send_json({
+                "type": "error",
+                "message": "FreedomSpeech API key not configured on backend."
+            })
+            await websocket.close()
+            return
+    else:
+        from app.services.whisper_service import get_local_whisper
+        local_whisper = await asyncio.to_thread(get_local_whisper)
+        if local_whisper is None and not OPENAI_API_KEY and not REPLICATE_API_TOKEN:
+            await websocket.send_json({
+                "type": "error",
+                "message": "No transcription engine configured on backend. Local Whisper is missing and OPENAI_API_KEY is not set."
+            })
+            await websocket.close()
+            return
 
     session_bytes = b""
     audio_window_chunks: list[bytes] = []  # sliding window of recent M4A chunks
