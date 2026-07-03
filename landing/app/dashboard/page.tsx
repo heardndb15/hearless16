@@ -628,7 +628,7 @@ export default function SubtitlesDashboard() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const text = transcriptionText || "Ожидание звукового потока...";
+    const text = rollingLines.slice(-2).join(" ") || "Ожидание звукового потока...";
     wrapText(ctx, text, canvas.width / 2, canvas.height / 2, canvas.width - 60, fontPx + 10);
     ctx.globalAlpha = 1;
   }
@@ -1066,7 +1066,7 @@ export default function SubtitlesDashboard() {
 
             {/* Right Section: Settings and utility keys */}
             <div className="flex items-center gap-3">
-              {transcriptionText.trim() && !isRecording && (
+              {transcriptionText.trim() && !isRecording && !isBackgroundCapturing && (
                 <button
                   onClick={handleSaveDialogue}
                   className="px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-syne font-bold text-xs shadow-sm transition-all flex items-center gap-1.5"
