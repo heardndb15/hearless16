@@ -322,6 +322,7 @@ export default function CommunityPage() {
   const [dmWith, setDmWith] = useState<{ id: string; name: string } | null>(null);
   const loadingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -382,6 +383,22 @@ export default function CommunityPage() {
   }, [token]);
 
   useEffect(() => { setPosts([]); setOffset(0); fetchPosts(sort, 0, false); }, [sort, fetchPosts]);
+
+  useEffect(() => {
+    if (activeTab !== "feed" || !hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingRef.current) {
+          fetchPosts(sort, offset, true);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activeTab, hasMore, sort, offset, fetchPosts]);
 
   const handleLike = useCallback(async (postId: string) => {
     if (!token) { alert("Войдите в аккаунт, чтобы ставить лайки"); return; }
@@ -507,10 +524,10 @@ export default function CommunityPage() {
                     <PostCard key={post.id} post={post} currentUserId={currentUserId} token={token} onLike={handleLike} onDelete={handleDelete} onOpen={setSelectedPost} onDm={handleDm} />
                   ))}
                   {hasMore && (
-                    <div style={{ textAlign: "center", marginTop: 8 }}>
-                      <button onClick={() => fetchPosts(sort, offset, true)} disabled={loading} style={{ padding: "12px 32px", borderRadius: 12, border: `1.5px solid ${border}`, background: "white", color: accent, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                        {loading ? "Загрузка..." : "Показать ещё"}
-                      </button>
+                    <div ref={sentinelRef} style={{ textAlign: "center", padding: "20px 0" }}>
+                      {loading && (
+                        <div style={{ width: 28, height: 28, border: "3px solid rgba(21,101,192,0.15)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto" }} />
+                      )}
                     </div>
                   )}
                 </>
