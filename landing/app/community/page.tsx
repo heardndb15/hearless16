@@ -454,7 +454,7 @@ export default function CommunityPage() {
           <>
             <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
               {(["new", "popular"] as const).map((s) => (
-                <button key={s} onClick={() => setSort(s)} style={{ padding: "8px 20px", borderRadius: 50, border: sort === s ? `1.5px solid ${accent}` : `1.5px solid ${border}`, background: sort === s ? accent : chipBg, color: sort === s ? "white" : accent, fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
+                <button key={s} onClick={() => setSort(s)} style={{ padding: "8px 20px", borderRadius: 50, border: sort === s ? `1.5px solid ${accent}` : `1.5px solid ${border}`, background: sort === s ? accent : "white", color: sort === s ? "white" : accent, fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
                   {s === "new" ? "Новые" : "Популярные"}
                 </button>
               ))}
@@ -468,7 +468,7 @@ export default function CommunityPage() {
               </div>
             ) : loading && posts.length === 0 ? (
               <div style={{ textAlign: "center", paddingTop: 60 }}>
-                <div style={{ width: 44, height: 44, border: "4px solid rgba(14,165,233,0.2)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+                <div style={{ width: 44, height: 44, border: "4px solid rgba(21,101,192,0.2)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
                 <p style={{ color: textSecondary, fontSize: 14 }}>Загрузка постов...</p>
               </div>
             ) : posts.length === 0 ? (
