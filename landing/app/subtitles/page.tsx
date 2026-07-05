@@ -138,6 +138,7 @@ export default function SubtitlesPage() {
   const screenChunksRef = useRef<Blob[]>([]);
   const screenHeaderChunkRef = useRef<Blob | null>(null);
   const screenIntervalRef = useRef<any>(null);
+  const screenSendInFlightRef = useRef(false);
   const lastNonEmptyTextAtRef = useRef<number>(0);
   const [isTextStale, setIsTextStale] = useState(false);
   const staleCheckIntervalRef = useRef<any>(null);
@@ -420,10 +421,17 @@ export default function SubtitlesPage() {
       // sends overlap by WINDOW_OVERLAP_MS, so a word split by the old hard
       // 3s boundary now lands whole inside at least one request.
       const sendWindow = async () => {
+        // Replicate transcription can take longer than WINDOW_INTERVAL_MS
+        // (cold starts routinely exceed it); without this guard the next
+        // tick fires anyway, and whichever overlapping request resolves
+        // last wins the UI update — sometimes an older, slower response
+        // landing after a newer one, showing captions out of order.
+        if (screenSendInFlightRef.current) return;
         const header = screenHeaderChunkRef.current;
         if (!header || screenChunksRef.current.length === 0) return;
         const windowChunks = screenChunksRef.current.slice(-WINDOW_CHUNK_COUNT);
         const blob = new Blob([header, ...windowChunks], { type: "audio/webm" });
+        screenSendInFlightRef.current = true;
         try {
           const fd = new FormData();
           fd.append("file", blob, "audio.webm");
@@ -439,7 +447,9 @@ export default function SubtitlesPage() {
               setIsTextStale(false);
             }
           }
-        } catch {}
+        } catch {} finally {
+          screenSendInFlightRef.current = false;
+        }
       };
 
       screenIntervalRef.current = setInterval(sendWindow, WINDOW_INTERVAL_MS);
@@ -464,6 +474,7 @@ export default function SubtitlesPage() {
     screenRecorderRef.current = null;
     screenChunksRef.current = [];
     screenHeaderChunkRef.current = null;
+    screenSendInFlightRef.current = false;
     setIsScreenCapturing(false);
     setIsTextStale(false);
     setScreenCaptureText("");
