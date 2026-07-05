@@ -37,8 +37,8 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   );
 }
 
-function PostCard({ post, currentUserId, token, onLike, onDelete, onOpen, onDm }: {
-  post: Post; currentUserId: string | null; token: string;
+function PostCard({ post, currentUserId, token, likingId, onLike, onDelete, onOpen, onDm }: {
+  post: Post; currentUserId: string | null; token: string; likingId: string | null;
   onLike: (id: string) => void; onDelete: (id: string) => void; onOpen: (post: Post) => void;
   onDm: (author: Author) => void;
 }) {
@@ -75,7 +75,7 @@ function PostCard({ post, currentUserId, token, onLike, onDelete, onOpen, onDm }
       {post.image_url && <img src={post.image_url} alt="" onClick={() => onOpen(post)} style={{ width: "100%", borderRadius: 12, marginBottom: 12, cursor: "pointer", maxHeight: 360, objectFit: "cover" }} />}
       <div style={{ display: "flex", gap: 20, alignItems: "center", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 12 }}>
         <button onClick={() => { if (!token) { alert("Войдите, чтобы ставить лайки"); return; } onLike(post.id); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: post.liked_by_me ? likeActive : textSecondary, fontWeight: 600, fontSize: 14, transition: "color 0.15s" }}>
-          <span style={{ fontSize: 18 }}>{post.liked_by_me ? "♥" : "♡"}</span>{post.likes_count}
+          <span className={likingId === post.id ? "community-like-pop" : undefined} style={{ fontSize: 18 }}>{post.liked_by_me ? "♥" : "♡"}</span>{post.likes_count}
         </button>
         <button onClick={() => onOpen(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: textSecondary, fontWeight: 600, fontSize: 14 }}>
           <span style={{ fontSize: 18 }}>💬</span>{post.comments_count}
@@ -85,7 +85,7 @@ function PostCard({ post, currentUserId, token, onLike, onDelete, onOpen, onDm }
   );
 }
 
-function PostModal({ post, token, currentUserId, onClose, onLike, onDelete }: { post: Post; token: string; currentUserId: string | null; onClose: () => void; onLike: (id: string) => void; onDelete: (id: string) => void; }) {
+function PostModal({ post, token, currentUserId, likingId, onClose, onLike, onDelete }: { post: Post; token: string; currentUserId: string | null; likingId: string | null; onClose: () => void; onLike: (id: string) => void; onDelete: (id: string) => void; }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -131,7 +131,7 @@ function PostModal({ post, token, currentUserId, onClose, onLike, onDelete }: { 
           {post.image_url && <img src={post.image_url} alt="" style={{ width: "100%", borderRadius: 12, marginTop: 12, objectFit: "cover", maxHeight: 260 }} />}
           <div style={{ display: "flex", gap: 20, marginTop: 14 }}>
             <button onClick={() => { if (!token) { alert("Войдите"); return; } onLike(post.id); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: post.liked_by_me ? likeActive : textSecondary, fontWeight: 600, fontSize: 14 }}>
-              <span style={{ fontSize: 18 }}>{post.liked_by_me ? "♥" : "♡"}</span>{post.likes_count}
+              <span className={likingId === post.id ? "community-like-pop" : undefined} style={{ fontSize: 18 }}>{post.liked_by_me ? "♥" : "♡"}</span>{post.likes_count}
             </button>
             <span style={{ color: textSecondary, fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}><span style={{ fontSize: 18 }}>💬</span>{comments.length}</span>
           </div>
@@ -317,6 +317,7 @@ export default function CommunityPage() {
   const [userName, setUserName] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [likingId, setLikingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("feed");
   const [dmWith, setDmWith] = useState<{ id: string; name: string } | null>(null);
@@ -406,6 +407,11 @@ export default function CommunityPage() {
     if (selectedPost?.id === postId) setSelectedPost((p) => p ? { ...p, liked_by_me: !p.liked_by_me, likes_count: p.liked_by_me ? p.likes_count - 1 : p.likes_count + 1 } : p);
     try { await fetch(`${API_URL}/community/posts/${postId}/like`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }); } catch {}
   }, [token, selectedPost]);
+
+  function triggerLikePop(postId: string) {
+    setLikingId(postId);
+    setTimeout(() => setLikingId((cur) => (cur === postId ? null : cur)), 250);
+  }
 
   const handleDelete = useCallback(async (postId: string) => {
     if (!confirm("Удалить пост?")) return;
@@ -521,7 +527,7 @@ export default function CommunityPage() {
               ) : (
                 <>
                   {posts.map((post) => (
-                    <PostCard key={post.id} post={post} currentUserId={currentUserId} token={token} onLike={handleLike} onDelete={handleDelete} onOpen={setSelectedPost} onDm={handleDm} />
+                    <PostCard key={post.id} post={post} currentUserId={currentUserId} token={token} likingId={likingId} onLike={(id) => { triggerLikePop(id); handleLike(id); }} onDelete={handleDelete} onOpen={setSelectedPost} onDm={handleDm} />
                   ))}
                   {hasMore && (
                     <div ref={sentinelRef} style={{ textAlign: "center", padding: "20px 0" }}>
@@ -548,7 +554,7 @@ export default function CommunityPage() {
       </main>
 
       {selectedPost && (
-        <PostModal post={selectedPost} token={token} currentUserId={currentUserId} onClose={() => setSelectedPost(null)} onLike={handleLike} onDelete={handleDelete} />
+        <PostModal post={selectedPost} token={token} currentUserId={currentUserId} likingId={likingId} onClose={() => setSelectedPost(null)} onLike={(id) => { triggerLikePop(id); handleLike(id); }} onDelete={handleDelete} />
       )}
       {showCreate && token && (
         <CreatePostModal token={token} onClose={() => setShowCreate(false)} onCreated={(post) => { setPosts((prev) => [post, ...prev]); }} />
@@ -556,6 +562,9 @@ export default function CommunityPage() {
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes community-like-pop { 0% { display: inline-block; transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+        .community-like-pop { display: inline-block; animation: community-like-pop 0.25s ease; }
 
         @keyframes community-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .community-skeleton-bar {
