@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "../../lib/supabase";
+import { accent, text, textSecondary, border, bgList, chipBg } from "./theme";
 
 interface ChatMessage {
   id: string;
@@ -72,7 +73,7 @@ export function ChatTab({ userId, userName }: Props) {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: "var(--textSecondary)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, color: textSecondary }}>
         Загрузка чата...
       </div>
     );
@@ -83,7 +84,7 @@ export function ChatTab({ userId, userName }: Props) {
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px 0", display: "flex", flexDirection: "column", gap: 10 }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: "center", color: "var(--textMuted)", fontSize: 14, marginTop: 40 }}>
+          <div style={{ textAlign: "center", color: textSecondary, fontSize: 14, marginTop: 40 }}>
             Будьте первым — напишите что-нибудь 👋
           </div>
         )}
@@ -93,31 +94,31 @@ export function ChatTab({ userId, userName }: Props) {
             <div key={msg.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", paddingLeft: 4, paddingRight: 4 }}>
               {!isMine && (
                 <div style={{
-                  width: 32, height: 32, borderRadius: "50%", background: "#E0F2FE",
+                  width: 32, height: 32, borderRadius: "50%", background: chipBg,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 13, fontWeight: 700, color: "#0369A1", flexShrink: 0, marginRight: 8, alignSelf: "flex-end",
+                  fontSize: 13, fontWeight: 700, color: accent, flexShrink: 0, marginRight: 8, alignSelf: "flex-end",
                 }}>
                   {msg.user_name[0]?.toUpperCase() ?? "?"}
                 </div>
               )}
               <div style={{ maxWidth: "68%" }}>
                 {!isMine && (
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 3, paddingLeft: 2 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 3, paddingLeft: 2 }}>
                     {msg.user_name}
                   </div>
                 )}
                 <div style={{
                   padding: "10px 14px",
                   borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                  background: isMine ? "#0EA5E9" : "#FFFFFF",
-                  border: isMine ? "none" : "1px solid var(--border)",
-                  color: isMine ? "#FFFFFF" : "var(--text)",
+                  background: isMine ? accent : "#FFFFFF",
+                  border: isMine ? "none" : `1px solid ${border}`,
+                  color: isMine ? "#FFFFFF" : text,
                   fontSize: 14, lineHeight: 1.5,
-                  boxShadow: "0 1px 4px rgba(14,165,233,0.07)",
+                  boxShadow: "0 1px 4px rgba(21,101,192,0.07)",
                 }}>
                   {msg.text}
                 </div>
-                <div style={{ fontSize: 10, color: "var(--textMuted)", marginTop: 3, textAlign: isMine ? "right" : "left", paddingLeft: 2 }}>
+                <div style={{ fontSize: 10, color: textSecondary, marginTop: 3, textAlign: isMine ? "right" : "left", paddingLeft: 2 }}>
                   {formatTime(msg.created_at)}
                 </div>
               </div>
@@ -129,7 +130,7 @@ export function ChatTab({ userId, userName }: Props) {
 
       {/* Input */}
       {userId ? (
-        <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", gap: 10, paddingTop: 12, borderTop: `1px solid ${border}` }}>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -138,8 +139,8 @@ export function ChatTab({ userId, userName }: Props) {
             maxLength={500}
             style={{
               flex: 1, padding: "12px 16px", borderRadius: 14,
-              border: "1px solid var(--border)", background: "#F0F9FF",
-              fontSize: 14, color: "var(--text)", outline: "none",
+              border: `1px solid ${border}`, background: bgList,
+              fontSize: 14, color: text, outline: "none",
             }}
           />
           <button
@@ -147,7 +148,7 @@ export function ChatTab({ userId, userName }: Props) {
             disabled={!input.trim() || sending}
             style={{
               padding: "12px 20px", borderRadius: 14, border: "none",
-              background: input.trim() ? "#0EA5E9" : "#BAE6FD",
+              background: input.trim() ? accent : border,
               color: "white", fontWeight: 700, fontSize: 14, cursor: input.trim() ? "pointer" : "not-allowed",
               transition: "background 0.2s",
             }}
@@ -157,8 +158,8 @@ export function ChatTab({ userId, userName }: Props) {
         </div>
       ) : (
         <div style={{
-          textAlign: "center", padding: "14px", background: "#F0F9FF",
-          borderRadius: 12, border: "1px dashed #BAE6FD", marginTop: 8, fontSize: 13, color: "var(--textSecondary)",
+          textAlign: "center", padding: "14px", background: bgList,
+          borderRadius: 12, border: `1px dashed ${border}`, marginTop: 8, fontSize: 13, color: textSecondary,
         }}>
           Войдите чтобы написать в чат
         </div>
