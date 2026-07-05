@@ -46,6 +46,7 @@ export default function GesturePracticeScreen() {
   const maxConfidenceRef = useRef(0);
   const cameraRef = useRef<CameraView>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recognizeInFlightRef = useRef(false);
   const flashAnim = useRef(new Animated.Value(0)).current;
 
   const isMatch = result ? result.confidence >= 80 : false;
@@ -69,6 +70,10 @@ export default function GesturePracticeScreen() {
         return next;
       });
     }, 800);
+    // Store in intervalRef too so the mount effect's cleanup can clear this
+    // if the screen unmounts mid-countdown, before the practice-phase effect
+    // (the only other place that populates intervalRef) ever runs.
+    intervalRef.current = timer;
   }, []);
 
   useEffect(() => {
@@ -82,7 +87,8 @@ export default function GesturePracticeScreen() {
     if (phase !== "practice") return;
 
     intervalRef.current = setInterval(async () => {
-      if (!cameraRef.current) return;
+      if (!cameraRef.current || recognizeInFlightRef.current) return;
+      recognizeInFlightRef.current = true;
       try {
         const photo = await cameraRef.current.takePictureAsync({
           base64: true,
@@ -113,7 +119,9 @@ export default function GesturePracticeScreen() {
         if (response.data.confidence >= 80) {
           handleSuccess(response.data.confidence, frameCountRef.current);
         }
-      } catch {}
+      } catch {} finally {
+        recognizeInFlightRef.current = false;
+      }
     }, 300);
 
     return () => {

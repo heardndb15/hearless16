@@ -11,10 +11,10 @@ export const SUBTITLE_LIMITS: Record<Plan, number> = {
   pro: Infinity,
 };
 
-let _cache: { data: SubscriptionInfo; at: number } | null = null;
+let _cache: { token: string; data: SubscriptionInfo; at: number } | null = null;
 
 export async function getSubscription(token: string): Promise<SubscriptionInfo> {
-  if (_cache && Date.now() - _cache.at < CACHE_TTL) {
+  if (_cache && _cache.token === token && Date.now() - _cache.at < CACHE_TTL) {
     return _cache.data;
   }
   return refreshSubscription(token);
@@ -26,7 +26,7 @@ export async function refreshSubscription(token: string): Promise<SubscriptionIn
       headers: { Authorization: `Bearer ${token}` },
       timeout: 10000,
     });
-    _cache = { data: res.data, at: Date.now() };
+    _cache = { token, data: res.data, at: Date.now() };
     return res.data;
   } catch {
     const fallback: SubscriptionInfo = { plan: "free", plan_expires_at: null };

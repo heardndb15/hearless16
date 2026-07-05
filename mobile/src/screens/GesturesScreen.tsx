@@ -164,12 +164,16 @@ export default function GesturesScreen() {
     (id: string) => {
       const g = gestures.find((x) => x.id === id);
       if (!g || g.status === "locked") return;
+      if (isCategoryLocked(g.category)) {
+        navigation.navigate("Paywall", { requiredPlan: requiredPlanForCategory(g.category) });
+        return;
+      }
       navigation.navigate("GesturePractice", {
         gestureId: id,
         gestureName: g.name,
       });
     },
-    [gestures, navigation]
+    [gestures, navigation, plan]
   );
 
   const total = gestures.length;

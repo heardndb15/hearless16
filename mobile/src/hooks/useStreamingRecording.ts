@@ -34,6 +34,14 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const chunkIndexRef = useRef(0);
   const userLangRef = useRef<string>("ru");
+  // True only while a recording session is actually meant to be active.
+  // sendChunk's Audio.Recording.createAsync() can still be in flight when
+  // stopStreaming runs (both read/write recordingRef.current); this ref lets
+  // that pending continuation notice the session already ended instead of
+  // overwriting the ref stopStreaming just cleared with a live, untracked
+  // recording that nothing then stops.
+  const isActiveRef = useRef(false);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const connectWs = useCallback((token: string) => {
     const wsUrl = BACKEND_WS + (BACKEND_WS.includes("?") ? "&" : "?") + `lang=${userLangRef.current}&token=${token}`;
@@ -114,7 +122,13 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
         const { recording } = await Audio.Recording.createAsync(
           Audio.RecordingOptionsPresets.HIGH_QUALITY
         );
-        recordingRef.current = recording;
+        if (isActiveRef.current) {
+          recordingRef.current = recording;
+        } else {
+          // stopStreaming ran while this recording was being prepared —
+          // don't leave a live, untracked recording holding the microphone.
+          recording.stopAndUnloadAsync().catch(() => {});
+        }
       } catch (err) {
         console.log("Failed to restart recording:", err);
       }
@@ -183,7 +197,14 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
 
       let ws: WebSocket;
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        // Reuse pre-warmed connection — no wait needed
+        // Reuse pre-warmed connection — no wait needed. Cancel any pending
+        // delayed close from a just-preceding stopStreaming: without this,
+        // that timer can still force-close this same, now actively
+        // recording, connection up to 2.5s later.
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current);
+          closeTimeoutRef.current = null;
+        }
         ws = wsRef.current;
       } else {
         const { data: { session } } = await supabase.auth.getSession();
@@ -204,6 +225,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
+      isActiveRef.current = true;
       recordingRef.current = recording;
       setIsRecording(true);
 
@@ -219,6 +241,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
   }, [connectWs, sendChunk, waitForWsOpen]);
 
   const stopStreaming = useCallback(async () => {
+    isActiveRef.current = false;
     setIsRecording(false);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -243,7 +266,8 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ action: "stop" }));
       // Wait up to 2.5 seconds for the server to transcribe, send "final", and close the socket
-      setTimeout(() => {
+      closeTimeoutRef.current = setTimeout(() => {
+        closeTimeoutRef.current = null;
         if (wsRef.current === ws) {
           ws.close();
           wsRef.current = null;
