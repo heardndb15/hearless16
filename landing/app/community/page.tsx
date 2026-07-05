@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { ChatTab } from "./ChatTab";
 import { DmsTab } from "./DmsTab";
@@ -46,11 +47,11 @@ function PostCard({ post, currentUserId, token, likingId, onLike, onDelete, onOp
   const isOwn = currentUserId === post.author.id;
 
   return (
-    <div style={{ background: "var(--bgCard)", border: "1px solid var(--border)", borderRadius: 20, padding: "20px 24px", marginBottom: 16, boxShadow: "var(--shadow)", transition: "box-shadow 0.2s" }}>
+    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: cardRadius, padding: "20px 24px", marginBottom: 16, boxShadow: cardShadow, transition: "box-shadow 0.2s" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
         <Avatar name={post.author.name} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div>
+          <div style={{ fontWeight: 700, fontSize: 14, color: text }}>{post.author.name}</div>
           <div style={{ fontSize: 12, color: textSecondary, marginTop: 1 }}>{timeAgo(post.created_at)}</div>
         </div>
         {!isOwn && token && (
@@ -123,7 +124,7 @@ function PostModal({ post, token, currentUserId, likingId, onClose, onLike, onDe
       <div onClick={(e) => e.stopPropagation()} style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 600, maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", borderBottom: `1px solid ${border}` }}>
           <Avatar name={post.author.name} />
-          <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div><div style={{ fontSize: 12, color: textSecondary }}>{timeAgo(post.created_at)}</div></div>
+          <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14, color: text }}>{post.author.name}</div><div style={{ fontSize: 12, color: textSecondary }}>{timeAgo(post.created_at)}</div></div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: textSecondary }}>✕</button>
         </div>
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${border}`, overflowY: "auto", maxHeight: 280 }}>
@@ -143,7 +144,7 @@ function PostModal({ post, token, currentUserId, likingId, onClose, onLike, onDe
               <div key={c.id} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                 <Avatar name={c.author.name} size={32} />
                 <div style={{ flex: 1, background: bgList, borderRadius: 12, padding: "10px 14px" }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "var(--text)", marginBottom: 3 }}>{c.author.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: text, marginBottom: 3 }}>{c.author.name}</div>
                   <div style={{ fontSize: 14, color: text, lineHeight: 1.5 }}>{c.text}</div>
                   <div style={{ fontSize: 11, color: textSecondary, marginTop: 4 }}>{timeAgo(c.created_at)}</div>
                 </div>
@@ -209,7 +210,7 @@ function CreatePostModal({ token, onClose, onCreated }: { token: string; onClose
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: `1px solid ${border}` }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--text)" }}>Новый пост</h3>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: text }}>Новый пост</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: textSecondary }}>✕</button>
         </div>
         <div style={{ padding: "20px 24px" }}>
@@ -306,6 +307,7 @@ function PostSkeleton() {
 }
 
 export default function CommunityPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [sort, setSort] = useState<"new" | "popular">("new");
   const [offset, setOffset] = useState(0);
@@ -481,7 +483,7 @@ export default function CommunityPage() {
       {activeTab === "feed" && (
         <button
           className="community-fab"
-          onClick={() => (token ? setShowCreate(true) : (window.location.href = "/login"))}
+          onClick={() => (token ? setShowCreate(true) : router.push("/login"))}
           aria-label="Новый пост"
         >
           +
@@ -527,9 +529,9 @@ export default function CommunityPage() {
                   <PostSkeleton />
                 </>
               ) : posts.length === 0 ? (
-                <div style={{ background: "var(--bgCard)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
+                <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: cardRadius, padding: "48px 32px", textAlign: "center" }}>
                   <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>
-                  <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Будьте первым — опубликуйте пост!</p>
+                  <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: text }}>Будьте первым — опубликуйте пост!</p>
                 </div>
               ) : (
                 <>
@@ -553,10 +555,12 @@ export default function CommunityPage() {
             <ChatTab userId={currentUserId} userName={userName} />
           )}
 
-          {/* DMs tab */}
-          {activeTab === "dms" && (
+          {/* DMs tab — kept mounted always (not conditionally rendered) so its
+              realtime subscription and onUnreadChange effect keep running while
+              the user is on the feed or chat tab; only visibility is toggled. */}
+          <div style={{ display: activeTab === "dms" ? "block" : "none" }}>
             <DmsTab userId={currentUserId} userName={userName} openDmWith={dmWith} onClearDmWith={() => setDmWith(null)} onUnreadChange={setDmUnreadCount} />
-          )}
+          </div>
         </div>
       </main>
 
