@@ -27,6 +27,12 @@ def _verify_webhook_signature(body: bytes, headers: dict) -> bool:
     msg_ts = headers.get("webhook-timestamp", "")
     msg_sig = headers.get("webhook-signature", "")
 
+    # Without this, an unset POLAR_WEBHOOK_SECRET ("") HMACs the payload with
+    # an empty key that anyone can reproduce, so a forged webhook would pass
+    # verification and could grant a free "pro" upgrade.
+    if not POLAR_WEBHOOK_SECRET:
+        return False
+
     if not msg_id or not msg_ts or not msg_sig:
         return False
 

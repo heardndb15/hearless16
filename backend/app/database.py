@@ -12,3 +12,14 @@ def get_supabase() -> Client:
             )
         _client = create_client(SUPABASE_URL, SUPABASE_KEY)
     return _client
+
+
+def fetch_single(query) -> dict | None:
+    """Execute a `.single()`-terminated PostgREST query, returning the row
+    dict or None when no row matches. `.single()` sets an Accept header that
+    makes PostgREST (and supabase-py) raise instead of returning empty data
+    when 0 rows match, unlike every other query shape in this codebase."""
+    try:
+        return query.execute().data
+    except Exception:
+        return None

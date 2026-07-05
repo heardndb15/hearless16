@@ -26,10 +26,11 @@ def audio_bytes_to_float(audio_bytes: bytes, target_sr: int = 16000) -> np.ndarr
             frames = wf.readframes(wf.getnframes())
             audio = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
     except wave.Error:
-        try:
-            audio = _convert_with_ffmpeg(audio_bytes, target_sr)
-        except Exception:
-            return np.array([], dtype=np.float32)
+        # Raise rather than returning an empty array here: an empty array is
+        # indistinguishable downstream from "genuinely silent audio", which
+        # transcribe_local treats as a successful (empty) transcription and
+        # never falls through to the Replicate/OpenAI fallback engines.
+        audio = _convert_with_ffmpeg(audio_bytes, target_sr)
         return audio
 
     if len(audio) == 0:
@@ -256,7 +257,17 @@ def transcribe_with_diarization(
             "segments": [{"text": text, "speaker": speaker, "start": 0.0, "end": 0.0}],
         }
 
-    audio = audio_bytes_to_float(audio_bytes)
+    try:
+        audio = audio_bytes_to_float(audio_bytes)
+    except Exception:
+        # Local decode failed (e.g. ffmpeg missing/unsupported input) — fall
+        # back to OpenAI instead of silently returning an empty transcript.
+        text = transcribe_openai(audio_bytes, language)
+        speaker = session_state["current_speaker"]
+        return {
+            "text": text,
+            "segments": [{"text": text, "speaker": speaker, "start": 0.0, "end": 0.0}],
+        }
     if len(audio) == 0:
         return {"text": "", "segments": []}
 

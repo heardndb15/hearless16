@@ -127,13 +127,21 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     try:
         while True:
             message = await websocket.receive_text()
-            data = json.loads(message)
-            action = data.get("action")
+            try:
+                data = json.loads(message)
+                action = data.get("action")
+            except (json.JSONDecodeError, AttributeError):
+                await websocket.send_json({"type": "error", "message": "Malformed message"})
+                continue
 
             if action == "chunk":
                 audio_b64 = data.get("audio", "")
                 import base64
-                audio_bytes = base64.b64decode(audio_b64)
+                try:
+                    audio_bytes = base64.b64decode(audio_b64)
+                except Exception:
+                    await websocket.send_json({"type": "error", "message": "Invalid audio encoding"})
+                    continue
                 if len(audio_bytes) == 0:
                     continue
 

@@ -2,7 +2,7 @@ import uuid
 from typing import Optional, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
 from pydantic import BaseModel
-from app.database import get_supabase
+from app.database import get_supabase, fetch_single
 from app.dependencies import get_current_user
 from app.limiter import limiter
 
@@ -139,8 +139,8 @@ async def create_post(request: Request, data: PostCreate, current_user: dict = D
         raise HTTPException(status_code=500, detail="Не удалось создать пост")
 
     post = row.data[0]
-    user_res = db.table("users").select("name").eq("id", current_user["id"]).single().execute()
-    author_name = (user_res.data or {}).get("name", "Пользователь")
+    user_row = fetch_single(db.table("users").select("name").eq("id", current_user["id"]).single())
+    author_name = (user_row or {}).get("name", "Пользователь")
 
     return {
         "id": post["id"],
@@ -157,10 +157,10 @@ async def create_post(request: Request, data: PostCreate, current_user: dict = D
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    existing = db.table("posts").select("user_id").eq("id", post_id).single().execute()
-    if not existing.data:
+    existing = fetch_single(db.table("posts").select("user_id").eq("id", post_id).single())
+    if not existing:
         raise HTTPException(status_code=404, detail="Пост не найден")
-    if existing.data["user_id"] != current_user["id"]:
+    if existing["user_id"] != current_user["id"]:
         raise HTTPException(status_code=403, detail="Нельзя удалить чужой пост")
     db.table("posts").delete().eq("id", post_id).execute()
     return {"ok": True}
@@ -170,6 +170,8 @@ async def delete_post(post_id: str, current_user: dict = Depends(get_current_use
 async def toggle_like(post_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     user_token = request.headers.get("Authorization", "")[7:]
     db = get_supabase()
+    if not fetch_single(db.table("posts").select("id").eq("id", post_id).single()):
+        raise HTTPException(status_code=404, detail="Пост не найден")
     authed = db.postgrest.auth(user_token)
     existing = (
         db.table("post_likes")
@@ -195,8 +197,8 @@ async def toggle_like(post_id: str, request: Request, current_user: dict = Depen
             except Exception:
                 liked = True  # Unique constraint — already liked
 
-    post_res = db.table("posts").select("likes_count").eq("id", post_id).single().execute()
-    likes_count = (post_res.data or {}).get("likes_count", 0)
+    post_row = fetch_single(db.table("posts").select("likes_count").eq("id", post_id).single())
+    likes_count = (post_row or {}).get("likes_count", 0)
     return {"liked": liked, "likes_count": likes_count}
 
 
@@ -252,8 +254,7 @@ async def create_comment(
         raise HTTPException(status_code=422, detail="Комментарий не может быть пустым")
     user_token = request.headers.get("Authorization", "")[7:]
     db = get_supabase()
-    post_check = db.table("posts").select("id").eq("id", post_id).single().execute()
-    if not post_check.data:
+    if not fetch_single(db.table("posts").select("id").eq("id", post_id).single()):
         raise HTTPException(status_code=404, detail="Post not found")
     try:
         row = db.postgrest.auth(user_token).from_("post_comments").insert({
@@ -270,8 +271,8 @@ async def create_comment(
     if not row.data:
         raise HTTPException(status_code=500, detail="Не удалось создать комментарий")
     c = row.data[0]
-    user_res = db.table("users").select("name").eq("id", current_user["id"]).single().execute()
-    author_name = (user_res.data or {}).get("name", "Пользователь")
+    user_row = fetch_single(db.table("users").select("name").eq("id", current_user["id"]).single())
+    author_name = (user_row or {}).get("name", "Пользователь")
     return {
         "id": c["id"],
         "text": c["text"],
@@ -283,10 +284,10 @@ async def create_comment(
 @router.delete("/comments/{comment_id}")
 async def delete_comment(comment_id: str, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    existing = db.table("post_comments").select("user_id").eq("id", comment_id).single().execute()
-    if not existing.data:
+    existing = fetch_single(db.table("post_comments").select("user_id").eq("id", comment_id).single())
+    if not existing:
         raise HTTPException(status_code=404, detail="Комментарий не найден")
-    if existing.data["user_id"] != current_user["id"]:
+    if existing["user_id"] != current_user["id"]:
         raise HTTPException(status_code=403, detail="Нельзя удалить чужой комментарий")
     db.table("post_comments").delete().eq("id", comment_id).execute()
     return {"ok": True}

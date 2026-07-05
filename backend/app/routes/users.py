@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
-from app.database import get_supabase
+from app.database import get_supabase, fetch_single
 from app.models import UserCreate
 from app.dependencies import get_current_user
 
@@ -41,9 +41,9 @@ async def update_username(data: UsernameUpdate, current_user: dict = Depends(get
 @router.get("/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    result = db.table("users").select("name, bio, avatar_url, plan, plan_expires_at").eq("id", current_user["id"]).single().execute()
-
-    row = result.data or {}
+    row = fetch_single(
+        db.table("users").select("name, bio, avatar_url, plan, plan_expires_at").eq("id", current_user["id"]).single()
+    ) or {}
     plan = row.get("plan", "free")
     expires = row.get("plan_expires_at")
 

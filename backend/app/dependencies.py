@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.database import get_supabase
+from app.database import get_supabase, fetch_single
 
 security = HTTPBearer(auto_error=False)
 
@@ -23,10 +23,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     user = user_res.user
 
     # Fetch plan from users table
-    try:
-        result = db.table("users").select("plan").eq("id", user.id).single().execute()
-        plan = (result.data or {}).get("plan", "free")
-    except Exception:
-        plan = "free"
+    row = fetch_single(db.table("users").select("plan").eq("id", user.id).single())
+    plan = (row or {}).get("plan", "free")
 
     return {"id": user.id, "email": user.email, "plan": plan}

@@ -1,9 +1,10 @@
 import base64
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from app.database import get_supabase
 from app.models import UserProgressCreate, GestureRecognizeRequest
 from app.signflow_model import recognize_gesture
 from app.dependencies import get_current_user
+from app.limiter import limiter
 
 router = APIRouter(prefix="/gestures", tags=["gestures"])
 
@@ -28,7 +29,8 @@ async def get_gesture(gesture_id: str):
 
 
 @router.post("/recognize")
-async def recognize(data: GestureRecognizeRequest):
+@limiter.limit("60/minute")
+async def recognize(request: Request, data: GestureRecognizeRequest):
     try:
         frame = base64.b64decode(data.image, validate=False)
         result = recognize_gesture(frame, data.target_gesture)
