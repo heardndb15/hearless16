@@ -1,0 +1,10 @@
+export const bg = "#FFFFFF";
+export const bgList = "#F4F7FB";
+export const accent = "#1565C0";
+export const text = "#1A1A2E";
+export const textSecondary = "#9CA3AF";
+export const border = "#E8EDF5";
+export const chipBg = "#EBF3FF";
+export const cardShadow = "0 2px 12px rgba(0,0,0,0.07)";
+export const cardRadius = 16;
+export const likeActive = "#ef4444";
