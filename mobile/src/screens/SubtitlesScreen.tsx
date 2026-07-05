@@ -102,7 +102,7 @@ export default function SubtitlesScreen() {
   // Track recording duration
   const recordingStartRef = React.useRef<number | null>(null);
 
-  const [subtitleLang, setSubtitleLang] = useState<"ru" | "en">("ru");
+  const [subtitleLang, setSubtitleLang] = useState<"ru" | "en" | "kk">("ru");
 
   const {
     isRecording,
@@ -153,7 +153,7 @@ export default function SubtitlesScreen() {
         if (typeof s.bgOpacity === "number") setBgOpacity(s.bgOpacity);
         if (s.alignment) setAlignment(s.alignment);
         if (s.speakerMode !== undefined) setSpeakerMode(s.speakerMode);
-        if (s.subtitleLang === "ru" || s.subtitleLang === "en") setSubtitleLang(s.subtitleLang);
+        if (s.subtitleLang === "ru" || s.subtitleLang === "en" || s.subtitleLang === "kk") setSubtitleLang(s.subtitleLang);
       } catch {}
       settingsLoadedRef.current = true;
     });
@@ -319,6 +319,7 @@ export default function SubtitlesScreen() {
                   {[
                     { code: "ru" as const, label: "Русский" },
                     { code: "en" as const, label: "English" },
+                    { code: "kk" as const, label: "Қазақша" },
                   ].map((l) => (
                     <TouchableOpacity
                       key={l.code}
