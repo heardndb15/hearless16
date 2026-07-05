@@ -49,6 +49,10 @@ export async function POST(req: NextRequest) {
 
     const prediction = await createRes.json();
 
+    if (!createRes.ok) {
+      throw new Error(prediction?.detail || prediction?.error || `Replicate request failed: ${createRes.status}`);
+    }
+
     if (prediction.status === "succeeded") {
       const out = prediction.output;
       const result = Array.isArray(out) ? out.join("") : String(out || "");

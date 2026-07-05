@@ -124,6 +124,7 @@ export default function SubtitlesPage() {
   const [useWhisper, setUseWhisper] = useState(false);
   const [whisperStatus, setWhisperStatus] = useState<"idle" | "recording" | "processing">("idle");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const whisperIntervalRef = useRef<any>(null);
   const [token, setToken] = useState("");
@@ -281,6 +282,7 @@ export default function SubtitlesPage() {
   const startWhisperRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
       setWhisperStatus("recording");
       setIsMicActive(true);
       isMicActiveRef.current = true;
@@ -342,7 +344,7 @@ export default function SubtitlesPage() {
 
       startRecorder();
       whisperIntervalRef.current = setInterval(async () => {
-        if (!isMicActiveRef.current) { clearInterval(whisperIntervalRef.current); stream.getTracks().forEach(t => t.stop()); return; }
+        if (!isMicActiveRef.current) return;
         if (mediaRecorderRef.current?.state === "recording") {
           mediaRecorderRef.current.stop();
           await new Promise<void>(r => { mediaRecorderRef.current!.onstop = () => r(); });
@@ -357,6 +359,8 @@ export default function SubtitlesPage() {
     clearInterval(whisperIntervalRef.current);
     isMicActiveRef.current = false;
     if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
     if (recognitionRef.current) { try { recognitionRef.current.stop(); } catch {} recognitionRef.current = null; }
     setIsMicActive(false);
     setWhisperStatus("idle");
@@ -686,6 +690,15 @@ export default function SubtitlesPage() {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+      // Stop any in-progress mic dictation or background screen/tab capture
+      // so the browser's mic/tab-share indicator doesn't stay on after
+      // navigating away — neither path had unmount cleanup before.
+      clearInterval(whisperIntervalRef.current);
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      clearInterval(screenIntervalRef.current);
+      clearInterval(staleCheckIntervalRef.current);
+      if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
+      screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     };
   }, []);
 

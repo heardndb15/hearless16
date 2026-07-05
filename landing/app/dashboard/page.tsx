@@ -185,6 +185,12 @@ export default function SubtitlesDashboard() {
 
     return () => {
       stopRecordingSession();
+      // stopRecordingSession only tears down mic/WS dictation — background
+      // screen/tab-audio capture had no unmount cleanup at all before this.
+      clearInterval(screenIntervalRef.current);
+      clearInterval(staleCheckIntervalRef.current);
+      if (screenRecorderRef.current?.state === "recording") screenRecorderRef.current.stop();
+      screenStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
     };
   }, []);
 
