@@ -321,6 +321,7 @@ export default function CommunityPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("feed");
   const [dmWith, setDmWith] = useState<{ id: string; name: string } | null>(null);
+  const [dmUnreadCount, setDmUnreadCount] = useState(0);
   const loadingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -445,6 +446,9 @@ export default function CommunityPage() {
             >
               <span className="community-rail-icon">{tab.icon}</span>
               <span className="community-rail-label">{tab.label}</span>
+              {tab.id === "dms" && dmUnreadCount > 0 && (
+                <span className="community-rail-badge">{dmUnreadCount > 9 ? "9+" : dmUnreadCount}</span>
+              )}
             </button>
           ))}
         </div>
@@ -467,6 +471,9 @@ export default function CommunityPage() {
           >
             <span className="community-rail-icon">{tab.icon}</span>
             <span className="community-rail-label">{tab.label}</span>
+            {tab.id === "dms" && dmUnreadCount > 0 && (
+              <span className="community-rail-badge">{dmUnreadCount > 9 ? "9+" : dmUnreadCount}</span>
+            )}
           </button>
         ))}
       </nav>
@@ -548,7 +555,7 @@ export default function CommunityPage() {
 
           {/* DMs tab */}
           {activeTab === "dms" && (
-            <DmsTab userId={currentUserId} userName={userName} openDmWith={dmWith} onClearDmWith={() => setDmWith(null)} />
+            <DmsTab userId={currentUserId} userName={userName} openDmWith={dmWith} onClearDmWith={() => setDmWith(null)} onUnreadChange={setDmUnreadCount} />
           )}
         </div>
       </main>
@@ -590,6 +597,11 @@ export default function CommunityPage() {
         .community-rail-icon { font-size: 22px; }
         .community-rail-label { font-size: 11px; font-weight: 600; color: ${textSecondary}; }
         .community-rail-item.active .community-rail-label { color: ${accent}; }
+        .community-rail-badge {
+          position: absolute; top: 2px; right: 12px; min-width: 16px; height: 16px; border-radius: 8px;
+          background: ${likeActive}; color: white; font-size: 10px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center; padding: 0 3px;
+        }
         .community-rail-post-btn {
           display: block; text-align: center; background: ${accent}; color: white; text-decoration: none;
           border: none; border-radius: 12px; padding: 10px 6px; font-weight: 700; font-size: 12px;

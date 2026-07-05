@@ -28,9 +28,10 @@ interface Props {
   userName: string;
   openDmWith?: { id: string; name: string } | null;
   onClearDmWith?: () => void;
+  onUnreadChange?: (count: number) => void;
 }
 
-export function DmsTab({ userId, userName, openDmWith, onClearDmWith }: Props) {
+export function DmsTab({ userId, userName, openDmWith, onClearDmWith, onUnreadChange }: Props) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConv, setActiveConv] = useState<{ id: string; name: string } | null>(null);
   const activeConvRef = useRef<{ id: string; name: string } | null>(null);
@@ -93,6 +94,10 @@ export function DmsTab({ userId, userName, openDmWith, onClearDmWith }: Props) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    onUnreadChange?.(conversations.reduce((sum, c) => sum + c.unread, 0));
+  }, [conversations, onUnreadChange]);
 
   async function loadConversations() {
     if (!userId) return;
