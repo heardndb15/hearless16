@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import { ChatTab } from "./ChatTab";
 import { DmsTab } from "./DmsTab";
+import { bg, bgList, accent, text, textSecondary, border, chipBg, cardShadow, cardRadius, likeActive } from "./theme";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 
@@ -30,7 +31,7 @@ function initials(name: string): string {
 
 function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: size / 2, background: "linear-gradient(135deg,#38BDF8,#0EA5E9)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: size * 0.35, flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: size / 2, background: accent, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: size * 0.35, flexShrink: 0 }}>
       {initials(name)}
     </div>
   );
@@ -50,19 +51,19 @@ function PostCard({ post, currentUserId, token, onLike, onDelete, onOpen, onDm }
         <Avatar name={post.author.name} />
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div>
-          <div style={{ fontSize: 12, color: "#64748b", marginTop: 1 }}>{timeAgo(post.created_at)}</div>
+          <div style={{ fontSize: 12, color: textSecondary, marginTop: 1 }}>{timeAgo(post.created_at)}</div>
         </div>
         {!isOwn && token && (
-          <button onClick={() => onDm(post.author)} style={{ background: "#E0F2FE", border: "1px solid #BAE6FD", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: "#0369A1", cursor: "pointer" }}>
+          <button onClick={() => onDm(post.author)} style={{ background: chipBg, border: `1px solid ${border}`, borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: accent, cursor: "pointer" }}>
             ✉️ DM
           </button>
         )}
         {isOwn && (
           <div style={{ position: "relative" }}>
-            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#94a3b8", lineHeight: 1, padding: "0 4px" }}>···</button>
+            <button onClick={() => setMenuOpen(!menuOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: textSecondary, lineHeight: 1, padding: "0 4px" }}>···</button>
             {menuOpen && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "white", borderRadius: 12, boxShadow: "0 4px 16px rgba(0,0,0,0.12)", border: "1px solid #e2e8f0", minWidth: 140, overflow: "hidden" }}>
-                <button onClick={() => { setMenuOpen(false); onDelete(post.id); }} style={{ display: "block", width: "100%", padding: "12px 16px", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 10, background: "white", borderRadius: 12, boxShadow: "0 4px 16px rgba(0,0,0,0.12)", border: `1px solid ${border}`, minWidth: 140, overflow: "hidden" }}>
+                <button onClick={() => { setMenuOpen(false); onDelete(post.id); }} style={{ display: "block", width: "100%", padding: "12px 16px", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: likeActive, fontWeight: 600 }}>
                   🗑 Удалить пост
                 </button>
               </div>
@@ -70,13 +71,13 @@ function PostCard({ post, currentUserId, token, onLike, onDelete, onOpen, onDm }
           </div>
         )}
       </div>
-      <p onClick={() => onOpen(post)} style={{ margin: "0 0 12px", fontSize: 15, lineHeight: 1.65, color: "#1e293b", cursor: "pointer" }}>{post.text}</p>
+      <p onClick={() => onOpen(post)} style={{ margin: "0 0 12px", fontSize: 15, lineHeight: 1.65, color: text, cursor: "pointer" }}>{post.text}</p>
       {post.image_url && <img src={post.image_url} alt="" onClick={() => onOpen(post)} style={{ width: "100%", borderRadius: 12, marginBottom: 12, cursor: "pointer", maxHeight: 360, objectFit: "cover" }} />}
       <div style={{ display: "flex", gap: 20, alignItems: "center", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 12 }}>
-        <button onClick={() => { if (!token) { alert("Войдите, чтобы ставить лайки"); return; } onLike(post.id); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: post.liked_by_me ? "#ef4444" : "#64748b", fontWeight: 600, fontSize: 14, transition: "color 0.15s" }}>
+        <button onClick={() => { if (!token) { alert("Войдите, чтобы ставить лайки"); return; } onLike(post.id); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: post.liked_by_me ? likeActive : textSecondary, fontWeight: 600, fontSize: 14, transition: "color 0.15s" }}>
           <span style={{ fontSize: 18 }}>{post.liked_by_me ? "♥" : "♡"}</span>{post.likes_count}
         </button>
-        <button onClick={() => onOpen(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "#64748b", fontWeight: 600, fontSize: 14 }}>
+        <button onClick={() => onOpen(post)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: textSecondary, fontWeight: 600, fontSize: 14 }}>
           <span style={{ fontSize: 18 }}>💬</span>{post.comments_count}
         </button>
       </div>
@@ -120,47 +121,47 @@ function PostModal({ post, token, currentUserId, onClose, onLike, onDelete }: { 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 600, maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", borderBottom: `1px solid ${border}` }}>
           <Avatar name={post.author.name} />
-          <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div><div style={{ fontSize: 12, color: "#64748b" }}>{timeAgo(post.created_at)}</div></div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#94a3b8" }}>✕</button>
+          <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>{post.author.name}</div><div style={{ fontSize: 12, color: textSecondary }}>{timeAgo(post.created_at)}</div></div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: textSecondary }}>✕</button>
         </div>
-        <div style={{ padding: "20px 24px", borderBottom: "1px solid #f1f5f9", overflowY: "auto", maxHeight: 280 }}>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.65, color: "#1e293b" }}>{post.text}</p>
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${border}`, overflowY: "auto", maxHeight: 280 }}>
+          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.65, color: text }}>{post.text}</p>
           {post.image_url && <img src={post.image_url} alt="" style={{ width: "100%", borderRadius: 12, marginTop: 12, objectFit: "cover", maxHeight: 260 }} />}
           <div style={{ display: "flex", gap: 20, marginTop: 14 }}>
-            <button onClick={() => { if (!token) { alert("Войдите"); return; } onLike(post.id); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: post.liked_by_me ? "#ef4444" : "#64748b", fontWeight: 600, fontSize: 14 }}>
+            <button onClick={() => { if (!token) { alert("Войдите"); return; } onLike(post.id); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: post.liked_by_me ? likeActive : textSecondary, fontWeight: 600, fontSize: 14 }}>
               <span style={{ fontSize: 18 }}>{post.liked_by_me ? "♥" : "♡"}</span>{post.likes_count}
             </button>
-            <span style={{ color: "#64748b", fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}><span style={{ fontSize: 18 }}>💬</span>{comments.length}</span>
+            <span style={{ color: textSecondary, fontWeight: 600, fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}><span style={{ fontSize: 18 }}>💬</span>{comments.length}</span>
           </div>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px" }}>
-          {loading ? <p style={{ color: "#94a3b8", fontSize: 14, textAlign: "center" }}>Загрузка...</p>
-            : comments.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 14, textAlign: "center" }}>Комментариев пока нет</p>
+          {loading ? <p style={{ color: textSecondary, fontSize: 14, textAlign: "center" }}>Загрузка...</p>
+            : comments.length === 0 ? <p style={{ color: textSecondary, fontSize: 14, textAlign: "center" }}>Комментариев пока нет</p>
             : comments.map((c) => (
               <div key={c.id} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                 <Avatar name={c.author.name} size={32} />
-                <div style={{ flex: 1, background: "#f8fafc", borderRadius: 12, padding: "10px 14px" }}>
+                <div style={{ flex: 1, background: bgList, borderRadius: 12, padding: "10px 14px" }}>
                   <div style={{ fontWeight: 700, fontSize: 12, color: "var(--text)", marginBottom: 3 }}>{c.author.name}</div>
-                  <div style={{ fontSize: 14, color: "#334155", lineHeight: 1.5 }}>{c.text}</div>
-                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>{timeAgo(c.created_at)}</div>
+                  <div style={{ fontSize: 14, color: text, lineHeight: 1.5 }}>{c.text}</div>
+                  <div style={{ fontSize: 11, color: textSecondary, marginTop: 4 }}>{timeAgo(c.created_at)}</div>
                 </div>
               </div>
             ))}
         </div>
-        <div style={{ padding: "14px 24px", borderTop: "1px solid #f1f5f9", display: "flex", flexDirection: "column", gap: 8 }}>
-          {commentError && <p style={{ margin: 0, fontSize: 12, color: "#ef4444" }}>{commentError}</p>}
+        <div style={{ padding: "14px 24px", borderTop: `1px solid ${border}`, display: "flex", flexDirection: "column", gap: 8 }}>
+          {commentError && <p style={{ margin: 0, fontSize: 12, color: likeActive }}>{commentError}</p>}
           {token ? (
             <div style={{ display: "flex", gap: 10 }}>
-              <input value={commentText} onChange={(e) => setCommentText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(); } }} placeholder="Написать комментарий..." style={{ flex: 1, border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "10px 14px", fontSize: 14, outline: "none", fontFamily: "inherit", background: "#f8fafc" }} />
-              <button onClick={sendComment} disabled={sending || !commentText.trim()} style={{ background: "#0EA5E9", color: "white", border: "none", borderRadius: 12, padding: "0 18px", fontWeight: 700, cursor: "pointer", fontSize: 14, opacity: (sending || !commentText.trim()) ? 0.5 : 1 }}>
+              <input value={commentText} onChange={(e) => setCommentText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(); } }} placeholder="Написать комментарий..." style={{ flex: 1, border: `1.5px solid ${border}`, borderRadius: 12, padding: "10px 14px", fontSize: 14, outline: "none", fontFamily: "inherit", background: bgList }} />
+              <button onClick={sendComment} disabled={sending || !commentText.trim()} style={{ background: accent, color: "white", border: "none", borderRadius: 12, padding: "0 18px", fontWeight: 700, cursor: "pointer", fontSize: 14, opacity: (sending || !commentText.trim()) ? 0.5 : 1 }}>
                 {sending ? "..." : "↑"}
               </button>
             </div>
           ) : (
-            <p style={{ margin: 0, fontSize: 13, color: "#64748b", textAlign: "center", width: "100%" }}>
-              <Link href="/login" style={{ color: "#0EA5E9", fontWeight: 600 }}>Войдите</Link>, чтобы оставить комментарий
+            <p style={{ margin: 0, fontSize: 13, color: textSecondary, textAlign: "center", width: "100%" }}>
+              <Link href="/login" style={{ color: accent, fontWeight: 600 }}>Войдите</Link>, чтобы оставить комментарий
             </p>
           )}
         </div>
@@ -207,20 +208,20 @@ function CreatePostModal({ token, onClose, onCreated }: { token: string; onClose
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: `1px solid ${border}` }}>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--text)" }}>Новый пост</h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#94a3b8" }}>✕</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: textSecondary }}>✕</button>
         </div>
         <div style={{ padding: "20px 24px" }}>
-          <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Что у вас нового?" rows={5} style={{ width: "100%", border: "1.5px solid #e2e8f0", borderRadius: 14, padding: "14px 16px", fontSize: 15, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6, boxSizing: "border-box", background: "#f8fafc" }} />
+          <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Что у вас нового?" rows={5} style={{ width: "100%", border: `1.5px solid ${border}`, borderRadius: 14, padding: "14px 16px", fontSize: 15, resize: "vertical", outline: "none", fontFamily: "inherit", lineHeight: 1.6, boxSizing: "border-box", background: bgList }} />
           {error && (
             <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginTop: 10 }}>
               <p style={{ color: "#DC2626", fontSize: 13, margin: 0, fontWeight: 600 }}>⚠️ {error}</p>
             </div>
           )}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
-            <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 12, border: "1.5px solid #e2e8f0", background: "white", cursor: "pointer", fontWeight: 600, fontSize: 14, color: "#64748b" }}>Отмена</button>
-            <button onClick={submit} disabled={loading || !text.trim()} style={{ padding: "10px 24px", borderRadius: 12, border: "none", background: "#0EA5E9", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", opacity: (loading || !text.trim()) ? 0.5 : 1 }}>
+            <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 12, border: `1.5px solid ${border}`, background: "white", cursor: "pointer", fontWeight: 600, fontSize: 14, color: textSecondary }}>Отмена</button>
+            <button onClick={submit} disabled={loading || !text.trim()} style={{ padding: "10px 24px", borderRadius: 12, border: "none", background: accent, color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", opacity: (loading || !text.trim()) ? 0.5 : 1 }}>
               {loading ? "Публикация..." : "Опубликовать"}
             </button>
           </div>
@@ -262,8 +263,8 @@ function UsernameModal({ onSave }: { onSave: (name: string) => void }) {
       <div style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 420, padding: "32px 28px", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>👤</div>
-          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0C4A6E" }}>Установите имя</h2>
-          <p style={{ margin: "8px 0 0", fontSize: 14, color: "#075985" }}>Под каким именем вас будут видеть в сообществе</p>
+          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: text }}>Установите имя</h2>
+          <p style={{ margin: "8px 0 0", fontSize: 14, color: textSecondary }}>Под каким именем вас будут видеть в сообществе</p>
         </div>
         <input
           value={name}
@@ -272,12 +273,12 @@ function UsernameModal({ onSave }: { onSave: (name: string) => void }) {
           placeholder="Ваше имя или никнейм"
           maxLength={32}
           autoFocus
-          style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid #BAE6FD", fontSize: 16, outline: "none", boxSizing: "border-box", marginBottom: 16, fontFamily: "inherit" }}
+          style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${border}`, fontSize: 16, outline: "none", boxSizing: "border-box", marginBottom: 16, fontFamily: "inherit" }}
         />
         <button
           onClick={save}
           disabled={!name.trim() || saving}
-          style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: name.trim() ? "#0EA5E9" : "#BAE6FD", color: "white", fontWeight: 700, fontSize: 15, cursor: name.trim() ? "pointer" : "not-allowed" }}
+          style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: name.trim() ? accent : chipBg, color: "white", fontWeight: 700, fontSize: 15, cursor: name.trim() ? "pointer" : "not-allowed" }}
         >
           {saving ? "Сохранение..." : "Сохранить и продолжить"}
         </button>
@@ -394,36 +395,36 @@ export default function CommunityPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F0F9FF", paddingTop: 80 }}>
+    <div style={{ minHeight: "100vh", background: bgList, paddingTop: 80 }}>
       {showUsernameModal && (
         <UsernameModal onSave={(n) => { setUserName(n); setShowUsernameModal(false); }} />
       )}
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 12px" }}>
-        <Link href="/" style={{ color: "#075985", textDecoration: "none", fontSize: 13, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>← На главную</Link>
+        <Link href="/" style={{ color: textSecondary, textDecoration: "none", fontSize: 13, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>← На главную</Link>
       </div>
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 60px" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "#0C4A6E" }}>Community</h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: "#075985" }}>
+            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: text }}>Community</h1>
+            <p style={{ margin: "4px 0 0", fontSize: 14, color: textSecondary }}>
               {userName ? `Привет, ${userName} 👋` : "Общайтесь с сообществом Hearless"}
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {userName && (
-              <button onClick={() => setShowUsernameModal(true)} style={{ background: "none", border: "1px solid #BAE6FD", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: "#0369A1", cursor: "pointer" }}>
+              <button onClick={() => setShowUsernameModal(true)} style={{ background: "none", border: `1px solid ${border}`, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: accent, cursor: "pointer" }}>
                 ✏️ {userName}
               </button>
             )}
             {token ? (
-              <button onClick={() => setShowCreate(true)} style={{ background: "#0EA5E9", color: "white", border: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+              <button onClick={() => setShowCreate(true)} style={{ background: accent, color: "white", border: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                 + Пост
               </button>
             ) : (
-              <Link href="/login" style={{ background: "#0EA5E9", color: "white", textDecoration: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 14 }}>Войти</Link>
+              <Link href="/login" style={{ background: accent, color: "white", textDecoration: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 14 }}>Войти</Link>
             )}
           </div>
         </div>
@@ -436,8 +437,8 @@ export default function CommunityPage() {
               onClick={() => setActiveTab(tab.id)}
               style={{
                 flex: 1, padding: "9px 12px", borderRadius: 10, border: "none",
-                background: activeTab === tab.id ? "#0EA5E9" : "transparent",
-                color: activeTab === tab.id ? "white" : "#075985",
+                background: activeTab === tab.id ? accent : "transparent",
+                color: activeTab === tab.id ? "white" : textSecondary,
                 fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}
@@ -453,7 +454,7 @@ export default function CommunityPage() {
           <>
             <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
               {(["new", "popular"] as const).map((s) => (
-                <button key={s} onClick={() => setSort(s)} style={{ padding: "8px 20px", borderRadius: 50, border: sort === s ? "1.5px solid #0EA5E9" : "1.5px solid #BAE6FD", background: sort === s ? "#0EA5E9" : "white", color: sort === s ? "white" : "#0369A1", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
+                <button key={s} onClick={() => setSort(s)} style={{ padding: "8px 20px", borderRadius: 50, border: sort === s ? `1.5px solid ${accent}` : `1.5px solid ${border}`, background: sort === s ? accent : chipBg, color: sort === s ? "white" : accent, fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
                   {s === "new" ? "Новые" : "Популярные"}
                 </button>
               ))}
@@ -461,14 +462,14 @@ export default function CommunityPage() {
             {fetchError ? (
               <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
                 <p style={{ color: "#DC2626", fontSize: 14, fontWeight: 600, margin: "0 0 14px" }}>⚠️ {fetchError}</p>
-                <button onClick={() => fetchPosts(sort, 0, false)} style={{ background: "#0EA5E9", color: "white", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                <button onClick={() => fetchPosts(sort, 0, false)} style={{ background: accent, color: "white", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                   Повторить
                 </button>
               </div>
             ) : loading && posts.length === 0 ? (
               <div style={{ textAlign: "center", paddingTop: 60 }}>
-                <div style={{ width: 44, height: 44, border: "4px solid rgba(14,165,233,0.2)", borderTopColor: "#0EA5E9", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-                <p style={{ color: "#075985", fontSize: 14 }}>Загрузка постов...</p>
+                <div style={{ width: 44, height: 44, border: "4px solid rgba(14,165,233,0.2)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+                <p style={{ color: textSecondary, fontSize: 14 }}>Загрузка постов...</p>
               </div>
             ) : posts.length === 0 ? (
               <div style={{ background: "var(--bgCard)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
@@ -482,7 +483,7 @@ export default function CommunityPage() {
                 ))}
                 {hasMore && (
                   <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <button onClick={() => fetchPosts(sort, offset, true)} disabled={loading} style={{ padding: "12px 32px", borderRadius: 12, border: "1.5px solid #BAE6FD", background: "white", color: "#0369A1", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                    <button onClick={() => fetchPosts(sort, offset, true)} disabled={loading} style={{ padding: "12px 32px", borderRadius: 12, border: `1.5px solid ${border}`, background: "white", color: accent, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                       {loading ? "Загрузка..." : "Показать ещё"}
                     </button>
                   </div>
