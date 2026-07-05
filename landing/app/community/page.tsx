@@ -395,114 +395,122 @@ export default function CommunityPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: bgList, paddingTop: 80 }}>
-      {showUsernameModal && (
-        <UsernameModal onSave={(n) => { setUserName(n); setShowUsernameModal(false); }} />
-      )}
-
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 12px" }}>
-        <Link href="/" style={{ color: textSecondary, textDecoration: "none", fontSize: 13, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>← На главную</Link>
-      </div>
-
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 60px" }}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: text }}>Community</h1>
-            <p style={{ margin: "4px 0 0", fontSize: 14, color: textSecondary }}>
-              {userName ? `Привет, ${userName} 👋` : "Общайтесь с сообществом Hearless"}
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {userName && (
-              <button onClick={() => setShowUsernameModal(true)} style={{ background: "none", border: `1px solid ${border}`, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: accent, cursor: "pointer" }}>
-                ✏️ {userName}
-              </button>
-            )}
-            {token ? (
-              <button onClick={() => setShowCreate(true)} style={{ background: accent, color: "white", border: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                + Пост
-              </button>
-            ) : (
-              <Link href="/login" style={{ background: accent, color: "white", textDecoration: "none", borderRadius: 12, padding: "10px 20px", fontWeight: 700, fontSize: 14 }}>Войти</Link>
-            )}
-          </div>
-        </div>
-
-        {/* Tab bar */}
-        <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "white", padding: 4, borderRadius: 14, border: "1px solid var(--border)" }}>
+    <div style={{ minHeight: "100vh", background: bgList }}>
+      <nav className="community-rail">
+        <div className="community-rail-top">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                flex: 1, padding: "9px 12px", borderRadius: 10, border: "none",
-                background: activeTab === tab.id ? accent : "transparent",
-                color: activeTab === tab.id ? "white" : textSecondary,
-                fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all 0.2s",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              }}
+              className={`community-rail-item${activeTab === tab.id ? " active" : ""}`}
             >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
+              <span className="community-rail-icon">{tab.icon}</span>
+              <span className="community-rail-label">{tab.label}</span>
             </button>
           ))}
         </div>
+        <div className="community-rail-bottom">
+          {token ? (
+            <button onClick={() => setShowCreate(true)} className="community-rail-post-btn">+ Пост</button>
+          ) : (
+            <Link href="/login" className="community-rail-post-btn">Войти</Link>
+          )}
+          <Link href="/" className="community-rail-home-link">← На сайт</Link>
+        </div>
+      </nav>
 
-        {/* Feed tab */}
-        {activeTab === "feed" && (
-          <>
-            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-              {(["new", "popular"] as const).map((s) => (
-                <button key={s} onClick={() => setSort(s)} style={{ padding: "8px 20px", borderRadius: 50, border: sort === s ? `1.5px solid ${accent}` : `1.5px solid ${border}`, background: sort === s ? accent : "white", color: sort === s ? "white" : accent, fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
-                  {s === "new" ? "Новые" : "Популярные"}
-                </button>
-              ))}
+      <nav className="community-bottombar">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`community-rail-item${activeTab === tab.id ? " active" : ""}`}
+          >
+            <span className="community-rail-icon">{tab.icon}</span>
+            <span className="community-rail-label">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {activeTab === "feed" && (
+        <button
+          className="community-fab"
+          onClick={() => (token ? setShowCreate(true) : (window.location.href = "/login"))}
+          aria-label="Новый пост"
+        >
+          +
+        </button>
+      )}
+
+      <main className="community-main" style={{ paddingTop: 24 }}>
+        {showUsernameModal && (
+          <UsernameModal onSave={(n) => { setUserName(n); setShowUsernameModal(false); }} />
+        )}
+
+        <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 20px 60px" }}>
+          {userName && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+              <button onClick={() => setShowUsernameModal(true)} style={{ background: "none", border: `1px solid ${border}`, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: accent, cursor: "pointer" }}>
+                ✏️ {userName}
+              </button>
             </div>
-            {fetchError ? (
-              <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
-                <p style={{ color: "#DC2626", fontSize: 14, fontWeight: 600, margin: "0 0 14px" }}>⚠️ {fetchError}</p>
-                <button onClick={() => fetchPosts(sort, 0, false)} style={{ background: accent, color: "white", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                  Повторить
-                </button>
-              </div>
-            ) : loading && posts.length === 0 ? (
-              <div style={{ textAlign: "center", paddingTop: 60 }}>
-                <div style={{ width: 44, height: 44, border: "4px solid rgba(21,101,192,0.2)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-                <p style={{ color: textSecondary, fontSize: 14 }}>Загрузка постов...</p>
-              </div>
-            ) : posts.length === 0 ? (
-              <div style={{ background: "var(--bgCard)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>
-                <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Будьте первым — опубликуйте пост!</p>
-              </div>
-            ) : (
-              <>
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} currentUserId={currentUserId} token={token} onLike={handleLike} onDelete={handleDelete} onOpen={setSelectedPost} onDm={handleDm} />
+          )}
+
+          {/* Feed tab */}
+          {activeTab === "feed" && (
+            <>
+              <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                {(["new", "popular"] as const).map((s) => (
+                  <button key={s} onClick={() => setSort(s)} style={{ padding: "8px 20px", borderRadius: 50, border: sort === s ? `1.5px solid ${accent}` : `1.5px solid ${border}`, background: sort === s ? accent : "white", color: sort === s ? "white" : accent, fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.2s" }}>
+                    {s === "new" ? "Новые" : "Популярные"}
+                  </button>
                 ))}
-                {hasMore && (
-                  <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <button onClick={() => fetchPosts(sort, offset, true)} disabled={loading} style={{ padding: "12px 32px", borderRadius: 12, border: `1.5px solid ${border}`, background: "white", color: accent, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                      {loading ? "Загрузка..." : "Показать ещё"}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
+              </div>
+              {fetchError ? (
+                <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 16, padding: "28px 24px", textAlign: "center" }}>
+                  <p style={{ color: "#DC2626", fontSize: 14, fontWeight: 600, margin: "0 0 14px" }}>⚠️ {fetchError}</p>
+                  <button onClick={() => fetchPosts(sort, 0, false)} style={{ background: accent, color: "white", border: "none", borderRadius: 10, padding: "10px 24px", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                    Повторить
+                  </button>
+                </div>
+              ) : loading && posts.length === 0 ? (
+                <div style={{ textAlign: "center", paddingTop: 60 }}>
+                  <div style={{ width: 44, height: 44, border: "4px solid rgba(21,101,192,0.2)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+                  <p style={{ color: textSecondary, fontSize: 14 }}>Загрузка постов...</p>
+                </div>
+              ) : posts.length === 0 ? (
+                <div style={{ background: "var(--bgCard)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>
+                  <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "var(--text)" }}>Будьте первым — опубликуйте пост!</p>
+                </div>
+              ) : (
+                <>
+                  {posts.map((post) => (
+                    <PostCard key={post.id} post={post} currentUserId={currentUserId} token={token} onLike={handleLike} onDelete={handleDelete} onOpen={setSelectedPost} onDm={handleDm} />
+                  ))}
+                  {hasMore && (
+                    <div style={{ textAlign: "center", marginTop: 8 }}>
+                      <button onClick={() => fetchPosts(sort, offset, true)} disabled={loading} style={{ padding: "12px 32px", borderRadius: 12, border: `1.5px solid ${border}`, background: "white", color: accent, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                        {loading ? "Загрузка..." : "Показать ещё"}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
 
-        {/* Chat tab */}
-        {activeTab === "chat" && (
-          <ChatTab userId={currentUserId} userName={userName} />
-        )}
+          {/* Chat tab */}
+          {activeTab === "chat" && (
+            <ChatTab userId={currentUserId} userName={userName} />
+          )}
 
-        {/* DMs tab */}
-        {activeTab === "dms" && (
-          <DmsTab userId={currentUserId} userName={userName} openDmWith={dmWith} onClearDmWith={() => setDmWith(null)} />
-        )}
-      </div>
+          {/* DMs tab */}
+          {activeTab === "dms" && (
+            <DmsTab userId={currentUserId} userName={userName} openDmWith={dmWith} onClearDmWith={() => setDmWith(null)} />
+          )}
+        </div>
+      </main>
 
       {selectedPost && (
         <PostModal post={selectedPost} token={token} currentUserId={currentUserId} onClose={() => setSelectedPost(null)} onLike={handleLike} onDelete={handleDelete} />
@@ -511,7 +519,51 @@ export default function CommunityPage() {
         <CreatePostModal token={token} onClose={() => setShowCreate(false)} onCreated={(post) => { setPosts((prev) => [post, ...prev]); }} />
       )}
 
-      <style dangerouslySetInnerHTML={{ __html: `@keyframes spin { to { transform: rotate(360deg); } }` }} />
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .community-rail {
+          position: fixed; top: 0; left: 0; bottom: 0; width: 88px;
+          background: #FFFFFF; border-right: 1px solid ${border};
+          display: flex; flex-direction: column; justify-content: space-between;
+          padding: 24px 8px; z-index: 50;
+        }
+        .community-rail-top { display: flex; flex-direction: column; gap: 8px; }
+        .community-rail-item {
+          display: flex; flex-direction: column; align-items: center; gap: 4px;
+          background: none; border: none; cursor: pointer; padding: 10px 4px; border-radius: 14px;
+          position: relative;
+        }
+        .community-rail-item.active { background: ${chipBg}; }
+        .community-rail-icon { font-size: 22px; }
+        .community-rail-label { font-size: 11px; font-weight: 600; color: ${textSecondary}; }
+        .community-rail-item.active .community-rail-label { color: ${accent}; }
+        .community-rail-post-btn {
+          display: block; text-align: center; background: ${accent}; color: white; text-decoration: none;
+          border: none; border-radius: 12px; padding: 10px 6px; font-weight: 700; font-size: 12px;
+          cursor: pointer; margin-bottom: 12px; width: 100%;
+        }
+        .community-rail-home-link { display: block; text-align: center; color: ${textSecondary}; text-decoration: none; font-size: 11px; }
+        .community-main { margin-left: 88px; }
+        .community-bottombar { display: none; }
+        .community-fab { display: none; }
+
+        @media (max-width: 768px) {
+          .community-rail { display: none; }
+          .community-main { margin-left: 0; padding-bottom: 76px; }
+          .community-bottombar {
+            display: flex; position: fixed; left: 0; right: 0; bottom: 0; height: 60px;
+            background: #FFFFFF; border-top: 1px solid ${border}; z-index: 50;
+          }
+          .community-bottombar .community-rail-item { flex: 1; padding: 6px 4px; border-radius: 0; }
+          .community-fab {
+            display: flex; position: fixed; right: 20px; bottom: 76px; width: 52px; height: 52px;
+            border-radius: 26px; background: ${accent}; color: white; border: none; font-size: 26px;
+            align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 51; cursor: pointer;
+          }
+        }
+      ` }} />
     </div>
   );
 }
