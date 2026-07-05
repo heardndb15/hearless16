@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE = "https://hearless16-ej8b.vercel.app";
+const BASE = "https://hearless16-pcug.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

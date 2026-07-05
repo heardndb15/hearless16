@@ -31,7 +31,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://hearless16-ej8b.vercel.app",
+        "https://hearless16-pcug.vercel.app",
         "https://hearless16-1.onrender.com",
         "http://localhost:3000",
     ],

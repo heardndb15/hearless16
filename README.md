@@ -13,7 +13,7 @@
 
 ## Сайт (лендинг)
 
-Развёрнут на Vercel: https://hearless16-ej8b.vercel.app
+Развёрнут на Vercel: https://hearless16-pcug.vercel.app
 
 Страницы:
 - `/` — главная (Hero, Features, Stats)
