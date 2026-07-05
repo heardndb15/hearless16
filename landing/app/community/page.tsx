@@ -289,6 +289,22 @@ function UsernameModal({ onSave }: { onSave: (name: string) => void }) {
 
 type Tab = "feed" | "chat" | "dms";
 
+function PostSkeleton() {
+  return (
+    <div style={{ background: "#FFFFFF", border: `1px solid ${border}`, borderRadius: cardRadius, padding: "20px 24px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="community-skeleton-bar" style={{ width: 40, height: 40, borderRadius: 20 }} />
+        <div style={{ flex: 1 }}>
+          <div className="community-skeleton-bar" style={{ width: "40%", height: 12, marginBottom: 6 }} />
+          <div className="community-skeleton-bar" style={{ width: "25%", height: 10 }} />
+        </div>
+      </div>
+      <div className="community-skeleton-bar" style={{ width: "90%", height: 14, marginTop: 14 }} />
+      <div className="community-skeleton-bar" style={{ width: "60%", height: 14, marginTop: 8 }} />
+    </div>
+  );
+}
+
 export default function CommunityPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [sort, setSort] = useState<"new" | "popular">("new");
@@ -474,10 +490,12 @@ export default function CommunityPage() {
                   </button>
                 </div>
               ) : loading && posts.length === 0 ? (
-                <div style={{ textAlign: "center", paddingTop: 60 }}>
-                  <div style={{ width: 44, height: 44, border: "4px solid rgba(21,101,192,0.2)", borderTopColor: accent, borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-                  <p style={{ color: textSecondary, fontSize: 14 }}>Загрузка постов...</p>
-                </div>
+                <>
+                  <PostSkeleton />
+                  <PostSkeleton />
+                  <PostSkeleton />
+                  <PostSkeleton />
+                </>
               ) : posts.length === 0 ? (
                 <div style={{ background: "var(--bgCard)", border: "1px solid var(--border)", borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
                   <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>
@@ -521,6 +539,14 @@ export default function CommunityPage() {
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes community-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .community-skeleton-bar {
+          background: linear-gradient(90deg, ${bgList} 25%, ${border} 37%, ${bgList} 63%);
+          background-size: 400% 100%;
+          animation: community-shimmer 1.4s ease infinite;
+          border-radius: 6px;
+        }
 
         .community-rail {
           position: fixed; top: 0; left: 0; bottom: 0; width: 88px;
