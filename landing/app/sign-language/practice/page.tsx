@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GESTURE_DEFS, CONNECTIONS } from "./gestureDefs";
-import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
+import { FilesetResolver, HandLandmarker, DrawingUtils, HandLandmarkerResult, NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 
 function GesturePracticeContent() {
@@ -40,7 +40,7 @@ function GesturePracticeContent() {
   const drawingUtilsRef = useRef<DrawingUtils | null>(null);
 
   // Математическая функция расчета евклидова расстояния
-  const getDistance3D = (pt1: any, pt2: any) => {
+  const getDistance3D = (pt1: NormalizedLandmark, pt2: NormalizedLandmark) => {
     return Math.sqrt(
       Math.pow(pt1.x - pt2.x, 2) +
       Math.pow(pt1.y - pt2.y, 2) +
@@ -118,7 +118,7 @@ function GesturePracticeContent() {
   };
 
   // Обработчик результатов трекинга от MediaPipe
-  const handleTrackingResults = (results: any) => {
+  const handleTrackingResults = (results: HandLandmarkerResult) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -128,8 +128,8 @@ function GesturePracticeContent() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Если рука найдена в кадре
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-      const landmarks = results.multiHandLandmarks[0];
+    if (results.landmarks && results.landmarks.length > 0) {
+      const landmarks = results.landmarks[0];
 
       // 1. ВЫЧИСЛЕНИЕ ВРАЩАТЕЛЬНО- И МАСШТАБНО-ИНВАРИАНТНЫХ ПРИЗНАКОВ
       // Точка 0: запястье. Точка 9: основание среднего пальца (MCP сустав)
