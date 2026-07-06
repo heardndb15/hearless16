@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 import { GESTURE_DEFS, CONNECTIONS } from "./gestureDefs";
+import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
 
 
 function GesturePracticeContent() {
@@ -21,13 +22,12 @@ function GesturePracticeContent() {
   });
   const [activeFeatures, setActiveFeatures] = useState<Record<string, number> | null>(null);
 
-  // Статусы камеры и скриптов
-  const [scriptsLoaded, setScriptsLoaded] = useState({ camera: false, hands: false });
+  // Статусы камеры и модели
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [isModelLoading, setIsModelLoading] = useState<boolean>(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [handsTrackingActive, setHandsTrackingActive] = useState<boolean>(false);
-  
+
   // Режим калибровки (для разработчика)
   const [calibrationMode, setCalibrationMode] = useState<boolean>(false);
   const [calibratedFeatures, setCalibratedFeatures] = useState<string | null>(null);
@@ -35,9 +35,10 @@ function GesturePracticeContent() {
   // Референсы элементов DOM и MediaPipe
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const handsInstanceRef = useRef<any>(null);
-  const cameraInstanceRef = useRef<any>(null);
+  const handLandmarkerRef = useRef<HandLandmarker | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const animationFrameIdRef = useRef<number | null>(null);
+  const drawingUtilsRef = useRef<DrawingUtils | null>(null);
 
   // Математическая функция расчета евклидова расстояния
   const getDistance3D = (pt1: any, pt2: any) => {
@@ -48,63 +49,62 @@ function GesturePracticeContent() {
     );
   };
 
-  // Инициализация MediaPipe Hands
-  const initMediaPipe = () => {
+  // Инициализация MediaPipe HandLandmarker
+  const initMediaPipe = async () => {
     if (typeof window === "undefined" || !videoRef.current || !canvasRef.current) return;
-    
+
     setCameraError(null);
     setIsModelLoading(true);
 
     try {
-      const Hands = (window as any).Hands;
-      const Camera = (window as any).Camera;
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm"
+      );
 
-      if (!Hands || !Camera) {
-        throw new Error("Библиотеки MediaPipe не найдены в глобальной области видимости.");
-      }
-
-      // Создаем экземпляр детектора рук
-      const hands = new Hands({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-      });
-
-      hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6
-      });
-
-      hands.onResults(handleTrackingResults);
-      handsInstanceRef.current = hands;
-
-      // Создаем обертку для веб-камеры
-      const camera = new Camera(videoRef.current, {
-        onFrame: async () => {
-          if (videoRef.current) {
-            await hands.send({ image: videoRef.current });
-          }
+      const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
         },
-        width: 640,
-        height: 480
+        runningMode: "VIDEO",
+        numHands: 1,
+        minHandDetectionConfidence: 0.6,
+        minHandPresenceConfidence: 0.6,
+        minTrackingConfidence: 0.6,
       });
 
-      cameraInstanceRef.current = camera;
-      camera.start()
-        .then(() => {
-          setIsCameraActive(true);
-          setIsModelLoading(false);
-          setHandsTrackingActive(true);
-        })
-        .catch((err: any) => {
-          console.error("Ошибка запуска камеры: ", err);
-          setCameraError("Не удалось получить доступ к веб-камере. Пожалуйста, проверьте разрешения в настройках браузера.");
-          setIsModelLoading(false);
-        });
+      handLandmarkerRef.current = handLandmarker;
 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480 },
+        audio: false,
+      });
+
+      if (!videoRef.current) return;
+      mediaStreamRef.current = stream;
+      videoRef.current.srcObject = stream;
+
+      await new Promise<void>((resolve) => {
+        if (!videoRef.current) return resolve();
+        videoRef.current.onloadeddata = () => resolve();
+      });
+
+      await videoRef.current.play();
+
+      setIsCameraActive(true);
+      setIsModelLoading(false);
+      setHandsTrackingActive(true);
+
+      const predictLoop = () => {
+        if (!videoRef.current || !handLandmarkerRef.current) return;
+        const results = handLandmarkerRef.current.detectForVideo(videoRef.current, performance.now());
+        handleTrackingResults(results);
+        animationFrameIdRef.current = requestAnimationFrame(predictLoop);
+      };
+      predictLoop();
     } catch (err: any) {
       console.error("Ошибка инициализации MediaPipe: ", err);
-      setCameraError(`Критическая ошибка инициализации трекера: ${err.message}`);
+      setCameraError(`Не удалось получить доступ к веб-камере или инициализировать трекер: ${err.message}`);
       setIsModelLoading(false);
     }
   };
@@ -265,20 +265,6 @@ function GesturePracticeContent() {
     });
   };
 
-  // Обработка загрузки сторонних скриптов MediaPipe
-  const handleScriptLoad = (type: "camera" | "hands") => {
-    setScriptsLoaded(prev => {
-      const updated = { ...prev, [type]: true };
-      if (updated.camera && updated.hands) {
-        // Ожидаем отрисовку элементов DOM
-        setTimeout(() => {
-          initMediaPipe();
-        }, 100);
-      }
-      return updated;
-    });
-  };
-
   // Переключение активного жеста
   const handleGestureChange = (gestureId: string) => {
     setActiveGesture(gestureId);
@@ -298,67 +284,31 @@ function GesturePracticeContent() {
     console.log("Калибровочные данные для жеста:", formatted);
   };
 
-  // Очистка веб-камеры и детектора при размонтировании
+  // Инициализация трекера при монтировании, очистка при размонтировании
   useEffect(() => {
-    // При монтировании проверяем, не загружены ли скрипты уже в глобальный контекст (для переходов без перезагрузки)
-    if (typeof window !== "undefined") {
-      const hasCamera = !!(window as any).Camera;
-      const hasHands = !!(window as any).Hands;
-      if (hasCamera && hasHands) {
-        setScriptsLoaded({ camera: true, hands: true });
-        setIsModelLoading(true);
-        const timer = setTimeout(() => {
-          initMediaPipe();
-        }, 500);
-        
-        return () => {
-          clearTimeout(timer);
-          // Полное освобождение камеры
-          if (cameraInstanceRef.current) {
-            cameraInstanceRef.current.stop();
-          }
-          if (handsInstanceRef.current) {
-            handsInstanceRef.current.close();
-          }
-          if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach((track) => track.stop());
-            videoRef.current.srcObject = null;
-          }
-        };
-      }
-    }
+    initMediaPipe();
 
     return () => {
-      // Полное освобождение камеры при обычном выходе
-      if (cameraInstanceRef.current) {
-        cameraInstanceRef.current.stop();
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
       }
-      if (handsInstanceRef.current) {
-        handsInstanceRef.current.close();
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
       }
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
+      if (handLandmarkerRef.current) {
+        handLandmarkerRef.current.close();
+        handLandmarkerRef.current = null;
+      }
+      if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
-      {/* Загрузка скриптов MediaPipe через Next.js Script */}
-      <Script
-        src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
-        strategy="afterInteractive"
-        onLoad={() => handleScriptLoad("camera")}
-      />
-      <Script
-        src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
-        strategy="afterInteractive"
-        onLoad={() => handleScriptLoad("hands")}
-      />
-
       <div style={{ padding: "100px 24px 60px", maxWidth: 1100, margin: "0 auto" }}>
         <Link href="/sign-language" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24, fontWeight: 600, transition: "color 0.2s" }}
           onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}
