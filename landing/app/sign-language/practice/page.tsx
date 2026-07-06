@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Script from "next/script";
 import { GESTURE_DEFS, CONNECTIONS } from "./gestureDefs";
 import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
 
@@ -50,7 +49,9 @@ function GesturePracticeContent() {
   };
 
   // Инициализация MediaPipe HandLandmarker
-  const initMediaPipe = async () => {
+  // shouldContinue позволяет отменить инициализацию, если компонент размонтирован
+  // до завершения одного из асинхронных шагов (см. useEffect ниже)
+  const initMediaPipe = async (shouldContinue: () => boolean = () => true) => {
     if (typeof window === "undefined" || !videoRef.current || !canvasRef.current) return;
 
     setCameraError(null);
@@ -73,6 +74,10 @@ function GesturePracticeContent() {
         minTrackingConfidence: 0.6,
       });
 
+      if (!shouldContinue()) {
+        handLandmarker.close();
+        return;
+      }
       handLandmarkerRef.current = handLandmarker;
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -80,7 +85,10 @@ function GesturePracticeContent() {
         audio: false,
       });
 
-      if (!videoRef.current) return;
+      if (!shouldContinue() || !videoRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       mediaStreamRef.current = stream;
       videoRef.current.srcObject = stream;
 
@@ -286,9 +294,11 @@ function GesturePracticeContent() {
 
   // Инициализация трекера при монтировании, очистка при размонтировании
   useEffect(() => {
-    initMediaPipe();
+    let cancelled = false;
+    initMediaPipe(() => !cancelled);
 
     return () => {
+      cancelled = true;
       if (animationFrameIdRef.current !== null) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
@@ -449,7 +459,7 @@ function GesturePracticeContent() {
                     </svg>
                     <h3 style={{ fontSize: 15, fontWeight: 600, color: "#f87171" }}>Не удалось запустить камеру</h3>
                     <p style={{ fontSize: 13, color: "rgba(240, 249, 255, 0.7)" }}>{cameraError}</p>
-                    <button className="btn btn-primary" onClick={initMediaPipe} style={{ fontSize: 13, padding: "8px 20px" }}>
+                    <button className="btn btn-primary" onClick={() => initMediaPipe()} style={{ fontSize: 13, padding: "8px 20px" }}>
                       Повторить попытку
                     </button>
                   </div>
