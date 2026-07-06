@@ -799,4 +799,126 @@ With the dev server running, open these pages in a real browser and confirm they
 3. `/about`, `/dashboard`, `/login` — general layout/color check.
 4. `/sign-language/practice` — confirm the gesture-matching similarity meter still shows green when matched and blue while tracking (functional colors preserved from the unrelated MediaPipe feature).
 
+**Note:** Task 6's Step 2 grep, run for real, found a gap — see Task 7 below, added after execution uncovered it. Task 6 must be re-run in full (Steps 1-4 at minimum) after Task 7 completes, before this plan is considered done.
+
+---
+
+### Task 7: Fix broken references to tokens removed in Task 1 (gap found during Task 6 verification)
+
+**Files:**
+- Modify: `landing/app/globals.css`
+- Modify: `landing/app/ai-tutor/page.tsx`
+- Modify: `landing/app/gamification/page.tsx`
+- Modify: `landing/app/subtitles/page.tsx`
+- Modify: `landing/components/Footer.tsx`
+- Modify: `landing/components/GamificationSection.tsx`
+- Modify: `landing/components/Header.tsx`
+- Modify: `landing/components/LanguageSection.tsx`
+- Modify: `landing/components/SubtitleDemo.tsx`
+
+**Interfaces:**
+- Consumes: `var(--accent)`, `var(--shadow)` from Task 1.
+- Produces: a restored `@keyframes pulse-ring` in `globals.css` (functional-only now, not used by any marketing/decorative element — Task 3 already removed the only decorative usage).
+
+**Why this task exists:** Task 1 removed `--gradient`, `--purple`, `--accentGlow` (no direct replacement — decorative/gradient-only) and the `pulse-ring` keyframe (decorative Hero rings, removed in Task 3). Neither the original spec nor this plan's earlier tasks searched the *entire* `landing/app` tree for other files already referencing these by name — only the specific components inspected during planning (Header's `linear-gradient`, the 5 gradient-text spans, etc.) were covered. Task 6's verification grep (run for real, not hypothetically) found 9 files still referencing the now-deleted tokens: `app/ai-tutor/page.tsx`, `app/dashboard/page.tsx`, `app/gamification/page.tsx`, `app/subtitles/page.tsx`, `components/Footer.tsx`, `components/GamificationSection.tsx`, `components/Header.tsx`, `components/LanguageSection.tsx`, `components/SubtitleDemo.tsx`. A CSS custom property reference to an undefined variable doesn't error — it silently resolves to nothing, so every one of these was rendering with a missing background/color/shadow in production right now, a real visual regression, not just "old palette lingering."
+
+One of the 9 is different in kind: `app/dashboard/page.tsx:1038` uses `animation: isRecording ? "pulse-ring 2s infinite" : "none"` as a **functional** recording-in-progress status indicator, not decoration. Removing the keyframe broke real behavior (the pulse animation silently stops working — an undefined animation name is ignored by the browser), which contradicts this plan's own Global Constraints ("No layout, copy, or functional changes"). The fix is to restore the keyframe (same name, so `dashboard/page.tsx` needs zero changes) rather than touch that file.
+
+- [ ] **Step 1: Restore the `pulse-ring` keyframe in `globals.css`, for functional use only**
+
+Find:
+```css
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+```
+
+Replace with:
+```css
+/* Used by the dashboard's recording-in-progress indicator (functional status,
+   not decoration) — the Hero section's decorative use of this keyframe was
+   removed in a prior task; do not reintroduce a decorative usage. */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.08); opacity: 0.1; }
+  100% { transform: scale(1); opacity: 0.4; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+```
+
+- [ ] **Step 2: Bulk-replace `var(--gradient)` and `var(--purple)` with `var(--accent)`**
+
+Every remaining usage of these two removed tokens is a decorative background or text color (avatar/logo circles, progress-bar fills, chat-bubble backgrounds, toggle/selector "active" backgrounds, a badge label color) — flattening to the flat accent color is correct in every case, consistent with how Task 2 already flattened the equivalent hardcoded-hex gradients elsewhere.
+
+```bash
+cd landing
+find app components -name "*.tsx" | grep -v "app/community" | xargs sed -i \
+  -e 's/var(--gradient)/var(--accent)/g' \
+  -e 's/var(--purple)/var(--accent)/g'
+```
+
+- [ ] **Step 3: Flatten the remaining `var(--accentGlow)` box-shadows in `app/subtitles/page.tsx`**
+
+Only two distinct string variants exist, both a colored glow behind an "active" toggle state — flatten both to the flat `var(--shadow)` token (same treatment Task 1 already gave `.btn-primary`'s glow), preserving the ternary's active/inactive visual distinction without a colored glow.
+
+Find (both occurrences of this exact string):
+```tsx
+"0 4px 24px var(--accentGlow)"
+```
+Replace with:
+```tsx
+"var(--shadow)"
+```
+(This string appears twice, at the mic-active toggle and the screen-capture toggle — replace both.)
+
+Find:
+```tsx
+"0 4px 16px var(--accentGlow)"
+```
+Replace with:
+```tsx
+"var(--shadow)"
+```
+
+- [ ] **Step 4: Verify it type-checks**
+
+```bash
+cd landing
+npx tsc --noEmit
+```
+Expected: no output.
+
+- [ ] **Step 5: Verify no reference to the removed tokens remains anywhere in scope**
+
+```bash
+cd landing
+grep -rlE "var\(--gradient\)|var\(--purple\)|var\(--accentGlow\)|var\(--purpleGlow\)|var\(--shadowHover\)|var\(--shadowPhone\)" app components --include="*.tsx" --include="*.css" | grep -v "app/community"
+```
+Expected: no output.
+
+- [ ] **Step 6: Verify the restored keyframe doesn't reintroduce decorative use**
+
+```bash
+cd landing
+grep -rn "pulse-ring" app components --include="*.tsx" | grep -v "app/community"
+```
+Expected: exactly one match, `app/dashboard/page.tsx`'s `animation: isRecording ? "pulse-ring 2s infinite" : "none"` line — confirming the keyframe is used functionally in exactly the one place it always was, and nowhere else (in particular, not reintroduced to `components/Hero.tsx`, which Task 3 already cleaned up).
+
+- [ ] **Step 7: Commit**
+
+```bash
+cd landing
+git add -A
+git commit -m "fix: restore functional pulse-ring keyframe, flatten remaining var(--gradient)/var(--purple)/var(--accentGlow) references"
+```
+
+- [ ] **Step 8: Re-run Task 6's automated verification (Steps 1-4) in full**
+
+This task exists because Task 6's verification found a real gap — after this fix, Task 6 must be re-run from Step 1, not assumed clean. Do not mark the plan complete until Task 6's Step 2 grep (the comprehensive one covering every removed token/pattern, not just this task's narrower Step 5 check above) returns no output.
+
 No commit for this step — it's a verification gate. If any check fails, stop and report back before considering this plan complete.
