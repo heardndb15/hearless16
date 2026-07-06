@@ -767,11 +767,21 @@ Expected: no output.
 
 - [ ] **Step 2: Comprehensive grep for every old-palette pattern**
 
+Note: `pulse-ring` is deliberately excluded from this pattern list — Task 7 restored it in `globals.css` for a *functional* purpose (`app/dashboard/page.tsx`'s recording indicator), so a bare match is now expected, not a leftover. Step 2b below checks specifically that this restored usage stayed confined to exactly those two legitimate places.
+
 ```bash
 cd landing
-grep -rlE "#(0EA5E9|0C4A6E|075985|0369A1|38BDF8|BAE6FD|E0F2FE|F0F9FF|0284C7)|rgba\([[:space:]]*(14,[[:space:]]*165,[[:space:]]*233|2,[[:space:]]*132,[[:space:]]*199|56,[[:space:]]*189,[[:space:]]*248)|var\(--purple\)|var\(--gradient\)|var\(--accentGlow\)|var\(--purpleGlow\)|var\(--shadowHover\)|var\(--shadowPhone\)|pulse-ring" app components --include="*.tsx" --include="*.css" | grep -v "app/community"
+grep -rlE "#(0EA5E9|0C4A6E|075985|0369A1|38BDF8|BAE6FD|E0F2FE|F0F9FF|0284C7)|rgba\([[:space:]]*(14,[[:space:]]*165,[[:space:]]*233|2,[[:space:]]*132,[[:space:]]*199|56,[[:space:]]*189,[[:space:]]*248)|var\(--purple\)|var\(--gradient\)|var\(--accentGlow\)|var\(--purpleGlow\)|var\(--shadowHover\)|var\(--shadowPhone\)" app components --include="*.tsx" --include="*.css" | grep -v "app/community"
 ```
 Expected: no output.
+
+- [ ] **Step 2b: Verify `pulse-ring` stayed confined to its two legitimate uses**
+
+```bash
+cd landing
+grep -rln "pulse-ring" app components --include="*.tsx" --include="*.css" | grep -v "app/community"
+```
+Expected: exactly two files — `app/globals.css` (the keyframe definition) and `app/dashboard/page.tsx` (the functional recording indicator). If `components/Hero.tsx` or any other file appears, the decorative usage was reintroduced — stop and investigate.
 
 - [ ] **Step 3: Start the dev server**
 
