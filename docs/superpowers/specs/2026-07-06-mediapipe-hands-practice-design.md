@@ -71,11 +71,11 @@ This is a deliberate, accepted trade-off: the matching algorithm only ever compa
 
 ### Reference vectors: calibration tool is the source of truth, not agent-generated data
 
-The 5 existing gestures' vectors were captured by a person performing the gesture on camera and using the page's own "Калибровка" panel. The same path is used for the 15 new gestures — **this is a human task, not agent-executable** (no ability to physically perform sign language on a webcam). The calibration panel is extended (see below) to make this a single recording action per gesture.
+The 5 existing gestures' vectors were captured by a person performing the gesture on camera and using the page's own "Калибровка" panel. The same path is used for the 20 new catalog gestures — **this is a human task, not agent-executable** (no ability to physically perform sign language on a webcam). The calibration panel is extended (see below) to make this a single recording action per gesture.
 
 We investigated using the open "Slovo" Russian Sign Language dataset (github.com/hukenovs/slovo, MediaPipe-annotated, 1000 classes) as a shortcut to avoid needing a human signer. Rejected for this step because: (a) the relevant data (`slovo_mediapipe.json`) is ~1.2GB, the full dataset ~16GB — impractical to pull into this project; (b) it's licensed CC BY-SA 4.0 (a variant) with a ShareAlike clause that would need legal review before baking derived data into the app; (c) it's Russian Sign Language, not confirmed Kazakh Sign Language — a fidelity question for Hearless's actual audience that a human calibration session sidesteps entirely.
 
-Until real calibration data is recorded, the 15 new entries ship with placeholder vectors, clearly marked with a `// PLACEHOLDER — needs real calibration via the in-app tool` comment, so the feature is code-complete and functional (just inaccurate for those 15) rather than broken.
+Until real calibration data is recorded, the 20 new entries ship with placeholder vectors, clearly marked with a `// PLACEHOLDER — needs real calibration via the in-app tool` comment, so the feature is code-complete and functional (just inaccurate for those 20) rather than broken.
 
 ### Calibration panel: combined vector + illustrative landmarks capture
 
@@ -98,7 +98,7 @@ Agent-executable (no camera needed):
 **Not agent-executable — human verification required** (same category as the TTS feature's listening-verification task):
 - Confirm `HandLandmarker` actually initializes and tracks a real hand via webcam in a real browser.
 - Confirm similarity scoring still feels reasonable for the 5 existing (real-vector) gestures after the engine swap — this is the regression check that the swap didn't change behavior.
-- The 15 new gestures' calibration recordings themselves (see above) are inherently a human, in-person task.
+- The 20 new gestures' calibration recordings themselves (see above) are inherently a human, in-person task.
 
 ## Follow-up (tracked separately, not designed here)
 
