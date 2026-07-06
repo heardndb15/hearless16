@@ -29,8 +29,8 @@ export default function GamificationSection() {
               background: "#FFFFFF",
               borderRadius: "var(--radius)",
               padding: "32px 28px",
-              border: "1px solid rgba(14,165,233,0.12)",
-              boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
+              border: "1px solid rgba(0, 0, 0,0.12)",
+              boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
             }}
           >
             <div
@@ -139,7 +139,7 @@ export default function GamificationSection() {
                     padding: "14px 8px",
                     borderRadius: "var(--radiusSm)",
                     background: "var(--bg)",
-                    border: "1px solid rgba(14,165,233,0.12)",
+                    border: "1px solid rgba(0, 0, 0,0.12)",
                   }}
                 >
                   <div
@@ -165,7 +165,7 @@ export default function GamificationSection() {
                 padding: "16px",
                 borderRadius: "var(--radiusSm)",
                 background: "var(--bg)",
-                border: "1px solid rgba(14,165,233,0.12)",
+                border: "1px solid rgba(0, 0, 0,0.12)",
               }}
             >
               <div
@@ -229,8 +229,8 @@ export default function GamificationSection() {
                   background: "#FFFFFF",
                   borderRadius: "var(--radius)",
                   padding: "24px 20px",
-                  border: "1px solid rgba(14,165,233,0.12)",
-                  boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
+                  border: "1px solid rgba(0, 0, 0,0.12)",
+                  boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
                   textAlign: "center",
                   transition: "all 0.3s ease",
                 }}
@@ -239,7 +239,7 @@ export default function GamificationSection() {
                   e.currentTarget.style.transform = "translateY(-3px)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(14,165,233,0.12)";
+                  e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.12)";
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >

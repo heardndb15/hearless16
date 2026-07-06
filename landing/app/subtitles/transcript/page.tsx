@@ -28,7 +28,7 @@ export default function TranscriptPage() {
   const [speakerSegments, setSpeakerSegments] = useState<SpeakerSegment[]>([]);
   const [useDiarization, setUseDiarization] = useState(false);
   const SPEAKER_COLORS = ["var(--accent)", "#10B981", "#F59E0B", "#8B5CF6"];
-  const SPEAKER_BG = ["rgba(14,165,233,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
+  const SPEAKER_BG = ["rgba(0, 0, 0,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
   const SPEAKER_LABELS = ["Говорящий 1", "Говорящий 2", "Говорящий 3", "Говорящий 4"];
 
   // Состояния AI
@@ -162,7 +162,7 @@ export default function TranscriptPage() {
           cardBg: "#ffffff",
           border: "#e2e8f0",
           accent: "#0284c7",
-          activeBg: "rgba(2, 132, 199, 0.1)",
+          activeBg: "rgba(0, 0, 0, 0.1)",
           textSecondary: "#475569"
         };
       case "contrast":
@@ -181,7 +181,7 @@ export default function TranscriptPage() {
           bg: "#090d16",
           text: "#f8fafc",
           cardBg: "rgba(15, 23, 42, 0.6)",
-          border: "rgba(56, 189, 248, 0.15)",
+          border: "rgba(0, 0, 0, 0.15)",
           accent: "#22d3ee",
           activeBg: "rgba(34, 211, 238, 0.12)",
           textSecondary: "#0e7490"
@@ -593,7 +593,7 @@ export default function TranscriptPage() {
                           fontWeight: 700,
                           color: isActive ? theme.accent : theme.textSecondary,
                           fontFamily: "monospace",
-                          background: isActive ? "rgba(2, 132, 199, 0.08)" : "transparent",
+                          background: isActive ? "rgba(0, 0, 0, 0.08)" : "transparent",
                           padding: "4px 8px",
                           borderRadius: 6,
                           textAlign: "center"

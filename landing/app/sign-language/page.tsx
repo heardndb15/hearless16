@@ -296,7 +296,7 @@ export default function SignLanguagePage() {
                     cursor: "pointer",
                     textAlign: "center",
                     transition: "all 0.18s",
-                    boxShadow: activeStep === i ? "0 0 0 3px rgba(14,165,233,0.12)" : "none",
+                    boxShadow: activeStep === i ? "0 0 0 3px rgba(0, 0, 0,0.12)" : "none",
                   }}
                 >
                   <HandSign

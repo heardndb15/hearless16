@@ -14,11 +14,11 @@ export default function NotFound() {
         maxWidth: 480,
         width: "100%",
         background: "#FFFFFF",
-        border: "1px solid rgba(14,165,233,0.12)",
+        border: "1px solid rgba(0, 0, 0,0.12)",
         borderRadius: 24,
         padding: "48px 40px",
         textAlign: "center",
-        boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
+        boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
       }}>
         <div style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",

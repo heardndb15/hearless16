@@ -150,7 +150,7 @@ export default function RegisterPage() {
           {googleLoading ? "Загрузка..." : "Зарегистрироваться через Google"}
         </button>
 
-        <div style={{ textAlign: "center", margin: "16px 0", borderBottom: "1px solid rgba(14,165,233,0.15)", lineHeight: "0.1em" }}>
+        <div style={{ textAlign: "center", margin: "16px 0", borderBottom: "1px solid rgba(0, 0, 0,0.15)", lineHeight: "0.1em" }}>
           <span style={{ background: "var(--white)", padding: "0 10px", fontSize: 13, color: "var(--textSecondary, #5a7a8f)" }}>или заполните форму</span>
         </div>
 
@@ -313,7 +313,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: "100%",
     padding: "12px",
     borderRadius: 12,
-    border: "1px solid rgba(14,165,233,0.2)",
+    border: "1px solid rgba(0, 0, 0,0.2)",
     background: "white",
     fontSize: 15,
     fontWeight: 600,

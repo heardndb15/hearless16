@@ -12,7 +12,7 @@ const PLANS = [
     badge: null,
     color: "var(--textSecondary)",
     bg: "#FFFFFF",
-    border: "rgba(14,165,233,0.15)",
+    border: "rgba(0, 0, 0,0.15)",
     highlight: false,
     cta: "Начать бесплатно",
     ctaHref: "/register",
@@ -58,7 +58,7 @@ const PLANS = [
     badge: null,
     color: "var(--textSecondary)",
     bg: "#FFFFFF",
-    border: "rgba(14,165,233,0.15)",
+    border: "rgba(0, 0, 0,0.15)",
     highlight: false,
     cta: "Выбрать Pro",
     ctaHref: "/api/checkout?plan=pro",
@@ -104,7 +104,7 @@ export default function PricingPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* Nav */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(14,165,233,0.1)", padding: "14px 0" }}>
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "14px 0" }}>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "white" }}>H</div>
@@ -145,8 +145,8 @@ export default function PricingPage() {
                   display: "flex",
                   flexDirection: "column",
                   boxShadow: plan.highlight
-                    ? "0 20px 60px rgba(14,165,233,0.3)"
-                    : "0 2px 20px rgba(14,165,233,0.07)",
+                    ? "0 20px 60px rgba(0, 0, 0,0.3)"
+                    : "0 2px 20px rgba(0, 0, 0,0.07)",
                   position: "relative",
                   transform: plan.highlight ? "scale(1.03)" : "none",
                 }}
@@ -202,20 +202,20 @@ export default function PricingPage() {
                 </Link>
 
                 {/* Divider */}
-                <div style={{ borderTop: `1px solid ${plan.highlight ? "rgba(255,255,255,0.2)" : "rgba(14,165,233,0.1)"}`, marginBottom: 24 }} />
+                <div style={{ borderTop: `1px solid ${plan.highlight ? "rgba(255,255,255,0.2)" : "rgba(0, 0, 0,0.1)"}`, marginBottom: 24 }} />
 
                 {/* Features */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
                   {plan.features.map((f, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, opacity: f.ok ? 1 : 0.4 }}>
-                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: f.ok ? (plan.highlight ? "rgba(255,255,255,0.25)" : "var(--chipBg)") : "transparent", border: f.ok ? "none" : `1.5px solid ${plan.highlight ? "rgba(255,255,255,0.3)" : "rgba(14,165,233,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11 }}>
+                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: f.ok ? (plan.highlight ? "rgba(255,255,255,0.25)" : "var(--chipBg)") : "transparent", border: f.ok ? "none" : `1.5px solid ${plan.highlight ? "rgba(255,255,255,0.3)" : "rgba(0, 0, 0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11 }}>
                         {f.ok ? (
                           <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
                             <path d="M1 4L4 7L10 1" stroke={plan.highlight ? "white" : "var(--accent)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : (
                           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                            <path d="M1 1L7 7M7 1L1 7" stroke={plan.highlight ? "rgba(255,255,255,0.5)" : "rgba(14,165,233,0.4)"} strokeWidth="1.5" strokeLinecap="round" />
+                            <path d="M1 1L7 7M7 1L1 7" stroke={plan.highlight ? "rgba(255,255,255,0.5)" : "rgba(0, 0, 0,0.4)"} strokeWidth="1.5" strokeLinecap="round" />
                           </svg>
                         )}
                       </span>
@@ -250,9 +250,9 @@ export default function PricingPage() {
           <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "var(--text)", textAlign: "center", marginBottom: 8 }}>Сравнение тарифов</h2>
           <p style={{ textAlign: "center", color: "var(--accent)", fontSize: 14, marginBottom: 36 }}>Подробное сравнение всех возможностей</p>
 
-          <div style={{ background: "white", borderRadius: 20, border: "1px solid rgba(14,165,233,0.12)", overflow: "hidden", boxShadow: "0 4px 24px rgba(14,165,233,0.07)" }}>
+          <div style={{ background: "white", borderRadius: 20, border: "1px solid rgba(0, 0, 0,0.12)", overflow: "hidden", boxShadow: "0 4px 24px rgba(0, 0, 0,0.07)" }}>
             {/* Header row */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "var(--bg)", borderBottom: "1px solid rgba(14,165,233,0.1)", padding: "16px 24px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "var(--bg)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "16px 24px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1 }}>Функция</div>
               {PLANS.map(p => (
                 <div key={p.id} style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", textAlign: "center" }}>{p.name}</div>
@@ -269,7 +269,7 @@ export default function PricingPage() {
               { label: "Приоритетная поддержка", values: [false, false, true] },
               { label: "Ранний доступ к функциям", values: [false, false, true] },
             ].map((row, i) => (
-              <div key={row.label} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "14px 24px", borderBottom: i < 7 ? "1px solid rgba(14,165,233,0.07)" : "none", background: i % 2 === 0 ? "white" : "#FAFEFF" }}>
+              <div key={row.label} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "14px 24px", borderBottom: i < 7 ? "1px solid rgba(0, 0, 0,0.07)" : "none", background: i % 2 === 0 ? "white" : "#FAFEFF" }}>
                 <div style={{ fontSize: 13, color: "var(--textSecondary)", fontWeight: 500 }}>{row.label}</div>
                 {row.values.map((v, j) => (
                   <div key={j} style={{ textAlign: "center" }}>
@@ -299,7 +299,7 @@ export default function PricingPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FAQ.map((item, i) => (
-              <div key={i} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(14,165,233,0.12)", overflow: "hidden", boxShadow: "0 2px 12px rgba(14,165,233,0.05)" }}>
+              <div key={i} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(0, 0, 0,0.12)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0, 0, 0,0.05)" }}>
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 16 }}
@@ -308,7 +308,7 @@ export default function PricingPage() {
                   <span style={{ fontSize: 18, color: "var(--accent)", transform: openFaq === i ? "rotate(45deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>+</span>
                 </button>
                 {openFaq === i && (
-                  <div style={{ padding: "0 22px 18px", fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7, borderTop: "1px solid rgba(14,165,233,0.08)" }}>
+                  <div style={{ padding: "0 22px 18px", fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7, borderTop: "1px solid rgba(0, 0, 0,0.08)" }}>
                     <div style={{ paddingTop: 14 }}>{item.a}</div>
                   </div>
                 )}

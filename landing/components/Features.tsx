@@ -28,23 +28,23 @@ export default function FeaturesSection() {
                 background: "#FFFFFF",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid rgba(14,165,233,0.12)",
-                boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
+                border: "1px solid rgba(0, 0, 0,0.12)",
+                boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
                 transition: "all 0.3s ease",
                 textDecoration: "none",
                 position: "relative",
                 overflow: "hidden",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(14,165,233,0.3)";
+                e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.3)";
                 e.currentTarget.style.background = "var(--bg)";
-                e.currentTarget.style.boxShadow = "0 8px 32px rgba(14,165,233,0.12)";
+                e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0,0.12)";
                 e.currentTarget.style.transform = "translateY(-3px)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(14,165,233,0.12)";
+                e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.12)";
                 e.currentTarget.style.background = "#FFFFFF";
-                e.currentTarget.style.boxShadow = "0 2px 16px rgba(14,165,233,0.07)";
+                e.currentTarget.style.boxShadow = "0 2px 16px rgba(0, 0, 0,0.07)";
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >

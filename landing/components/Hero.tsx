@@ -183,7 +183,7 @@ export default function Hero() {
                 flexDirection: "column",
                 justifyContent: "flex-end",
                 overflow: "hidden",
-                boxShadow: "0 4px 20px rgba(14,165,233,0.08)",
+                boxShadow: "0 4px 20px rgba(0, 0, 0,0.08)",
                 zIndex: 5,
               }}
             >

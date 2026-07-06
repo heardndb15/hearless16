@@ -24,7 +24,7 @@ export default function CTASection() {
           height: "60%",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(0, 0, 0,0.08) 0%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
@@ -88,8 +88,8 @@ export default function CTASection() {
                 padding: "12px 24px",
                 borderRadius: "var(--radiusSm)",
                 background: "#FFFFFF",
-                border: "1.5px solid rgba(14,165,233,0.12)",
-                boxShadow: "0 8px 20px rgba(14,165,233,0.07)",
+                border: "1.5px solid rgba(0, 0, 0,0.12)",
+                boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
                 textDecoration: "none",
                 transition: "all 0.3s ease",
               }}
@@ -98,7 +98,7 @@ export default function CTASection() {
                 e.currentTarget.style.background = "var(--bg)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(14,165,233,0.12)";
+                e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.12)";
                 e.currentTarget.style.background = "#FFFFFF";
               }}
             >

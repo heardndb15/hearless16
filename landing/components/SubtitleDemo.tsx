@@ -104,8 +104,8 @@ export default function SubtitleDemo() {
             background: "#FFFFFF",
             borderRadius: "var(--radius)",
             padding: "28px 24px",
-            border: "1px solid rgba(14,165,233,0.12)",
-            boxShadow: "0 8px 20px rgba(14,165,233,0.07)",
+            border: "1px solid rgba(0, 0, 0,0.12)",
+            boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
             minHeight: 100,
             marginBottom: 20,
           }}
@@ -154,7 +154,7 @@ export default function SubtitleDemo() {
             width: "100%",
             padding: "14px 18px",
             borderRadius: "var(--radiusSm)",
-            border: "1px solid rgba(14,165,233,0.12)",
+            border: "1px solid rgba(0, 0, 0,0.12)",
             background: "var(--bg)",
             color: "var(--text)",
             fontSize: 15,
@@ -184,7 +184,7 @@ export default function SubtitleDemo() {
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                background: "rgba(14,165,233,0.1)",
+                background: "rgba(0, 0, 0,0.1)",
                 color: "var(--accent)",
                 fontSize: 11,
                 fontWeight: 600,
@@ -229,7 +229,7 @@ export default function SubtitleDemo() {
                     padding: "12px 16px",
                     borderRadius: "var(--radiusSm)",
                     background: "#FFFFFF",
-                    border: "1px solid rgba(14,165,233,0.12)",
+                    border: "1px solid rgba(0, 0, 0,0.12)",
                     fontSize: 14,
                     color: "var(--textSecondary)",
                   }}

@@ -361,7 +361,7 @@ function GesturePracticeContent() {
               padding: 24, 
               position: "relative",
               overflow: "hidden",
-              boxShadow: "0 8px 32px rgba(2, 132, 199, 0.03)"
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.03)"
             }}>
               {/* Окно веб-камеры с неоновой границей */}
               <div style={{ 
@@ -371,7 +371,7 @@ function GesturePracticeContent() {
                 borderRadius: "var(--radiusSm)", 
                 background: "#090d16", 
                 overflow: "hidden",
-                border: "1px solid rgba(2, 132, 199, 0.2)",
+                border: "1px solid rgba(0, 0, 0, 0.2)",
                 boxShadow: isMatched ? "0 0 20px rgba(34, 197, 94, 0.2)" : "none",
                 transition: "box-shadow 0.3s ease"
               }}>
@@ -425,7 +425,7 @@ function GesturePracticeContent() {
                     <div style={{ 
                       width: 44, 
                       height: 44, 
-                      border: "3px solid rgba(56, 189, 248, 0.15)", 
+                      border: "3px solid rgba(0, 0, 0, 0.15)", 
                       borderTop: "3px solid var(--accent)", 
                       borderRadius: "50%",
                       animation: "spin 0.8s linear infinite"
@@ -486,7 +486,7 @@ function GesturePracticeContent() {
                 )}
                 
                 {/* Шкала схожести с градиентным заполнением */}
-                <div style={{ width: "100%", height: 10, background: "rgba(2, 132, 199, 0.08)", borderRadius: 5, overflow: "hidden", border: "1px solid var(--border)" }}>
+                <div style={{ width: "100%", height: 10, background: "rgba(0, 0, 0, 0.08)", borderRadius: 5, overflow: "hidden", border: "1px solid var(--border)" }}>
                   <div style={{ 
                     width: `${similarity}%`, 
                     height: "100%", 
@@ -500,7 +500,7 @@ function GesturePracticeContent() {
 
             {/* БАННЕР ОБРАТНОЙ СВЯЗИ БЕЗ ЭМОДЗИ */}
             <div style={{ 
-              background: isMatched ? "rgba(34, 197, 94, 0.06)" : "rgba(2, 132, 199, 0.04)", 
+              background: isMatched ? "rgba(34, 197, 94, 0.06)" : "rgba(0, 0, 0, 0.04)", 
               borderRadius: "var(--radius)", 
               border: isMatched ? "1px solid var(--success)" : "1px solid var(--border)", 
               padding: "20px 24px",
@@ -536,7 +536,7 @@ function GesturePracticeContent() {
               ) : (
                 <>
                   <div style={{ 
-                    background: "rgba(2, 132, 199, 0.1)", 
+                    background: "rgba(0, 0, 0, 0.1)", 
                     borderRadius: "50%", 
                     width: 32, 
                     height: 32, 
@@ -635,7 +635,7 @@ function GesturePracticeContent() {
                       style={{
                         padding: "10px 16px",
                         borderRadius: 30,
-                        background: isActive ? "var(--accent)" : "rgba(2, 132, 199, 0.04)",
+                        background: isActive ? "var(--accent)" : "rgba(0, 0, 0, 0.04)",
                         border: "1px solid",
                         borderColor: isActive ? "var(--accent)" : "var(--border)",
                         color: isActive ? "#ffffff" : "var(--text)",
@@ -669,7 +669,7 @@ function GesturePracticeContent() {
                   gap: 20, 
                   alignItems: "center", 
                   padding: "20px", 
-                  background: "rgba(2, 132, 199, 0.02)", 
+                  background: "rgba(0, 0, 0, 0.02)", 
                   borderRadius: "var(--radiusSm)", 
                   border: "1px solid var(--border)" 
                 }}>
@@ -696,7 +696,7 @@ function GesturePracticeContent() {
                             y1={pt1.y}
                             x2={pt2.x}
                             y2={pt2.y}
-                            stroke="rgba(56, 189, 248, 0.5)"
+                            stroke="rgba(0, 0, 0, 0.5)"
                             strokeWidth="2.5"
                             strokeLinecap="round"
                           />
@@ -755,7 +755,7 @@ function GesturePracticeContent() {
                         alignItems: "center", 
                         justifyContent: "space-between",
                         padding: "10px 16px",
-                        background: isActive ? "rgba(34, 197, 94, 0.03)" : "rgba(2, 132, 199, 0.01)",
+                        background: isActive ? "rgba(34, 197, 94, 0.03)" : "rgba(0, 0, 0, 0.01)",
                         borderRadius: "var(--radiusSm)",
                         border: "1px solid",
                         borderColor: isActive ? "rgba(34, 197, 94, 0.2)" : "var(--border)",
@@ -775,7 +775,7 @@ function GesturePracticeContent() {
                         fontWeight: 700, 
                         letterSpacing: "0.5px",
                         color: isActive ? "#166534" : "#0369a1",
-                        background: isActive ? "rgba(34, 197, 94, 0.12)" : "rgba(2, 132, 199, 0.08)",
+                        background: isActive ? "rgba(34, 197, 94, 0.12)" : "rgba(0, 0, 0, 0.08)",
                         transition: "all 0.25s ease"
                       }}>
                         {isActive ? "ВЫПРЯМЛЕН" : "СОГНУТ"}

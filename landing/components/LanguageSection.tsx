@@ -47,8 +47,8 @@ export default function LanguageSection() {
                 background: "#FFFFFF",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid rgba(14,165,233,0.12)",
-                boxShadow: "0 2px 16px rgba(14,165,233,0.07)",
+                border: "1px solid rgba(0, 0, 0,0.12)",
+                boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
                 position: "relative",
                 overflow: "hidden",
               }}

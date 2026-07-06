@@ -56,7 +56,7 @@ const PLANS = [
 function Check({ ok }: { ok: boolean }) {
   return ok ? (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <circle cx="8" cy="8" r="8" fill="rgba(14,165,233,0.12)" />
+      <circle cx="8" cy="8" r="8" fill="rgba(0, 0, 0,0.12)" />
       <path d="M5 8l2 2 4-4" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ) : (
@@ -93,14 +93,14 @@ export default function PricingSection() {
                   : "#FFFFFF",
                 border: plan.highlight
                   ? "none"
-                  : "1px solid rgba(14,165,233,0.15)",
+                  : "1px solid rgba(0, 0, 0,0.15)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
                 display: "flex",
                 flexDirection: "column",
                 boxShadow: plan.highlight
-                  ? "0 16px 48px rgba(14,165,233,0.28)"
-                  : "0 2px 16px rgba(14,165,233,0.07)",
+                  ? "0 16px 48px rgba(0, 0, 0,0.28)"
+                  : "0 2px 16px rgba(0, 0, 0,0.07)",
                 transform: plan.highlight ? "scale(1.03)" : "none",
                 position: "relative",
               }}

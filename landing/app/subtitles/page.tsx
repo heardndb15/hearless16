@@ -81,7 +81,7 @@ const DEMO_VIDEO_SUBTITLES = [
 ];
 
 const SPEAKER_COLORS = ["var(--accent)", "#10B981", "#F59E0B", "#8B5CF6"];
-const SPEAKER_BG = ["rgba(14,165,233,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
+const SPEAKER_BG = ["rgba(0, 0, 0,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
 const SPEAKER_LABELS = ["Говорящий 1", "Говорящий 2", "Говорящий 3", "Говорящий 4"];
 
 export default function SubtitlesPage() {
@@ -1365,20 +1365,20 @@ export default function SubtitlesPage() {
                     </div>
 
                     <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                      <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(2,132,199,0.08)", color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>{lang}</span>
-                      <span style={{ padding: "6px 14px", borderRadius: 30, background: useWhisper ? "rgba(14,165,233,0.12)" : "rgba(56,189,248,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
+                      <span style={{ padding: "6px 14px", borderRadius: 30, background: "rgba(0, 0, 0,0.08)", color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>{lang}</span>
+                      <span style={{ padding: "6px 14px", borderRadius: 30, background: useWhisper ? "rgba(0, 0, 0,0.12)" : "rgba(0, 0, 0,0.08)", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600 }}>
                         {useWhisper ? (whisperStatus === "processing" ? "⏳ Обработка..." : "🤖 Replicate AI") : "Web Speech API"}
                       </span>
                       <button onClick={() => { if (!isMicActive && lang !== "ҚАЗ") setUseWhisper(v => !v); }} disabled={isMicActive || lang === "ҚАЗ"}
                         title={lang === "ҚАЗ" ? "Для казахского доступен только Replicate AI" : undefined}
-                        style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(14,165,233,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: (isMicActive || lang === "ҚАЗ") ? "default" : "pointer", opacity: lang === "ҚАЗ" ? 0.6 : 1 }}>
+                        style={{ padding: "4px 10px", borderRadius: 16, border: "1px solid var(--border)", background: useWhisper ? "rgba(0, 0, 0,0.12)" : "transparent", color: "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: (isMicActive || lang === "ҚАЗ") ? "default" : "pointer", opacity: lang === "ҚАЗ" ? 0.6 : 1 }}>
                         {useWhisper ? "→ Web Speech" : "→ Replicate AI"}
                       </button>
                       {useWhisper && (
                         <button
                           onClick={() => { if (!isMicActive) { setUseDiarization(v => !v); if (useDiarization) setSpeakerSegments([]); } }}
                           disabled={isMicActive}
-                          style={{ padding: "4px 10px", borderRadius: 16, border: `1px solid ${useDiarization ? SPEAKER_COLORS[0] : "var(--border)"}`, background: useDiarization ? "rgba(14,165,233,0.12)" : "transparent", color: useDiarization ? SPEAKER_COLORS[0] : "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+                          style={{ padding: "4px 10px", borderRadius: 16, border: `1px solid ${useDiarization ? SPEAKER_COLORS[0] : "var(--border)"}`, background: useDiarization ? "rgba(0, 0, 0,0.12)" : "transparent", color: useDiarization ? SPEAKER_COLORS[0] : "var(--textSecondary)", fontSize: 11, fontWeight: 600, cursor: isMicActive ? "default" : "pointer", display: "flex", alignItems: "center", gap: 4 }}>
                           👥 {useDiarization ? "Спикеры вкл" : "Спикеры"}
                         </button>
                       )}
@@ -1441,7 +1441,7 @@ export default function SubtitlesPage() {
                   {/* Вывод Конспекта */}
                   {aiSummary && (
                     <div style={{ 
-                      background: "rgba(14, 165, 233, 0.05)", 
+                      background: "rgba(0, 0, 0, 0.05)", 
                       border: "1px solid var(--border)", 
                       borderRadius: 12, 
                       padding: 16, 
@@ -1496,7 +1496,7 @@ export default function SubtitlesPage() {
                   {/* Ответ на вопрос */}
                   {aiResponse && (
                     <div style={{ 
-                      background: "rgba(14, 165, 233, 0.08)", 
+                      background: "rgba(0, 0, 0, 0.08)", 
                       borderLeft: "3px solid var(--accent)", 
                       borderRadius: "0 10px 10px 0", 
                       padding: 12, 
