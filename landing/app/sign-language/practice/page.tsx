@@ -20,6 +20,7 @@ function GesturePracticeContent() {
     thumb: false, index: false, middle: false, ring: false, pinky: false
   });
   const [activeFeatures, setActiveFeatures] = useState<Record<string, number> | null>(null);
+  const latestLandmarksRef = useRef<NormalizedLandmark[] | null>(null);
 
   // Статусы камеры и модели
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
@@ -160,6 +161,7 @@ function GesturePracticeContent() {
       };
 
       setActiveFeatures(currentFeatures);
+      latestLandmarksRef.current = landmarks;
 
       // Бинарные состояния пальцев (выпрямлен / согнут) для простого чек-листа
       // Палец считается выпрямленным, если расстояние от кончика до запястья больше, чем от сустава PIP (второго сустава) до запястья
@@ -269,11 +271,16 @@ function GesturePracticeContent() {
 
   // Режим калибровки (сохранение текущих координат пользователя как эталонных)
   const handleCalibrate = () => {
-    if (!activeFeatures) {
+    if (!activeFeatures || !latestLandmarksRef.current) {
       alert("Сначала покажите руку камере, чтобы зафиксировать координаты.");
       return;
     }
-    const formatted = JSON.stringify(activeFeatures, null, 2);
+    // Пересчитываем 21 координату руки в 0-100 viewBox, как у REFERENCE_LANDMARKS
+    const referenceLandmarks = latestLandmarksRef.current.map((pt) => ({
+      x: Math.round(pt.x * 100),
+      y: Math.round(pt.y * 100),
+    }));
+    const formatted = JSON.stringify({ features: activeFeatures, referenceLandmarks }, null, 2);
     setCalibratedFeatures(formatted);
     console.log("Калибровочные данные для жеста:", formatted);
   };
