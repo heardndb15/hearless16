@@ -57,7 +57,7 @@ function Check({ ok }: { ok: boolean }) {
   return ok ? (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
       <circle cx="8" cy="8" r="8" fill="rgba(14,165,233,0.12)" />
-      <path d="M5 8l2 2 4-4" stroke="#0EA5E9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 8l2 2 4-4" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ) : (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
@@ -111,7 +111,7 @@ export default function PricingSection() {
                   top: -12,
                   left: "50%",
                   transform: "translateX(-50%)",
-                  background: "#0C4A6E",
+                  background: "var(--text)",
                   color: "white",
                   fontSize: 11,
                   fontWeight: 800,
@@ -129,7 +129,7 @@ export default function PricingSection() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 20,
                   fontWeight: 800,
-                  color: plan.highlight ? "#FFFFFF" : "#0C4A6E",
+                  color: plan.highlight ? "#FFFFFF" : "var(--text)",
                   marginBottom: 12,
                 }}>
                   {plan.name}
@@ -139,17 +139,17 @@ export default function PricingSection() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 42,
                     fontWeight: 800,
-                    color: plan.highlight ? "#FFFFFF" : "#0C4A6E",
+                    color: plan.highlight ? "#FFFFFF" : "var(--text)",
                     lineHeight: 1,
                   }}>
                     {plan.price === 0 ? "0" : plan.price.toLocaleString("ru-RU")}
                   </span>
-                  <span style={{ color: plan.highlight ? "rgba(255,255,255,0.75)" : "#075985", fontSize: 14, paddingBottom: 6 }}>
+                  <span style={{ color: plan.highlight ? "rgba(255,255,255,0.75)" : "var(--textSecondary)", fontSize: 14, paddingBottom: 6 }}>
                     {plan.price === 0 ? "₸" : `₸/${plan.period}`}
                   </span>
                 </div>
                 {plan.price === 0 && (
-                  <div style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "#075985", fontSize: 13, marginTop: 2 }}>
+                  <div style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--textSecondary)", fontSize: 13, marginTop: 2 }}>
                     навсегда
                   </div>
                 )}
@@ -159,7 +159,7 @@ export default function PricingSection() {
                 {plan.features.map((f) => (
                   <div key={f} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <Check ok={true} />
-                    <span style={{ fontSize: 13, color: plan.highlight ? "rgba(255,255,255,0.9)" : "#075985" }}>{f}</span>
+                    <span style={{ fontSize: 13, color: plan.highlight ? "rgba(255,255,255,0.9)" : "var(--textSecondary)" }}>{f}</span>
                   </div>
                 ))}
                 {plan.missing.map((f) => (
@@ -181,16 +181,16 @@ export default function PricingSection() {
                   fontWeight: 700,
                   fontSize: 14,
                   textDecoration: "none",
-                  background: plan.highlight ? "rgba(255,255,255,0.18)" : "#0EA5E9",
+                  background: plan.highlight ? "rgba(255,255,255,0.18)" : "var(--accent)",
                   color: "#FFFFFF",
                   border: plan.highlight ? "1.5px solid rgba(255,255,255,0.35)" : "none",
                   transition: "all 0.2s",
                 }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.background = plan.highlight ? "rgba(255,255,255,0.28)" : "#0284C7";
+                  (e.currentTarget as HTMLElement).style.background = plan.highlight ? "rgba(255,255,255,0.28)" : "var(--accent)";
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.background = plan.highlight ? "rgba(255,255,255,0.18)" : "#0EA5E9";
+                  (e.currentTarget as HTMLElement).style.background = plan.highlight ? "rgba(255,255,255,0.18)" : "var(--accent)";
                 }}
               >
                 {plan.cta}
@@ -200,7 +200,7 @@ export default function PricingSection() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: 32 }}>
-          <Link href="/pricing" style={{ color: "#0EA5E9", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+          <Link href="/pricing" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
             Полное сравнение тарифов →
           </Link>
         </div>

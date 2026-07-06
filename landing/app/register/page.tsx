@@ -317,7 +317,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: "white",
     fontSize: 15,
     fontWeight: 600,
-    color: "#0C4A6E",
+    color: "var(--text)",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",

@@ -37,7 +37,7 @@ export default function FeaturesSection() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "rgba(14,165,233,0.3)";
-                e.currentTarget.style.background = "#F0F9FF";
+                e.currentTarget.style.background = "var(--bg)";
                 e.currentTarget.style.boxShadow = "0 8px 32px rgba(14,165,233,0.12)";
                 e.currentTarget.style.transform = "translateY(-3px)";
               }}
@@ -48,13 +48,13 @@ export default function FeaturesSection() {
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: "#E0F2FE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 16 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: "var(--chipBg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 16 }}>
                 {feat.icon}
               </div>
-              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: "#0C4A6E", marginBottom: 10 }}>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 10 }}>
                 {feat.title}
               </h3>
-              <p style={{ fontSize: 14, color: "#075985", lineHeight: 1.7 }}>
+              <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7 }}>
                 {feat.desc}
               </p>
             </Link>

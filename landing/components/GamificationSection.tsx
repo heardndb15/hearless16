@@ -16,7 +16,7 @@ export default function GamificationSection() {
           <h2 className="section-title">
             Учись, играя. <span style={{ color: "var(--accent)" }}>Прогресс</span> — это XP.
           </h2>
-          <p className="section-subtitle" style={{ color: "#075985" }}>
+          <p className="section-subtitle" style={{ color: "var(--textSecondary)" }}>
             Зарабатывай XP, открывай ачивки, продлевай стрики и соревнуйся с друзьями.
             Каждый урок — это шаг к новому уровню.
           </p>
@@ -64,12 +64,12 @@ export default function GamificationSection() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 18,
                     fontWeight: 600,
-                    color: "#0C4A6E",
+                    color: "var(--text)",
                   }}
                 >
                   Айгуль
                 </div>
-                <div style={{ fontSize: 13, color: "#075985" }}>
+                <div style={{ fontSize: 13, color: "var(--textSecondary)" }}>
                   Уровень 4 · Жестовед
                 </div>
               </div>
@@ -93,7 +93,7 @@ export default function GamificationSection() {
                 style={{
                   height: 6,
                   borderRadius: 3,
-                  background: "#E0F2FE",
+                  background: "var(--chipBg)",
                   overflow: "hidden",
                 }}
               >
@@ -102,7 +102,7 @@ export default function GamificationSection() {
                     width: "62%",
                     height: "100%",
                     borderRadius: 3,
-                    background: "#0EA5E9",
+                    background: "var(--accent)",
                     animation: "xp-fill 1.5s ease-out",
                   }}
                 />
@@ -138,7 +138,7 @@ export default function GamificationSection() {
                     textAlign: "center",
                     padding: "14px 8px",
                     borderRadius: "var(--radiusSm)",
-                    background: "#F0F9FF",
+                    background: "var(--bg)",
                     border: "1px solid rgba(14,165,233,0.12)",
                   }}
                 >
@@ -164,7 +164,7 @@ export default function GamificationSection() {
               style={{
                 padding: "16px",
                 borderRadius: "var(--radiusSm)",
-                background: "#F0F9FF",
+                background: "var(--bg)",
                 border: "1px solid rgba(14,165,233,0.12)",
               }}
             >
@@ -181,7 +181,7 @@ export default function GamificationSection() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "#0C4A6E",
+                    color: "var(--text)",
                   }}
                 >
                   Ежедневное задание
@@ -198,7 +198,7 @@ export default function GamificationSection() {
                   marginTop: 10,
                   height: 4,
                   borderRadius: 2,
-                  background: "#E0F2FE",
+                  background: "var(--chipBg)",
                   overflow: "hidden",
                 }}
               >
@@ -207,7 +207,7 @@ export default function GamificationSection() {
                     width: "40%",
                     height: "100%",
                     borderRadius: 2,
-                    background: "#0EA5E9",
+                    background: "var(--accent)",
                   }}
                 />
               </div>
@@ -249,12 +249,12 @@ export default function GamificationSection() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 14,
                     fontWeight: 600,
-                    color: "#0C4A6E",
+                    color: "var(--text)",
                   }}
                 >
                   {a.label}
                 </div>
-                <div style={{ fontSize: 12, color: "#075985" }}>
+                <div style={{ fontSize: 12, color: "var(--textSecondary)" }}>
                   Ачивка
                 </div>
               </div>

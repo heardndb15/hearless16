@@ -10,7 +10,7 @@ export default function CTASection() {
       style={{
         position: "relative",
         overflow: "hidden",
-        background: "#E0F2FE",
+        background: "var(--chipBg)",
       }}
     >
       {/* Background glow */}
@@ -37,28 +37,28 @@ export default function CTASection() {
         </div>
         <h2
           className="section-title"
-          style={{ maxWidth: 640, margin: "0 auto 20px", color: "#0C4A6E" }}
+          style={{ maxWidth: 640, margin: "0 auto 20px", color: "var(--text)" }}
         >
           {t.cta.title}{" "}
           <span style={{ color: "var(--accent)" }}>{t.cta.titleHighlight}</span>?
         </h2>
         <p
           className="section-subtitle"
-          style={{ margin: "0 auto 36px", textAlign: "center", color: "#075985" }}
+          style={{ margin: "0 auto 36px", textAlign: "center", color: "var(--textSecondary)" }}
         >
           {t.cta.subtitle}
         </p>
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="/register"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "white", border: "none", transition: "all 0.3s ease" }}
           >
             {t.cta.btn1}
             <span style={{ fontSize: 18 }}>→</span>
           </a>
           <a
             href="/features"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "var(--accent)", border: "1.5px solid var(--border)", transition: "all 0.3s ease" }}
           >
             {t.cta.btn2}
           </a>
@@ -95,7 +95,7 @@ export default function CTASection() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.background = "#F0F9FF";
+                e.currentTarget.style.background = "var(--bg)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "rgba(14,165,233,0.12)";
@@ -104,14 +104,14 @@ export default function CTASection() {
             >
               <span style={{ fontSize: 24 }}>{store.icon}</span>
               <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: 10, color: "#0369A1" }}>
+                <div style={{ fontSize: 10, color: "var(--accent)" }}>
                   {store.sub}
                 </div>
                 <div
                   style={{
                     fontSize: 15,
                     fontWeight: 600,
-                    color: "#0C4A6E",
+                    color: "var(--text)",
                   }}
                 >
                   {store.label}

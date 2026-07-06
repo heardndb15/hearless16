@@ -168,7 +168,7 @@ const TUTORIALS = [
     icon: "😊",
     title: "Эмоции",
     level: "Средний",
-    color: "#0EA5E9",
+    color: "var(--accent)",
     desc: "Радость, грусть и другие базовые чувства",
     gestures: [
       {
@@ -202,7 +202,7 @@ const TUTORIALS = [
 
 const LEVEL_COLOR: Record<string, string> = {
   "Начальный": "#22C55E",
-  "Средний": "#0EA5E9",
+  "Средний": "var(--accent)",
   "Продвинутый": "#8B5CF6",
 };
 
@@ -245,14 +245,14 @@ export default function SignLanguagePage() {
                   display: "flex", alignItems: "center", gap: 12,
                   padding: "11px 14px", borderRadius: "var(--radiusSm)",
                   border: activeTutorialId === t.id ? `1.5px solid ${t.color}` : "1px solid var(--border)",
-                  background: activeTutorialId === t.id ? "#F0F9FF" : "var(--bgCard)",
+                  background: activeTutorialId === t.id ? "var(--bg)" : "var(--bgCard)",
                   cursor: "pointer", textAlign: "left", transition: "all 0.2s",
                   width: "100%",
                 }}
               >
                 <span style={{ fontSize: 20 }}>{t.icon}</span>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: activeTutorialId === t.id ? "#0369A1" : "var(--text)", lineHeight: 1.3 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: activeTutorialId === t.id ? "var(--accent)" : "var(--text)", lineHeight: 1.3 }}>
                     {t.title}
                   </div>
                   <div style={{ fontSize: 11, color: LEVEL_COLOR[t.level], fontWeight: 600, marginTop: 2 }}>
@@ -263,7 +263,7 @@ export default function SignLanguagePage() {
             ))}
 
             {/* Quick link to free practice */}
-            <div style={{ marginTop: 16, padding: "14px", borderRadius: "var(--radiusSm)", border: "1px dashed #BAE6FD", background: "#F0F9FF", textAlign: "center" }}>
+            <div style={{ marginTop: 16, padding: "14px", borderRadius: "var(--radiusSm)", border: "1px dashed var(--border)", background: "var(--bg)", textAlign: "center" }}>
               <div style={{ fontSize: 20, marginBottom: 6 }}>🎥</div>
               <p style={{ fontSize: 12, color: "var(--textSecondary)", marginBottom: 10, lineHeight: 1.5 }}>
                 Свободная тренировка всех жестов
@@ -291,8 +291,8 @@ export default function SignLanguagePage() {
                     width: 88,
                     padding: "10px 6px 8px",
                     borderRadius: 14,
-                    border: activeStep === i ? "2px solid #0EA5E9" : "1.5px solid #E2E8F0",
-                    background: activeStep === i ? "#E0F2FE" : "white",
+                    border: activeStep === i ? "2px solid var(--accent)" : "1.5px solid #E2E8F0",
+                    background: activeStep === i ? "var(--chipBg)" : "white",
                     cursor: "pointer",
                     textAlign: "center",
                     transition: "all 0.18s",
@@ -302,11 +302,11 @@ export default function SignLanguagePage() {
                   <HandSign
                     fingers={g.fingers}
                     size={58}
-                    color={activeStep === i ? "#0EA5E9" : "#94A3B8"}
+                    color={activeStep === i ? "var(--accent)" : "#94A3B8"}
                   />
                   <div style={{
                     fontSize: 10, fontWeight: 700, marginTop: 6, lineHeight: 1.3,
-                    color: activeStep === i ? "#0369A1" : "#475569",
+                    color: activeStep === i ? "var(--accent)" : "#475569",
                   }}>
                     {g.name}
                   </div>
@@ -337,11 +337,11 @@ export default function SignLanguagePage() {
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "1px solid #BAE6FD",
+                    border: "1px solid var(--border)",
                     marginBottom: 16,
                     gap: 6,
                   }}>
-                    <HandSign fingers={gesture.fingers} size={148} color="#0EA5E9" />
+                    <HandSign fingers={gesture.fingers} size={148} color="var(--accent)" />
                     <span style={{ fontSize: 13, color: "#94A3B8" }}>{gesture.emoji} {gesture.name}</span>
                   </div>
                   <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
@@ -368,9 +368,9 @@ export default function SignLanguagePage() {
                       <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
                         <div style={{
                           width: 28, height: 28, borderRadius: "50%",
-                          background: "#E0F2FE", border: "1.5px solid #BAE6FD",
+                          background: "var(--chipBg)", border: "1.5px solid var(--border)",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 12, fontWeight: 700, color: "#0369A1", flexShrink: 0,
+                          fontSize: 12, fontWeight: 700, color: "var(--accent)", flexShrink: 0,
                         }}>
                           {i + 1}
                         </div>
@@ -386,7 +386,7 @@ export default function SignLanguagePage() {
                     background: "var(--bg)",
                     borderRadius: 16,
                     padding: "22px 20px",
-                    border: "1px solid #BAE6FD",
+                    border: "1px solid var(--border)",
                     textAlign: "center",
                   }}>
                     <div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
@@ -398,7 +398,7 @@ export default function SignLanguagePage() {
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 8,
                         padding: "12px 24px", borderRadius: 12,
-                        background: "#0EA5E9", color: "white",
+                        background: "var(--accent)", color: "white",
                         fontWeight: 700, fontSize: 14, textDecoration: "none",
                       }}
                     >
@@ -435,7 +435,7 @@ export default function SignLanguagePage() {
                   disabled={activeStep === tutorial.gestures.length - 1}
                   style={{
                     padding: "10px 20px", borderRadius: 10,
-                    border: "1px solid var(--accent)", background: "#0EA5E9", color: "white",
+                    border: "1px solid var(--accent)", background: "var(--accent)", color: "white",
                     cursor: activeStep === tutorial.gestures.length - 1 ? "not-allowed" : "pointer",
                     fontWeight: 600, fontSize: 13,
                     opacity: activeStep === tutorial.gestures.length - 1 ? 0.45 : 1,

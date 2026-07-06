@@ -37,11 +37,11 @@ export default function Error({
         <h1 style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 22, fontWeight: 700,
-          color: "#0C4A6E", marginBottom: 12,
+          color: "var(--text)", marginBottom: 12,
         }}>
           Что-то пошло не так
         </h1>
-        <p style={{ fontSize: 14, color: "#075985", lineHeight: 1.7, marginBottom: 28 }}>
+        <p style={{ fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7, marginBottom: 28 }}>
           Произошла непредвиденная ошибка. Попробуйте обновить страницу или вернуться на главную.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
@@ -49,7 +49,7 @@ export default function Error({
             onClick={reset}
             style={{
               padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 600,
-              background: "#0EA5E9", color: "white", border: "none", cursor: "pointer",
+              background: "var(--accent)", color: "white", border: "none", cursor: "pointer",
             }}
           >
             Попробовать снова
@@ -58,8 +58,8 @@ export default function Error({
             href="/"
             style={{
               padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 600,
-              background: "white", color: "#0369A1",
-              border: "1.5px solid #BAE6FD", textDecoration: "none",
+              background: "white", color: "var(--accent)",
+              border: "1.5px solid var(--border)", textDecoration: "none",
               display: "inline-flex", alignItems: "center",
             }}
           >

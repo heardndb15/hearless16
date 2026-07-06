@@ -51,7 +51,7 @@ export default function Hero() {
               fontWeight: 800,
               fontSize: "clamp(40px, 6vw, 68px)",
               lineHeight: 1.08,
-              color: "#0C4A6E",
+              color: "var(--text)",
               marginBottom: 24,
             }}
           >
@@ -62,7 +62,7 @@ export default function Hero() {
           <p
             style={{
               fontSize: 17,
-              color: "#075985",
+              color: "var(--textSecondary)",
               lineHeight: 1.7,
               maxWidth: 480,
               marginBottom: 36,
@@ -71,11 +71,11 @@ export default function Hero() {
             {t.hero.desc}
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "white", border: "none", transition: "all 0.3s ease" }}>
+            <a href="/register" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "white", border: "none", transition: "all 0.3s ease" }}>
               {t.hero.cta1}
               <span style={{ fontSize: 18 }}>→</span>
             </a>
-            <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD", transition: "all 0.3s ease" }}>
+            <a href="/features" style={{ fontSize: 15, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "var(--accent)", border: "1.5px solid var(--border)", transition: "all 0.3s ease" }}>
               {t.hero.cta2}
             </a>
           </div>
@@ -86,7 +86,7 @@ export default function Hero() {
               gap: 32,
               marginTop: 48,
               paddingTop: 32,
-              borderTop: "1px solid #BAE6FD",
+              borderTop: "1px solid var(--border)",
             }}
           >
             {t.hero.stats.map((s) => (
@@ -96,12 +96,12 @@ export default function Hero() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
-                    color: "#0C4A6E",
+                    color: "var(--text)",
                   }}
                 >
                   {s.value}
                 </div>
-                <div style={{ fontSize: 13, color: "#075985" }}>{s.label}</div>
+                <div style={{ fontSize: 13, color: "var(--textSecondary)" }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -177,7 +177,7 @@ export default function Hero() {
                 flex: 1,
                 background: "#FFFFFF",
                 borderRadius: 16,
-                border: "1.5px solid #BAE6FD",
+                border: "1.5px solid var(--border)",
                 padding: "16px 12px",
                 display: "flex",
                 flexDirection: "column",
@@ -189,13 +189,13 @@ export default function Hero() {
             >
               {/* Rolling lines preview */}
               <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, justifyContent: "flex-end", marginBottom: 12 }}>
-                <div style={{ fontSize: 9, fontWeight: 600, color: "#BAE6FD", transform: "scale(0.95)", transformOrigin: "left" }}>
+                <div style={{ fontSize: 9, fontWeight: 600, color: "var(--border)", transform: "scale(0.95)", transformOrigin: "left" }}>
                   Здравствуйте! Меня зовут...
                 </div>
                 <div style={{
                   fontSize: 13,
                   fontWeight: 800,
-                  color: "#0369A1",
+                  color: "var(--accent)",
                   lineHeight: 1.4,
                   textShadow: "none"
                 }}>
@@ -205,7 +205,7 @@ export default function Hero() {
                       display: "inline-block",
                       width: 2,
                       height: 14,
-                      background: "#0EA5E9",
+                      background: "var(--accent)",
                       marginLeft: 2,
                       verticalAlign: "middle",
                       animation: "cursor-blink 0.8s step-end infinite",

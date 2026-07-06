@@ -21,22 +21,22 @@ export default function GlobalError({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#F0F9FF",
+        background: "var(--bg)",
         fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
       }}>
         <div style={{ textAlign: "center", padding: 24 }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>💔</div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0C4A6E", marginBottom: 12 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>
             Критическая ошибка
           </h1>
-          <p style={{ fontSize: 14, color: "#075985", marginBottom: 24 }}>
+          <p style={{ fontSize: 14, color: "var(--textSecondary)", marginBottom: 24 }}>
             Не удалось загрузить приложение. Попробуйте обновить страницу.
           </p>
           <button
             onClick={reset}
             style={{
               padding: "12px 28px", borderRadius: 12, fontSize: 14, fontWeight: 600,
-              background: "#0EA5E9", color: "white", border: "none", cursor: "pointer",
+              background: "var(--accent)", color: "white", border: "none", cursor: "pointer",
             }}
           >
             Обновить

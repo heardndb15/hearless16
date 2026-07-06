@@ -12,7 +12,7 @@ export type Fingers = {
 export function HandSign({
   fingers,
   size = 120,
-  color = "#0EA5E9",
+  color = "var(--accent)",
 }: {
   fingers: Fingers;
   size?: number;

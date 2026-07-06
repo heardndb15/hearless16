@@ -9,7 +9,7 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: "#F0F9FF",
+        background: "var(--bg)",
         borderTop: "1px solid rgba(14,165,233,0.12)",
         padding: "60px 0 32px",
       }}
@@ -49,7 +49,7 @@ export default function Footer() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 20,
                   fontWeight: 700,
-                  color: "#0C4A6E",
+                  color: "var(--text)",
                 }}
               >
                 Hearless
@@ -58,7 +58,7 @@ export default function Footer() {
             <p
               style={{
                 fontSize: 13,
-                color: "#075985",
+                color: "var(--textSecondary)",
                 lineHeight: 1.7,
                 maxWidth: 280,
               }}
@@ -75,7 +75,7 @@ export default function Footer() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#0C4A6E",
+                  color: "var(--text)",
                   marginBottom: 16,
                   textTransform: "uppercase",
                   letterSpacing: 1,
@@ -89,16 +89,16 @@ export default function Footer() {
                     key={label}
                     href={href}
                     style={{
-                      color: "#075985",
+                      color: "var(--textSecondary)",
                       textDecoration: "none",
                       fontSize: 13,
                       transition: "color 0.2s",
                     }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "#0EA5E9")
+                      (e.currentTarget.style.color = "var(--accent)")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "#075985")
+                      (e.currentTarget.style.color = "var(--textSecondary)")
                     }
                   >
                     {label}
@@ -120,7 +120,7 @@ export default function Footer() {
             gap: 12,
           }}
         >
-          <div style={{ fontSize: 12, color: "#0369A1" }}>
+          <div style={{ fontSize: 12, color: "var(--accent)" }}>
             © {new Date().getFullYear()} Hearless. {t.footer.copyright}
           </div>
           <div style={{ display: "flex", gap: 12 }}>
@@ -129,12 +129,12 @@ export default function Footer() {
                 key={s}
                 style={{
                   fontSize: 12,
-                  color: "#075985",
+                  color: "var(--textSecondary)",
                   cursor: "pointer",
                   transition: "color 0.2s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#0EA5E9")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#075985")}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--textSecondary)")}
               >
                 {s}
               </span>

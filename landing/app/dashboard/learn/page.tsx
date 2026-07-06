@@ -436,7 +436,7 @@ export default function LearnSignLanguagePage() {
                 <div className="w-full space-y-4">
                   <div className="flex gap-4 items-start">
                     <div className="shrink-0 w-28 h-28 bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl border border-sky-100 flex items-center justify-center shadow-sm">
-                      <HandSign fingers={GESTURE_TUTORIALS[selectedGesture.name].fingers} size={88} color="#0EA5E9" />
+                      <HandSign fingers={GESTURE_TUTORIALS[selectedGesture.name].fingers} size={88} color="var(--accent)" />
                     </div>
                     <div className="flex-1 text-left space-y-2">
                       {GESTURE_TUTORIALS[selectedGesture.name].steps.map((step, i) => (
@@ -632,7 +632,7 @@ export default function LearnSignLanguagePage() {
                         <div className="flex gap-4 pt-4">
                           {/* SVG hand */}
                           <div className="shrink-0 w-20 h-20 bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border border-sky-100 flex items-center justify-center">
-                            <HandSign fingers={tutorial.fingers} size={64} color="#0EA5E9" />
+                            <HandSign fingers={tutorial.fingers} size={64} color="var(--accent)" />
                           </div>
                           {/* Steps */}
                           <div className="flex-1 min-w-0 space-y-1.5">

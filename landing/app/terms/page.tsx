@@ -5,13 +5,13 @@ export const metadata = { title: "Условия использования — 
 export default function TermsPage() {
   return (
     <div style={{ minHeight: "100vh", padding: "80px 24px 60px", maxWidth: 780, margin: "0 auto" }}>
-      <Link href="/" style={{ color: "#0EA5E9", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+      <Link href="/" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
         ← На главную
       </Link>
-      <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 36, fontWeight: 800, color: "#0C4A6E", margin: "24px 0 8px" }}>
+      <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 36, fontWeight: 800, color: "var(--text)", margin: "24px 0 8px" }}>
         Условия использования
       </h1>
-      <p style={{ color: "#075985", fontSize: 14, marginBottom: 40 }}>Последнее обновление: 26 июня 2025 г.</p>
+      <p style={{ color: "var(--textSecondary)", fontSize: 14, marginBottom: 40 }}>Последнее обновление: 26 июня 2025 г.</p>
 
       {[
         {
@@ -48,10 +48,10 @@ export default function TermsPage() {
         },
       ].map(({ title, text }) => (
         <div key={title} style={{ marginBottom: 32 }}>
-          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: "#0C4A6E", marginBottom: 8 }}>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
             {title}
           </h2>
-          <p style={{ fontSize: 15, color: "#075985", lineHeight: 1.75 }}>{text}</p>
+          <p style={{ fontSize: 15, color: "var(--textSecondary)", lineHeight: 1.75 }}>{text}</p>
         </div>
       ))}
     </div>

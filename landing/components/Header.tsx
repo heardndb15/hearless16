@@ -52,34 +52,34 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "white", flexShrink: 0 }}>H</div>
-            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "#0C4A6E" }}>Hearless</span>
+            <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text)" }}>Hearless</span>
           </Link>
 
           {/* Desktop nav */}
           <nav className="nav-desktop" style={{ gap: 20, alignItems: "center", position: "relative" }}>
             <div style={{ position: "relative" }} onMouseEnter={() => setDropdown(true)} onMouseLeave={() => setDropdown(false)}>
-              <button style={{ background: "none", border: "none", color: dropdown ? "#0EA5E9" : "#075985", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s", display: "flex", alignItems: "center", gap: 4 }}>
+              <button style={{ background: "none", border: "none", color: dropdown ? "var(--accent)" : "var(--textSecondary)", fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s", display: "flex", alignItems: "center", gap: 4 }}>
                 {t.nav.features}
-                <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s", color: "#075985" }}>▼</span>
+                <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s", color: "var(--textSecondary)" }}>▼</span>
               </button>
               {dropdown && (
                 <div style={{ position: "absolute", top: "calc(100% + 12px)", left: -120, width: 280, background: "#FFFFFF", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(14,165,233,0.12)", borderRadius: "var(--radius)", padding: "8px", boxShadow: "0 8px 24px rgba(14,165,233,0.1)" }}>
                   {t.featureLinks.map(f => (
-                    <Link key={f.href} href={f.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: "var(--radiusSm)", textDecoration: "none", color: "#075985", fontSize: 13, transition: "all 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#F0F9FF"; e.currentTarget.style.color = "#0EA5E9"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#075985"; }}>
+                    <Link key={f.href} href={f.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: "var(--radiusSm)", textDecoration: "none", color: "var(--textSecondary)", fontSize: 13, transition: "all 0.2s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "var(--bg)"; e.currentTarget.style.color = "var(--accent)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--textSecondary)"; }}>
                       <span style={{ fontSize: 16 }}>{f.icon}</span>{f.label}
                     </Link>
                   ))}
                 </div>
               )}
             </div>
-            <Link href="/about" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.about}</Link>
-            <Link href="/blog" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.blog}</Link>
-            <Link href="/pricing" style={{ color: "#075985", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.pricing}</Link>
+            <Link href="/about" style={{ color: "var(--textSecondary)", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.about}</Link>
+            <Link href="/blog" style={{ color: "var(--textSecondary)", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.blog}</Link>
+            <Link href="/pricing" style={{ color: "var(--textSecondary)", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.pricing}</Link>
 
             {/* Language switcher */}
-            <div style={{ display: "flex", gap: 3, background: "#F0F9FF", borderRadius: 10, padding: 3, border: "1px solid rgba(14,165,233,0.15)" }}>
+            <div style={{ display: "flex", gap: 3, background: "var(--bg)", borderRadius: 10, padding: 3, border: "1px solid rgba(14,165,233,0.15)" }}>
               {(["ru", "en", "kz"] as Lang[]).map((l) => (
                 <button
                   key={l}
@@ -88,8 +88,8 @@ export default function Header() {
                     padding: "4px 9px",
                     borderRadius: 7,
                     border: "none",
-                    background: lang === l ? "#0EA5E9" : "transparent",
-                    color: lang === l ? "#ffffff" : "#075985",
+                    background: lang === l ? "var(--accent)" : "transparent",
+                    color: lang === l ? "#ffffff" : "var(--textSecondary)",
                     fontSize: 11,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -104,14 +104,14 @@ export default function Header() {
             </div>
 
             {userName ? (
-              <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>
+              <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "#ffffff" }}>
                 <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{userName[0].toUpperCase()}</span>
                 {userName}
               </Link>
             ) : (
               <>
-                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "#0369A1", border: "1.5px solid #BAE6FD" }}>{t.nav.login}</Link>
-                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "#0EA5E9", color: "#ffffff" }}>{t.nav.register}</Link>
+                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "var(--accent)", border: "1.5px solid var(--border)" }}>{t.nav.login}</Link>
+                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "#ffffff" }}>{t.nav.register}</Link>
               </>
             )}
           </nav>
@@ -123,9 +123,9 @@ export default function Header() {
             aria-label={t.nav.openMenu}
             style={{ background: "none", border: "1px solid rgba(14,165,233,0.2)", borderRadius: 10, width: 42, height: 42, alignItems: "center", justifyContent: "center", cursor: "pointer", flexDirection: "column", gap: 5, padding: "10px 9px" }}
           >
-            <span style={{ display: "block", width: 22, height: 2, background: "#0369A1", borderRadius: 2, transition: "all 0.25s", transform: mobileOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-            <span style={{ display: "block", width: 22, height: 2, background: "#0369A1", borderRadius: 2, transition: "all 0.25s", opacity: mobileOpen ? 0 : 1 }} />
-            <span style={{ display: "block", width: 22, height: 2, background: "#0369A1", borderRadius: 2, transition: "all 0.25s", transform: mobileOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "var(--accent)", borderRadius: 2, transition: "all 0.25s", transform: mobileOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "var(--accent)", borderRadius: 2, transition: "all 0.25s", opacity: mobileOpen ? 0 : 1 }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "var(--accent)", borderRadius: 2, transition: "all 0.25s", transform: mobileOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
           </button>
         </div>
       </header>
@@ -142,7 +142,7 @@ export default function Header() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: "8px 0" }}>
               {t.featureLinks.map(f => (
                 <Link key={f.href} href={f.href} onClick={() => setMobileOpen(false)}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>
                   <span style={{ fontSize: 18 }}>{f.icon}</span>
                   <span>{f.label}</span>
                 </Link>
@@ -154,9 +154,9 @@ export default function Header() {
 
             {/* Pages */}
             <div style={{ display: "flex", gap: 8, padding: "4px 0 8px" }}>
-              <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>{t.nav.about}</Link>
-              <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#075985", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>{t.nav.blog}</Link>
-              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "#0EA5E9", fontSize: 14, fontWeight: 600, textAlign: "center", background: "#E0F2FE", border: "1px solid rgba(14,165,233,0.15)" }}>{t.nav.pricing}</Link>
+              <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>{t.nav.about}</Link>
+              <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(14,165,233,0.08)" }}>{t.nav.blog}</Link>
+              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--accent)", fontSize: 14, fontWeight: 600, textAlign: "center", background: "var(--chipBg)", border: "1px solid rgba(14,165,233,0.15)" }}>{t.nav.pricing}</Link>
             </div>
 
             {/* Mobile language switcher */}
@@ -169,9 +169,9 @@ export default function Header() {
                     flex: 1,
                     padding: "10px",
                     borderRadius: 12,
-                    border: lang === l ? "1.5px solid #0EA5E9" : "1px solid rgba(14,165,233,0.15)",
-                    background: lang === l ? "#E0F2FE" : "#F8FBFF",
-                    color: lang === l ? "#0EA5E9" : "#075985",
+                    border: lang === l ? "1.5px solid var(--accent)" : "1px solid rgba(14,165,233,0.15)",
+                    background: lang === l ? "var(--chipBg)" : "#F8FBFF",
+                    color: lang === l ? "var(--accent)" : "var(--textSecondary)",
                     fontSize: 13,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -187,13 +187,13 @@ export default function Header() {
             {/* Auth buttons */}
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
               {userName ? (
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   {userName[0].toUpperCase()} · {userName}
                 </Link>
               ) : (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "#0369A1", border: "1.5px solid #BAE6FD", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.login}</Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "#0EA5E9", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.register}</Link>
+                  <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "var(--accent)", border: "1.5px solid var(--border)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.login}</Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.register}</Link>
                 </>
               )}
             </div>

@@ -80,7 +80,7 @@ const DEMO_VIDEO_SUBTITLES = [
   { start: 18, end: 21, text: "Enjoy your favorite web content on the big screen." }
 ];
 
-const SPEAKER_COLORS = ["#0EA5E9", "#10B981", "#F59E0B", "#8B5CF6"];
+const SPEAKER_COLORS = ["var(--accent)", "#10B981", "#F59E0B", "#8B5CF6"];
 const SPEAKER_BG = ["rgba(14,165,233,0.10)", "rgba(16,185,129,0.10)", "rgba(245,158,11,0.10)", "rgba(139,92,246,0.10)"];
 const SPEAKER_LABELS = ["Говорящий 1", "Говорящий 2", "Говорящий 3", "Говорящий 4"];
 

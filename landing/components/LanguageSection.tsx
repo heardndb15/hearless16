@@ -33,7 +33,7 @@ export default function LanguageSection() {
           <h2 className="section-title">
             Три языка. Один <span style={{ color: "var(--accent)" }}>голос</span>.
           </h2>
-          <p className="section-subtitle" style={{ color: "#075985" }}>
+          <p className="section-subtitle" style={{ color: "var(--textSecondary)" }}>
             Hearless говорит на казахском, русском и английском. Автоопределение
             языка и перевод в реальном времени.
           </p>
@@ -60,10 +60,10 @@ export default function LanguageSection() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 12,
                   fontWeight: 700,
-                  color: "#0369A1",
+                  color: "var(--accent)",
                   letterSpacing: 3,
                   marginBottom: 16,
-                  background: "#E0F2FE",
+                  background: "var(--chipBg)",
                   padding: "4px 10px",
                   borderRadius: 6,
                 }}
@@ -75,7 +75,7 @@ export default function LanguageSection() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 22,
                   fontWeight: 600,
-                  color: "#0C4A6E",
+                  color: "var(--text)",
                   marginBottom: 12,
                 }}
               >
@@ -84,7 +84,7 @@ export default function LanguageSection() {
               <p
                 style={{
                   fontSize: 14,
-                  color: "#075985",
+                  color: "var(--textSecondary)",
                   lineHeight: 1.7,
                   marginBottom: 24,
                 }}
@@ -103,12 +103,12 @@ export default function LanguageSection() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 28,
                     fontWeight: 700,
-                    color: "#0EA5E9",
+                    color: "var(--accent)",
                   }}
                 >
                   {l.stat}
                 </span>
-                <span style={{ fontSize: 13, color: "#075985" }}>
+                <span style={{ fontSize: 13, color: "var(--textSecondary)" }}>
                   {l.statLabel}
                 </span>
               </div>

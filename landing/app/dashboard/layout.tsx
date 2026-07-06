@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F0F9FF] text-sky-900">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] text-sky-900">
         {/* Decorative background blobs */}
         <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-cyan-200/50 rounded-full blur-[80px] pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-purple-200/40 rounded-full blur-[80px] pointer-events-none"></div>
@@ -121,7 +121,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-[#F0F9FF] font-dm flex text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg)] font-dm flex text-slate-800 relative overflow-hidden">
 
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-sky-100 shadow-sm shrink-0 z-10 relative">
