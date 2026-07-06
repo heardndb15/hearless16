@@ -235,41 +235,27 @@ function GesturePracticeContent() {
   };
 
   // Рисование скелета руки поверх видео
-  const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: any[], success: boolean) => {
-    const isDark = true;
+  const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: NormalizedLandmark[], success: boolean) => {
     const accentColor = success ? "#22C55E" : "#38bdf8"; // Зеленый при успехе, ярко-голубой при трекинге
-    const pointColor = "#ffffff";
 
-    // 1. Отрисовка костей
-    ctx.strokeStyle = accentColor;
-    ctx.lineWidth = 4;
-    ctx.lineCap = "round";
+    if (!drawingUtilsRef.current) {
+      drawingUtilsRef.current = new DrawingUtils(ctx);
+    }
+    const drawingUtils = drawingUtilsRef.current;
+
     ctx.shadowBlur = success ? 15 : 6;
     ctx.shadowColor = accentColor;
-
-    CONNECTIONS.forEach(([from, to]) => {
-      const pt1 = landmarks[from];
-      const pt2 = landmarks[to];
-      if (pt1 && pt2) {
-        ctx.beginPath();
-        ctx.moveTo(pt1.x * ctx.canvas.width, pt1.y * ctx.canvas.height);
-        ctx.lineTo(pt2.x * ctx.canvas.width, pt2.y * ctx.canvas.height);
-        ctx.stroke();
-      }
+    drawingUtils.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
+      color: accentColor,
+      lineWidth: 4,
     });
 
-    // Сбрасываем тень для суставов
     ctx.shadowBlur = 0;
-
-    // 2. Отрисовка суставов (точек)
-    landmarks.forEach((pt) => {
-      ctx.beginPath();
-      ctx.arc(pt.x * ctx.canvas.width, pt.y * ctx.canvas.height, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = pointColor;
-      ctx.fill();
-      ctx.strokeStyle = accentColor;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    drawingUtils.drawLandmarks(landmarks, {
+      color: accentColor,
+      fillColor: "#ffffff",
+      lineWidth: 2,
+      radius: 5,
     });
   };
 
