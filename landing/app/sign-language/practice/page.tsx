@@ -4,228 +4,8 @@ import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
+import { GESTURE_DEFS, CONNECTIONS } from "./gestureDefs";
 
-// ==========================================
-// 1. ОПРЕДЕЛЕНИЕ ЭТАЛОННЫХ ЖЕСТОВ И ИХ ПРАВИЛ
-// ==========================================
-interface GestureDef {
-  name: string;
-  description: string;
-  emoji: string;
-  features: Record<string, number>;
-  checkRules: (features: Record<string, number>, states: Record<string, boolean>) => string[];
-}
-
-const GESTURE_DEFS: Record<string, GestureDef> = {
-  A: {
-    name: "Буква А (Дактиль)",
-    description: "Кулак со сжатыми четырьмя пальцами и отведенным в сторону большим пальцем. Стандартная первая буква алфавита.",
-    emoji: "✊",
-    // Эталонный 14-мерный вектор признаков (соотношений расстояний)
-    features: {
-      thumb_extension: 1.0,
-      index_extension: 0.52,
-      middle_extension: 0.52,
-      ring_extension: 0.51,
-      pinky_extension: 0.51,
-      thumb_wrist: 1.25,
-      index_wrist: 1.15,
-      middle_wrist: 1.15,
-      ring_wrist: 1.15,
-      pinky_wrist: 1.15,
-      thumb_index: 0.85,
-      index_middle: 0.22,
-      middle_ring: 0.22,
-      ring_pinky: 0.22,
-    },
-    // Эвристическая проверка для текстовых подсказок пользователю
-    checkRules: (features, states) => {
-      const hints: string[] = [];
-      if (states.index) hints.push("Сожмите указательный палец");
-      if (states.middle) hints.push("Сожмите средний палец");
-      if (states.ring) hints.push("Сожмите безымянный палец");
-      if (states.pinky) hints.push("Сожмите мизинец");
-      if (features.thumb_extension < 0.75) hints.push("Отведите большой палец сбоку наружу");
-      return hints;
-    }
-  },
-  B: {
-    name: "Буква В (Дактиль)",
-    description: "Открытая прямая ладонь, направленная пальцами вверх. Все пять пальцев полностью выпрямлены и сомкнуты.",
-    emoji: "🖐️",
-    features: {
-      thumb_extension: 1.25,
-      index_extension: 1.85,
-      middle_extension: 2.05,
-      ring_extension: 1.85,
-      pinky_extension: 1.62,
-      thumb_wrist: 1.95,
-      index_wrist: 2.35,
-      middle_wrist: 2.55,
-      ring_wrist: 2.35,
-      pinky_wrist: 1.98,
-      thumb_index: 0.82,
-      index_middle: 0.35,
-      middle_ring: 0.35,
-      ring_pinky: 0.35,
-    },
-    checkRules: (features, states) => {
-      const hints: string[] = [];
-      if (!states.index) hints.push("Выпрямите указательный палец");
-      if (!states.middle) hints.push("Выпрямите средний палец");
-      if (!states.ring) hints.push("Выпрямите безымянный палец");
-      if (!states.pinky) hints.push("Выпрямите мизинец");
-      if (features.index_middle > 0.55 || features.middle_ring > 0.55 || features.ring_pinky > 0.55) {
-        hints.push("Сомкните пальцы плотнее друг к другу");
-      }
-      return hints;
-    }
-  },
-  G: {
-    name: "Буква Г (Дактиль)",
-    description: "Указательный палец поднят вверх, большой палец отведен вбок под углом 90 градусов. Остальные пальцы сжаты.",
-    emoji: "👈",
-    features: {
-      thumb_extension: 1.30,
-      index_extension: 1.82,
-      middle_extension: 0.55,
-      ring_extension: 0.54,
-      pinky_extension: 0.52,
-      thumb_wrist: 1.92,
-      index_wrist: 2.32,
-      middle_wrist: 1.15,
-      ring_wrist: 1.15,
-      pinky_wrist: 1.15,
-      thumb_index: 1.75,
-      index_middle: 1.45,
-      middle_ring: 0.22,
-      ring_pinky: 0.22,
-    },
-    checkRules: (features, states) => {
-      const hints: string[] = [];
-      if (!states.index) hints.push("Поднимите указательный палец вверх");
-      if (features.thumb_extension < 0.9) hints.push("Отведите большой палец сильнее в сторону");
-      if (states.middle) hints.push("Сожмите средний палец в кулак");
-      if (states.ring) hints.push("Сожмите безымянный палец в кулак");
-      if (states.pinky) hints.push("Сожмите мизинец в кулак");
-      return hints;
-    }
-  },
-  V: {
-    name: "Жест Победа (V)",
-    description: "Указательный и средний пальцы подняты вверх и разведены в стороны. Остальные пальцы сжаты к ладони.",
-    emoji: "✌️",
-    features: {
-      thumb_extension: 0.72,
-      index_extension: 1.82,
-      middle_extension: 1.82,
-      ring_extension: 0.52,
-      pinky_extension: 0.51,
-      thumb_wrist: 1.22,
-      index_wrist: 2.32,
-      middle_wrist: 2.32,
-      ring_wrist: 1.15,
-      pinky_wrist: 1.15,
-      thumb_index: 1.05,
-      index_middle: 0.88,
-      middle_ring: 1.45,
-      ring_pinky: 0.22,
-    },
-    checkRules: (features, states) => {
-      const hints: string[] = [];
-      if (!states.index) hints.push("Поднимите указательный палец");
-      if (!states.middle) hints.push("Поднимите средний палец");
-      if (states.ring) hints.push("Сожмите безымянный палец");
-      if (states.pinky) hints.push("Сожмите мизинец");
-      if (features.index_middle < 0.6) hints.push("Раздвиньте указательный и средний пальцы шире");
-      return hints;
-    }
-  },
-  O: {
-    name: "Буква О (Дактиль)",
-    description: "Пальцы округлены и их кончики соприкасаются с большим пальцем, образуя форму кольца (буквы О).",
-    emoji: "👌",
-    features: {
-      thumb_extension: 0.82,
-      index_extension: 0.85,
-      middle_extension: 0.85,
-      ring_extension: 0.85,
-      pinky_extension: 0.85,
-      thumb_wrist: 1.25,
-      index_wrist: 1.25,
-      middle_wrist: 1.25,
-      ring_wrist: 1.25,
-      pinky_wrist: 1.25,
-      thumb_index: 0.22,
-      index_middle: 0.32,
-      middle_ring: 0.32,
-      ring_pinky: 0.32,
-    },
-    checkRules: (features, states) => {
-      const hints: string[] = [];
-      if (features.thumb_index > 0.42) {
-        hints.push("Соедините кончики большого и указательного пальцев в кольцо");
-      }
-      if (features.index_extension > 1.35) hints.push("Округлите указательный палец");
-      if (features.middle_extension > 1.35) hints.push("Округлите средний палец");
-      if (features.ring_extension > 1.35) hints.push("Округлите безымянный палец");
-      return hints;
-    }
-  }
-};
-
-// Двумерные координаты для отрисовки красивой статической схемы-подсказки
-const REFERENCE_LANDMARKS: Record<string, {x: number, y: number}[]> = {
-  A: [
-    {x: 50, y: 90}, 
-    {x: 36, y: 82}, {x: 28, y: 72}, {x: 23, y: 62}, {x: 18, y: 50}, // Большой (отведен)
-    {x: 35, y: 55}, {x: 34, y: 64}, {x: 35, y: 70}, {x: 38, y: 74}, // Указательный (согнут)
-    {x: 48, y: 53}, {x: 48, y: 62}, {x: 48, y: 68}, {x: 48, y: 72}, // Средний (согнут)
-    {x: 62, y: 55}, {x: 62, y: 64}, {x: 61, y: 70}, {x: 60, y: 74}, // Безымянный (согнут)
-    {x: 73, y: 60}, {x: 75, y: 68}, {x: 74, y: 74}, {x: 72, y: 78}  // Мизинец (согнут)
-  ],
-  B: [
-    {x: 50, y: 90}, 
-    {x: 32, y: 80}, {x: 24, y: 70}, {x: 20, y: 60}, {x: 16, y: 50}, // Большой
-    {x: 36, y: 52}, {x: 34, y: 38}, {x: 32, y: 26}, {x: 30, y: 14}, // Указательный (прямой)
-    {x: 48, y: 50}, {x: 48, y: 34}, {x: 48, y: 21}, {x: 48, y: 8},  // Средний (прямой)
-    {x: 60, y: 52}, {x: 62, y: 38}, {x: 63, y: 26}, {x: 64, y: 14}, // Безымянный (прямой)
-    {x: 72, y: 56}, {x: 75, y: 44}, {x: 77, y: 34}, {x: 79, y: 24}  // Мизинец (прямой)
-  ],
-  G: [
-    {x: 50, y: 90}, 
-    {x: 34, y: 80}, {x: 22, y: 74}, {x: 14, y: 70}, {x: 6, y: 66},  // Большой (отведен под 90)
-    {x: 36, y: 52}, {x: 34, y: 38}, {x: 32, y: 26}, {x: 30, y: 14}, // Указательный (прямой)
-    {x: 48, y: 53}, {x: 48, y: 62}, {x: 48, y: 68}, {x: 48, y: 72}, // Средний (согнут)
-    {x: 62, y: 55}, {x: 62, y: 64}, {x: 61, y: 70}, {x: 60, y: 74}, // Безымянный (согнут)
-    {x: 73, y: 60}, {x: 75, y: 68}, {x: 74, y: 74}, {x: 72, y: 78}  // Мизинец (согнут)
-  ],
-  V: [
-    {x: 50, y: 90}, 
-    {x: 38, y: 80}, {x: 32, y: 73}, {x: 28, y: 68}, {x: 25, y: 62}, // Большой (согнут)
-    {x: 36, y: 52}, {x: 30, y: 38}, {x: 24, y: 24}, {x: 18, y: 12}, // Указательный (прямой, разведен)
-    {x: 48, y: 50}, {x: 50, y: 35}, {x: 52, y: 22}, {x: 54, y: 9},  // Средний (прямой, разведен)
-    {x: 62, y: 55}, {x: 62, y: 64}, {x: 61, y: 70}, {x: 60, y: 74}, // Безымянный (согнут)
-    {x: 73, y: 60}, {x: 75, y: 68}, {x: 74, y: 74}, {x: 72, y: 78}  // Мизинец (согнут)
-  ],
-  O: [
-    {x: 50, y: 90}, 
-    {x: 42, y: 80}, {x: 35, y: 70}, {x: 34, y: 62}, {x: 35, y: 52}, // Большой
-    {x: 45, y: 55}, {x: 38, y: 44}, {x: 36, y: 47}, {x: 35, y: 51}, // Указательный
-    {x: 48, y: 53}, {x: 46, y: 42}, {x: 43, y: 46}, {x: 40, y: 51}, // Средний
-    {x: 55, y: 55}, {x: 53, y: 45}, {x: 49, y: 49}, {x: 45, y: 52}, // Безымянный
-    {x: 60, y: 58}, {x: 58, y: 48}, {x: 54, y: 52}, {x: 50, y: 55}  // Мизинец
-  ]
-};
-
-const CONNECTIONS = [
-  [0, 1], [1, 2], [2, 3], [3, 4], // Большой палец
-  [0, 5], [5, 6], [6, 7], [7, 8], // Указательный палец
-  [0, 9], [9, 10], [10, 11], [11, 12], // Средний палец
-  [0, 13], [13, 14], [14, 15], [15, 16], // Безымянный палец
-  [0, 17], [17, 18], [18, 19], [19, 20], // Мизинец
-  [5, 9], [9, 13], [13, 17] // Ладонь
-];
 
 function GesturePracticeContent() {
   const searchParams = useSearchParams();
@@ -911,7 +691,7 @@ function GesturePracticeContent() {
                       }}
                     >
                       <span style={{ fontSize: 16 }}>{g.emoji}</span>
-                      <span>{g.name.split(" ")[1]}</span>
+                      <span>{g.shortLabel}</span>
                     </button>
                   );
                 })}
@@ -942,8 +722,8 @@ function GesturePracticeContent() {
                     <svg viewBox="0 0 100 100" style={{ width: "100%", height: "100%" }}>
                       {/* Отрисовка костей */}
                       {CONNECTIONS.map(([from, to], idx) => {
-                        const pt1 = REFERENCE_LANDMARKS[activeGesture][from];
-                        const pt2 = REFERENCE_LANDMARKS[activeGesture][to];
+                        const pt1 = GESTURE_DEFS[activeGesture].referenceLandmarks[from];
+                        const pt2 = GESTURE_DEFS[activeGesture].referenceLandmarks[to];
                         return (
                           <line
                             key={idx}
@@ -958,7 +738,7 @@ function GesturePracticeContent() {
                         );
                       })}
                       {/* Отрисовка суставов */}
-                      {REFERENCE_LANDMARKS[activeGesture].map((pt, idx) => (
+                      {GESTURE_DEFS[activeGesture].referenceLandmarks.map((pt, idx) => (
                         <circle
                           key={idx}
                           cx={pt.x}
