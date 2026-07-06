@@ -521,7 +521,7 @@ Replace with:
 cd landing
 npx tsc --noEmit
 ```
-Expected: no errors. (This step will still show errors related to `Hands`/`Camera`/`Script` usage further down the file — those are fixed in Task 4. Confirm specifically that no error mentions `REFERENCE_LANDMARKS`, `GESTURE_DEFS` import, or `g.name.split`.)
+Expected: no output. (The legacy `Hands`/`Camera`/`Script` engine code further down the file is untouched by this task and does not reference `GESTURE_DEFS`/`REFERENCE_LANDMARKS`/`CONNECTIONS`, so it does not affect this check — it's replaced in Task 4, not fixed here.)
 
 - [ ] **Step 6: Commit**
 
@@ -860,7 +860,7 @@ Replace with:
 cd landing
 npx tsc --noEmit
 ```
-Expected: errors remaining should only mention `results.multiHandLandmarks` (fixed in Task 5) and `drawHandSkeleton`'s `landmarks: any[]` param shape (fixed in Task 6) — nothing about `Hands`, `Camera`, `Script`, or `scriptsLoaded`.
+Expected: no output. Note this is not a functional guarantee: `handleTrackingResults`'s `results` parameter and `drawHandSkeleton`'s `landmarks` parameter are still typed `any`/`any[]` at this point, so TypeScript will not flag that `results.multiHandLandmarks` no longer matches the new API's `results.landmarks` shape — that's a runtime bug until Task 5 fixes it, invisible to this typecheck. Confirm via `grep -n "multiHandLandmarks" app/sign-language/practice/page.tsx` that the stale field name is still there (expected at this stage — Task 5 removes it) rather than relying on tsc to catch it.
 
 - [ ] **Step 7: Commit**
 
@@ -948,7 +948,7 @@ Replace with:
 cd landing
 npx tsc --noEmit
 ```
-Expected: no errors mentioning `multiHandLandmarks`, `handleTrackingResults`, or `getDistance3D`. Remaining errors (if any) should only be in `drawHandSkeleton`, fixed next.
+Expected: no output. (`drawHandSkeleton`'s `landmarks` parameter is still typed `any[]` at this point, so passing it the now-`NormalizedLandmark[]`-typed `landmarks` value from `handleTrackingResults` won't error either way — tightened in Task 6, not required for a clean typecheck here.)
 
 - [ ] **Step 5: Commit**
 
