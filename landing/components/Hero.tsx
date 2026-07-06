@@ -116,41 +116,6 @@ export default function Hero() {
             alignItems: "center",
           }}
         >
-          {/* Pulsing rings */}
-          <div
-            className="pulse-ring"
-            style={{
-              position: "absolute",
-              width: 440,
-              height: 440,
-              borderRadius: "50%",
-              border: "1px solid var(--accent)",
-              opacity: 0.2,
-            }}
-          />
-          <div
-            className="pulse-ring-delayed"
-            style={{
-              position: "absolute",
-              width: 360,
-              height: 360,
-              borderRadius: "50%",
-              border: "1px solid var(--purple)",
-              opacity: 0.15,
-            }}
-          />
-          <div
-            className="pulse-ring"
-            style={{
-              position: "absolute",
-              width: 280,
-              height: 280,
-              borderRadius: "50%",
-              border: "1px solid var(--accent)",
-              opacity: 0.1,
-            }}
-          />
-
           {/* Phone mockup */}
           <div
             style={{
@@ -164,7 +129,7 @@ export default function Hero() {
               padding: "16px 14px",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "0 24px 80px rgba(14,165,233,0.18), 0 0 40px rgba(14,165,233,0.1)",
+              boxShadow: "var(--shadow)",
               overflow: "hidden"
             }}
           >
