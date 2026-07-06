@@ -330,7 +330,7 @@ export default function SignLanguagePage() {
                     Эталон жеста
                   </div>
                   <div style={{
-                    background: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)",
+                    background: "var(--bg)",
                     borderRadius: 16,
                     height: 200,
                     display: "flex",
@@ -383,7 +383,7 @@ export default function SignLanguagePage() {
 
                   {/* AI camera CTA */}
                   <div style={{
-                    background: "linear-gradient(135deg, #E0F2FE 0%, #F0F9FF 100%)",
+                    background: "var(--bg)",
                     borderRadius: 16,
                     padding: "22px 20px",
                     border: "1px solid #BAE6FD",

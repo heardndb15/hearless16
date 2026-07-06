@@ -89,7 +89,7 @@ export default function PricingSection() {
               key={plan.name}
               style={{
                 background: plan.highlight
-                  ? "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)"
+                  ? "var(--accent)"
                   : "#FFFFFF",
                 border: plan.highlight
                   ? "none"

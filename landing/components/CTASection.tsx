@@ -40,7 +40,7 @@ export default function CTASection() {
           style={{ maxWidth: 640, margin: "0 auto 20px", color: "#0C4A6E" }}
         >
           {t.cta.title}{" "}
-          <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{t.cta.titleHighlight}</span>?
+          <span style={{ color: "var(--accent)" }}>{t.cta.titleHighlight}</span>?
         </h2>
         <p
           className="section-subtitle"

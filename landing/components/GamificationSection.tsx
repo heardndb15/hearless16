@@ -14,7 +14,7 @@ export default function GamificationSection() {
         <div style={{ marginBottom: 48 }}>
           <div className="section-label">Геймификация</div>
           <h2 className="section-title">
-            Учись, играя. <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Прогресс</span> — это XP.
+            Учись, играя. <span style={{ color: "var(--accent)" }}>Прогресс</span> — это XP.
           </h2>
           <p className="section-subtitle" style={{ color: "#075985" }}>
             Зарабатывай XP, открывай ачивки, продлевай стрики и соревнуйся с друзьями.

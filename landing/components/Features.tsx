@@ -13,7 +13,7 @@ export default function FeaturesSection() {
           <div className="section-label">{t.features.label}</div>
           <h2 className="section-title">
             {t.features.title}{" "}
-            <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{t.features.titleHighlight}</span>
+            <span style={{ color: "var(--accent)" }}>{t.features.titleHighlight}</span>
           </h2>
           <p className="section-subtitle">{t.features.subtitle}</p>
         </div>

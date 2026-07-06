@@ -34,7 +34,7 @@ const PLANS = [
     period: "в месяц",
     badge: "Популярный",
     color: "#FFFFFF",
-    bg: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)",
+    bg: "var(--accent)",
     border: "transparent",
     highlight: true,
     cta: "Попробовать Basic",
@@ -107,7 +107,7 @@ export default function PricingPage() {
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(14,165,233,0.1)", padding: "14px 0" }}>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "white" }}>H</div>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "white" }}>H</div>
             <span style={{ fontSize: 20, fontWeight: 700, color: "#0C4A6E" }}>Hearless</span>
           </Link>
           <div style={{ display: "flex", gap: 10 }}>
@@ -124,7 +124,7 @@ export default function PricingPage() {
           <div className="section-label" style={{ justifyContent: "center" }}>Тарифы</div>
           <h1 style={{ fontSize: "clamp(32px, 6vw, 52px)", fontWeight: 800, color: "#0C4A6E", lineHeight: 1.1, marginBottom: 18 }}>
             Простые и прозрачные{" "}
-            <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>цены</span>
+            <span style={{ color: "var(--accent)" }}>цены</span>
           </h1>
           <p style={{ fontSize: 17, color: "#075985", lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
             Начни бесплатно и переходи на платный тариф когда будешь готов. Никаких скрытых платежей.
@@ -318,7 +318,7 @@ export default function PricingPage() {
         </div>
 
         {/* CTA */}
-        <div style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)", padding: "64px 24px", textAlign: "center" }}>
+        <div style={{ background: "var(--accent)", padding: "64px 24px", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(24px, 5vw, 38px)", fontWeight: 800, color: "white", marginBottom: 12 }}>Готов начать?</h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.85)", marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>
             Зарегистрируйся бесплатно и начни пользоваться Hearless уже сегодня.

@@ -20,7 +20,7 @@ export default function Error({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 50%, #F0F9FF 100%)",
+      background: "var(--bg)",
       padding: "24px",
     }}>
       <div style={{

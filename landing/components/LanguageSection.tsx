@@ -31,7 +31,7 @@ export default function LanguageSection() {
         <div style={{ marginBottom: 48 }}>
           <div className="section-label">Языки</div>
           <h2 className="section-title">
-            Три языка. Один <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>голос</span>.
+            Три языка. Один <span style={{ color: "var(--accent)" }}>голос</span>.
           </h2>
           <p className="section-subtitle" style={{ color: "#075985" }}>
             Hearless говорит на казахском, русском и английском. Автоопределение

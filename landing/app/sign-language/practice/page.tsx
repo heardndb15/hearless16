@@ -490,7 +490,7 @@ function GesturePracticeContent() {
                   <div style={{ 
                     width: `${similarity}%`, 
                     height: "100%", 
-                    background: isMatched ? "linear-gradient(90deg, #4ade80 0%, #22c55e 100%)" : "linear-gradient(90deg, #38bdf8 0%, #0284c7 100%)",
+                    background: isMatched ? "var(--success)" : "var(--accent)",
                     transition: "width 0.15s ease-out, background-color 0.3s ease",
                     boxShadow: isMatched ? "0 0 10px rgba(34, 197, 94, 0.4)" : "none"
                   }} />

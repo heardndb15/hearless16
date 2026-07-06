@@ -264,7 +264,7 @@ export default function Hero() {
                     style={{
                       flex: 1,
                       height: h * 0.7,
-                      background: "linear-gradient(to top, #0EA5E9, #0369A1)",
+                      background: "var(--accent)",
                       opacity: 0.9,
                       borderRadius: "1px 1px 0 0",
                       animation: `sound-pulse ${0.8 + Math.random() * 0.6}s ease-in-out infinite`,

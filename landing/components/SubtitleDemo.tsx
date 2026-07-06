@@ -57,7 +57,7 @@ export default function SubtitleDemo() {
         <div style={{ marginBottom: 40 }}>
           <div className="section-label">Субтитры</div>
           <h2 className="section-title" style={{ color: "#0C4A6E" }}>
-            Живые <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>AI-субтитры</span>
+            Живые <span style={{ color: "var(--accent)" }}>AI-субтитры</span>
           </h2>
           <p className="section-subtitle" style={{ color: "#075985" }}>
             Введи текст или смотри демо. Так работают субтитры в реальном времени.
