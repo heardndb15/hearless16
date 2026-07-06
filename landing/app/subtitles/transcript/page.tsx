@@ -161,7 +161,7 @@ export default function TranscriptPage() {
           text: "#0f172a",
           cardBg: "#ffffff",
           border: "#e2e8f0",
-          accent: "#0284c7",
+          accent: "var(--accent)",
           activeBg: "rgba(0, 0, 0, 0.1)",
           textSecondary: "#475569"
         };
@@ -181,7 +181,7 @@ export default function TranscriptPage() {
           bg: "#090d16",
           text: "#f8fafc",
           cardBg: "rgba(15, 23, 42, 0.6)",
-          border: "rgba(0, 0, 0, 0.15)",
+          border: "rgba(255, 255, 255, 0.15)",
           accent: "#22d3ee",
           activeBg: "rgba(34, 211, 238, 0.12)",
           textSecondary: "#0e7490"

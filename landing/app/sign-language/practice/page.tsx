@@ -244,7 +244,7 @@ function GesturePracticeContent() {
 
   // Рисование скелета руки поверх видео
   const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: NormalizedLandmark[], success: boolean) => {
-    const accentColor = success ? "#22C55E" : "#38bdf8"; // Зеленый при успехе, ярко-голубой при трекинге
+    const accentColor = success ? "#22C55E" : "#1565C0"; // Зеленый при успехе, ярко-голубой при трекинге
 
     if (!drawingUtilsRef.current) {
       drawingUtilsRef.current = new DrawingUtils(ctx);
@@ -425,7 +425,7 @@ function GesturePracticeContent() {
                     <div style={{ 
                       width: 44, 
                       height: 44, 
-                      border: "3px solid rgba(0, 0, 0, 0.15)", 
+                      border: "3px solid rgba(255, 255, 255, 0.15)",
                       borderTop: "3px solid var(--accent)", 
                       borderRadius: "50%",
                       animation: "spin 0.8s linear infinite"
@@ -597,7 +597,7 @@ function GesturePracticeContent() {
                 {calibratedFeatures && (
                   <pre style={{ 
                     background: "#0a0d16", 
-                    color: "#38bdf8", 
+                    color: "var(--accent)",
                     padding: 12, 
                     borderRadius: "var(--radiusSm)", 
                     fontSize: 10, 
@@ -696,7 +696,7 @@ function GesturePracticeContent() {
                             y1={pt1.y}
                             x2={pt2.x}
                             y2={pt2.y}
-                            stroke="rgba(0, 0, 0, 0.5)"
+                            stroke="rgba(255, 255, 255, 0.5)"
                             strokeWidth="2.5"
                             strokeLinecap="round"
                           />
@@ -774,7 +774,7 @@ function GesturePracticeContent() {
                         fontSize: 10, 
                         fontWeight: 700, 
                         letterSpacing: "0.5px",
-                        color: isActive ? "#166534" : "#0369a1",
+                        color: isActive ? "#166534" : "var(--accent)",
                         background: isActive ? "rgba(34, 197, 94, 0.12)" : "rgba(0, 0, 0, 0.08)",
                         transition: "all 0.25s ease"
                       }}>
