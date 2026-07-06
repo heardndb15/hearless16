@@ -335,6 +335,7 @@ git commit -m "feat: migrate globals.css tokens to Clean Blue, remove glow/gradi
 - Modify: `landing/components/LanguageSection.tsx`
 - Modify: `landing/components/SubtitleDemo.tsx`
 - Modify: `landing/components/PricingSection.tsx`
+- Modify: `landing/components/Hero.tsx`
 
 **Interfaces:**
 - Consumes: `var(--accent)`, `var(--bg)`, `var(--success)` from Task 1's updated `globals.css`.
@@ -547,7 +548,7 @@ Expected: no output. (The `camera-to-text` exclusion is intentional — that lin
 
 ```bash
 cd landing
-git add app/error.tsx app/not-found.tsx app/pricing/page.tsx app/sign-language/page.tsx app/sign-language/practice/page.tsx components/CTASection.tsx components/Features.tsx components/GamificationSection.tsx components/LanguageSection.tsx components/SubtitleDemo.tsx components/PricingSection.tsx
+git add app/error.tsx app/not-found.tsx app/pricing/page.tsx app/sign-language/page.tsx app/sign-language/practice/page.tsx components/CTASection.tsx components/Features.tsx components/GamificationSection.tsx components/LanguageSection.tsx components/SubtitleDemo.tsx components/PricingSection.tsx components/Hero.tsx
 git commit -m "fix: flatten old-palette linear-gradient usages to flat Clean Blue colors"
 ```
 
