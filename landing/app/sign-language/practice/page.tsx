@@ -21,6 +21,12 @@ function GesturePracticeContent() {
   });
   const [activeFeatures, setActiveFeatures] = useState<Record<string, number> | null>(null);
   const latestLandmarksRef = useRef<NormalizedLandmark[] | null>(null);
+  // Ref с актуальным activeGesture для чтения внутри predictLoop/handleTrackingResults,
+  // которые создаются один раз при монтировании и иначе видели бы "замороженное" значение
+  const activeGestureRef = useRef(activeGesture);
+  useEffect(() => {
+    activeGestureRef.current = activeGesture;
+  }, [activeGesture]);
 
   // Статусы камеры и модели
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
@@ -176,7 +182,7 @@ function GesturePracticeContent() {
       setFingerStates(currentStates);
 
       // 2. СРАВНЕНИЕ С ЭТАЛОНОМ ДЛЯ ВЫБРАННОГО ЖЕСТА
-      const refDef = GESTURE_DEFS[activeGesture];
+      const refDef = GESTURE_DEFS[activeGestureRef.current];
       if (refDef) {
         // Вычисляем евклидову дистанцию между векторами признаков
         let squareDiffSum = 0;
@@ -275,7 +281,7 @@ function GesturePracticeContent() {
       alert("Сначала покажите руку камере, чтобы зафиксировать координаты.");
       return;
     }
-    // Пересчитываем 21 координату руки в 0-100 viewBox, как у REFERENCE_LANDMARKS
+    // Пересчитываем 21 координату руки в 0-100 viewBox, как у GestureDef.referenceLandmarks
     const referenceLandmarks = latestLandmarksRef.current.map((pt) => ({
       x: Math.round(pt.x * 100),
       y: Math.round(pt.y * 100),
