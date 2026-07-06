@@ -456,15 +456,21 @@ function GesturePracticeContent() {
               <div style={{ marginTop: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>Точность совпадения:</span>
-                  <span style={{ 
-                    fontFamily: "'Plus Jakarta Sans', sans-serif", 
-                    fontSize: 18, 
-                    fontWeight: 700, 
+                  <span style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 18,
+                    fontWeight: 700,
                     color: isMatched ? "var(--success)" : "var(--accent)"
                   }}>
                     {similarity}%
                   </span>
                 </div>
+                {GESTURE_DEFS[activeGesture]?.motionBased && (
+                  <div style={{ fontSize: 12, color: "#eab308", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span>⚠</span>
+                    <span>Упрощённая проверка: сравниваем финальную позу руки, точность ниже для жестов с движением</span>
+                  </div>
+                )}
                 
                 {/* Шкала схожести с градиентным заполнением */}
                 <div style={{ width: "100%", height: 10, background: "rgba(2, 132, 199, 0.08)", borderRadius: 5, overflow: "hidden", border: "1px solid var(--border)" }}>
