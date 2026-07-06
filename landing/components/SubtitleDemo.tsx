@@ -197,7 +197,7 @@ export default function SubtitleDemo() {
                 padding: "4px 10px",
                 borderRadius: 6,
                 background: "rgba(123, 94, 234, 0.1)",
-                color: "var(--purple)",
+                color: "var(--accent)",
                 fontSize: 11,
                 fontWeight: 600,
               }}

@@ -48,7 +48,7 @@ export default function GamificationPage() {
         {/* User card */}
         <div style={{ marginTop: 40, background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: "32px 28px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: "white" }}>A</div>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: "white" }}>A</div>
             <div>
               <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 600, color: "var(--text)" }}>Айгуль</div>
               <div style={{ fontSize: 13, color: "var(--textMuted)" }}>Уровень 4 · Жестовед · 1,240 XP</div>
@@ -59,7 +59,7 @@ export default function GamificationPage() {
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--textSecondary)", marginBottom: 6 }}><span>1,240 XP</span><span>2,000 XP</span></div>
             <div style={{ height: 8, borderRadius: 4, background: "var(--border)", overflow: "hidden" }}>
-              <div style={{ width: "62%", height: "100%", borderRadius: 4, background: "var(--gradient)", animation: "xp-fill 1.5s ease-out" }} />
+              <div style={{ width: "62%", height: "100%", borderRadius: 4, background: "var(--accent)", animation: "xp-fill 1.5s ease-out" }} />
             </div>
             <div style={{ fontSize: 11, color: "var(--textMuted)", marginTop: 4 }}>Ещё 760 XP до уровня 5</div>
           </div>
@@ -101,7 +101,7 @@ export default function GamificationPage() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--border)", overflow: "hidden" }}>
-                    <div style={{ width: `${(q.progress / q.total) * 100}%`, height: "100%", borderRadius: 3, background: "var(--gradient)" }} />
+                    <div style={{ width: `${(q.progress / q.total) * 100}%`, height: "100%", borderRadius: 3, background: "var(--accent)" }} />
                   </div>
                   <span style={{ fontSize: 12, color: "var(--textMuted)" }}>{q.progress}/{q.total}</span>
                 </div>

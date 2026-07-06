@@ -31,7 +31,7 @@ export default function AiTutorPage() {
           {/* Chat */}
           <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", display: "flex", flexDirection: "column", minHeight: 400 }}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🤖</div>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🤖</div>
               <div>
                 <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>AI-преподаватель</div>
                 <div style={{ fontSize: 11, color: "var(--success)" }}>Онлайн</div>
@@ -40,7 +40,7 @@ export default function AiTutorPage() {
             <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10, overflow: "auto" }}>
               {chat.map((m, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-                  <div style={{ maxWidth: "80%", padding: "12px 16px", borderRadius: 14, background: m.role === "user" ? "var(--gradient)" : "var(--bg)", color: m.role === "user" ? "white" : "var(--text)", fontSize: 14, lineHeight: 1.5, border: m.role === "user" ? "none" : "1px solid var(--border)" }}>
+                  <div style={{ maxWidth: "80%", padding: "12px 16px", borderRadius: 14, background: m.role === "user" ? "var(--accent)" : "var(--bg)", color: m.role === "user" ? "white" : "var(--text)", fontSize: 14, lineHeight: 1.5, border: m.role === "user" ? "none" : "1px solid var(--border)" }}>
                     {m.text}
                   </div>
                 </div>
@@ -66,7 +66,7 @@ export default function AiTutorPage() {
               <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 12 }}>Прогресс</h3>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--textSecondary)", marginBottom: 6 }}><span>Текущий курс</span><span>4/10 уроков</span></div>
               <div style={{ height: 6, borderRadius: 3, background: "var(--border)", overflow: "hidden", marginBottom: 16 }}>
-                <div style={{ width: "40%", height: "100%", borderRadius: 3, background: "var(--gradient)" }} />
+                <div style={{ width: "40%", height: "100%", borderRadius: 3, background: "var(--accent)" }} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
                 {[{ label: "Точность", value: "68%" }, { label: "Тестов пройдено", value: "12" }].map(s => (

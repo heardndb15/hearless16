@@ -33,7 +33,7 @@ export default function Footer() {
                   width: 32,
                   height: 32,
                   borderRadius: 8,
-                  background: "var(--gradient)",
+                  background: "var(--accent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

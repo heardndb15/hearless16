@@ -1130,7 +1130,7 @@ export default function SubtitlesPage() {
               fontWeight: 600,
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: "pointer",
-              background: mode === "speech" ? "var(--gradient)" : "transparent",
+              background: mode === "speech" ? "var(--accent)" : "transparent",
               color: mode === "speech" ? "white" : "var(--text)",
               transition: "all 0.2s ease"
             }}
@@ -1147,7 +1147,7 @@ export default function SubtitlesPage() {
               fontWeight: 600,
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: "pointer",
-              background: mode === "video" ? "var(--gradient)" : "transparent",
+              background: mode === "video" ? "var(--accent)" : "transparent",
               color: mode === "video" ? "white" : "var(--text)",
               transition: "all 0.2s ease"
             }}
@@ -1170,14 +1170,14 @@ export default function SubtitlesPage() {
                 padding: "10px 26px",
                 borderRadius: 50,
                 border: lang === code ? "none" : "1.5px solid var(--border)",
-                background: lang === code ? "var(--gradient)" : "var(--bgCard)",
+                background: lang === code ? "var(--accent)" : "var(--bgCard)",
                 color: lang === code ? "white" : "var(--textSecondary)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
                 cursor: "pointer",
                 transition: "all 0.2s",
-                boxShadow: lang === code ? "0 4px 16px var(--accentGlow)" : "none",
+                boxShadow: lang === code ? "var(--shadow)" : "none",
               }}
             >
               {label}
@@ -1324,9 +1324,9 @@ export default function SubtitlesPage() {
                           padding: "12px 24px",
                           fontSize: 13,
                           borderRadius: 50,
-                          background: isMicActive ? "var(--sos)" : "var(--gradient)",
+                          background: isMicActive ? "var(--sos)" : "var(--accent)",
                           color: "white",
-                          boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "0 4px 24px var(--accentGlow)",
+                          boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "var(--shadow)",
                           animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
                           border: "none",
                           cursor: isScreenCapturing ? "default" : "pointer",
@@ -1619,7 +1619,7 @@ export default function SubtitlesPage() {
                           padding: "8px 16px",
                           fontSize: 11,
                           borderRadius: 8,
-                          background: isMicActive ? "var(--sos)" : "var(--gradient)",
+                          background: isMicActive ? "var(--sos)" : "var(--accent)",
                           color: "white",
                           boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "none",
                           animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
@@ -1663,12 +1663,12 @@ export default function SubtitlesPage() {
                   padding: "12px 24px",
                   fontSize: 13,
                   borderRadius: 50,
-                  background: isScreenCapturing ? "var(--sos)" : "var(--gradient)",
+                  background: isScreenCapturing ? "var(--sos)" : "var(--accent)",
                   color: "white",
                   border: "none",
                   cursor: isMicActive ? "default" : "pointer",
                   opacity: isMicActive ? 0.5 : 1,
-                  boxShadow: isScreenCapturing ? "0 4px 12px rgba(239,68,68,0.35)" : "0 4px 24px var(--accentGlow)",
+                  boxShadow: isScreenCapturing ? "0 4px 12px rgba(239,68,68,0.35)" : "var(--shadow)",
                   animation: isScreenCapturing ? "mic-pulse 1.5s infinite" : "none",
                   fontWeight: 600,
                 }}
@@ -1744,7 +1744,7 @@ export default function SubtitlesPage() {
               <div style={{ display: "flex", gap: 6 }}>
                 {["ҚАЗ", "РУС", "ENG"].map(l => (
                   <button key={l} onClick={() => handleLangChange(l)}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--accent)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {l}
                   </button>
                 ))}
@@ -1763,7 +1763,7 @@ export default function SubtitlesPage() {
                       padding: "10px", 
                       borderRadius: 12, 
                       border: !isApiConnecting ? "none" : "1px solid var(--border)", 
-                      background: !isApiConnecting ? "var(--gradient)" : "rgba(255,255,255,0.4)", 
+                      background: !isApiConnecting ? "var(--accent)" : "rgba(255,255,255,0.4)", 
                       color: !isApiConnecting ? "white" : "var(--textSecondary)", 
                       fontWeight: 600, 
                       fontSize: 12, 
@@ -1784,7 +1784,7 @@ export default function SubtitlesPage() {
                       padding: "10px", 
                       borderRadius: 12, 
                       border: isApiConnecting ? "none" : "1px solid var(--border)", 
-                      background: isApiConnecting ? "var(--gradient)" : "rgba(255,255,255,0.4)", 
+                      background: isApiConnecting ? "var(--accent)" : "rgba(255,255,255,0.4)", 
                       color: isApiConnecting ? "white" : "var(--textSecondary)", 
                       fontWeight: 600, 
                       fontSize: 12, 
@@ -1805,7 +1805,7 @@ export default function SubtitlesPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                 {[18, 22, 24, 28].map((sz) => (
                   <button key={sz} onClick={() => setFontSize(sz)}
-                    style={{ padding: "8px 0", borderRadius: 12, border: fontSize === sz ? "none" : "1px solid var(--border)", background: fontSize === sz ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: fontSize === sz ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ padding: "8px 0", borderRadius: 12, border: fontSize === sz ? "none" : "1px solid var(--border)", background: fontSize === sz ? "var(--accent)" : "rgba(255,255,255,0.4)", color: fontSize === sz ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {sz}
                   </button>
                 ))}
@@ -1840,7 +1840,7 @@ export default function SubtitlesPage() {
                   { opacity: 0, label: "Без фона" }
                 ].map((bg) => (
                   <button key={bg.opacity} onClick={() => setBgOpacity(bg.opacity)}
-                    style={{ width: "100%", padding: "10px", borderRadius: 12, border: bgOpacity === bg.opacity ? "none" : "1px solid var(--border)", background: bgOpacity === bg.opacity ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: bgOpacity === bg.opacity ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s", textAlign: "left", paddingLeft: 16 }}>
+                    style={{ width: "100%", padding: "10px", borderRadius: 12, border: bgOpacity === bg.opacity ? "none" : "1px solid var(--border)", background: bgOpacity === bg.opacity ? "var(--accent)" : "rgba(255,255,255,0.4)", color: bgOpacity === bg.opacity ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s", textAlign: "left", paddingLeft: 16 }}>
                     {bg.label}
                   </button>
                 ))}
@@ -1856,7 +1856,7 @@ export default function SubtitlesPage() {
                   { key: "left", label: "По левому краю" }
                 ].map((align) => (
                   <button key={align.key} onClick={() => setAlignment(align.key as any)}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: alignment === align.key ? "none" : "1px solid var(--border)", background: alignment === align.key ? "var(--gradient)" : "rgba(255,255,255,0.4)", color: alignment === align.key ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: alignment === align.key ? "none" : "1px solid var(--border)", background: alignment === align.key ? "var(--accent)" : "rgba(255,255,255,0.4)", color: alignment === align.key ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {align.label}
                   </button>
                 ))}

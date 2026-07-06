@@ -121,7 +121,7 @@ export default function LanguageSection() {
                   left: 0,
                   right: 0,
                   height: 3,
-                  background: "var(--gradient)",
+                  background: "var(--accent)",
                   opacity: 0.5,
                 }}
               />

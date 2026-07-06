@@ -70,6 +70,15 @@ section:nth-child(odd) {
   background: #FFFFFF;
 }
 
+/* Used by the dashboard's recording-in-progress indicator (functional status,
+   not decoration) — the Hero section's decorative use of this keyframe was
+   removed in a prior task; do not reintroduce a decorative usage. */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.08); opacity: 0.1; }
+  100% { transform: scale(1); opacity: 0.4; }
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12px); }

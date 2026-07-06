@@ -3,7 +3,7 @@
 export default function GamificationSection() {
   const achievements = [
     { icon: "🔥", label: "День 7", color: "var(--accent)" },
-    { icon: "⭐", label: "50 слов", color: "var(--purple)" },
+    { icon: "⭐", label: "50 слов", color: "var(--accent)" },
     { icon: "🏆", label: "10 уроков", color: "var(--success)" },
     { icon: "💪", label: "100 XP", color: "var(--accent)" },
   ];
@@ -46,7 +46,7 @@ export default function GamificationSection() {
                   width: 56,
                   height: 56,
                   borderRadius: "50%",
-                  background: "var(--gradient)",
+                  background: "var(--accent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -265,7 +265,7 @@ export default function GamificationSection() {
                 gridColumn: "1 / -1",
                 borderRadius: "var(--radius)",
                 padding: "20px 24px",
-                background: "var(--gradient)",
+                background: "var(--accent)",
                 textAlign: "center",
               }}
             >
