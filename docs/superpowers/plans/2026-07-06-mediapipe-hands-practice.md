@@ -465,6 +465,8 @@ Expected: `11:interface GestureDef {`, `221:const CONNECTIONS = [`, `230:functio
 
 - [ ] **Step 2: Add the import**
 
+Note: `import Script from "next/script";` must stay — the legacy CDN-script JSX further down the file still uses it, and that code isn't removed until Task 4. Add the new import as an additional line right after it, do not replace it.
+
 Find:
 ```tsx
 import Script from "next/script";
@@ -472,6 +474,7 @@ import Script from "next/script";
 
 Replace with:
 ```tsx
+import Script from "next/script";
 import { GESTURE_DEFS, CONNECTIONS } from "./gestureDefs";
 ```
 
