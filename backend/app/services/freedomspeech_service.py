@@ -7,6 +7,13 @@ FREEDOMSPEECH_BASE_URL = "https://freedomspeech.kz"
 
 def transcribe_with_freedomspeech(audio_bytes: bytes) -> str | None:
     from app.config import FREEDOMSPEECH_API_KEY
+    # TEMP DEBUG: tracing "Kazakh subtitles produce no text" — confirms
+    # whether this function is even reached, and with a real key, before
+    # looking at the API response itself. Remove once root cause is confirmed.
+    print(
+        f"[fs-debug] called, audio_bytes={len(audio_bytes)} key_set={bool(FREEDOMSPEECH_API_KEY)}",
+        file=sys.stderr,
+    )
     if not FREEDOMSPEECH_API_KEY:
         return None
     try:
@@ -39,7 +46,9 @@ def transcribe_with_freedomspeech(audio_bytes: bytes) -> str | None:
             file=(f"audio.{ext}", audio_bytes),
             language="kk",
         )
+        # TEMP DEBUG: see above. Remove once root cause is confirmed.
+        print(f"[fs-debug] ext={ext} raw_response={response!r}", file=sys.stderr)
         return (response.text or "").strip() or None
     except Exception as e:
-        print(f"FreedomSpeech transcription error: {e}", file=sys.stderr)
+        print(f"FreedomSpeech transcription error: {e!r}", file=sys.stderr)
         return None
