@@ -34,17 +34,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setLoading(false);
     }
 
-    // Read session from browser storage — no network call, instant
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) {
-        router.push("/login");
-        return;
-      }
-      setUser(session.user);
-      loadProfile(session.user.id);
-    });
-
-    // React to sign-out or token expiry in real time
+    // Use onAuthStateChange as the single source of truth — avoids a race
+    // where getSession() can resolve with null before the browser client
+    // finishes restoring the session from cookies, firing a false "not
+    // logged in" redirect right after mounting (most visible navigating in
+    // from /community, which doesn't share this layout). INITIAL_SESSION
+    // fires once on mount with the definitive session (or null), so no
+    // separate getSession() call is needed — same pattern already used in
+    // mobile/src/screens/ProfileScreen.tsx.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         // TEMP DEBUG: tracing the "logged out after leaving Community" bug —
@@ -52,7 +49,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // once root cause is confirmed.
         console.log(`[auth-debug] ${new Date().toISOString()} DashboardLayout redirecting to /login — event=${event} session=${!!session}`);
         router.push("/login");
+        return;
       }
+      setUser(session.user);
+      loadProfile(session.user.id);
     });
 
     return () => subscription.unsubscribe();
