@@ -34,25 +34,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setLoading(false);
     }
 
-    // Use onAuthStateChange as the single source of truth — avoids a race
-    // where getSession() can resolve with null before the browser client
-    // finishes restoring the session from cookies, firing a false "not
-    // logged in" redirect right after mounting (most visible navigating in
-    // from /community, which doesn't share this layout). INITIAL_SESSION
-    // fires once on mount with the definitive session (or null), so no
-    // separate getSession() call is needed — same pattern already used in
-    // mobile/src/screens/ProfileScreen.tsx.
+    // middleware.ts already gates every /dashboard/* and /profile/* request
+    // server-side before this component ever mounts — reaching this code
+    // means the server just confirmed a valid session. So a null session
+    // here (e.g. on the INITIAL_SESSION event, which can race the browser
+    // client's cookie restore right after a fresh mount) is treated as a
+    // transient client-side hiccup, not a sign-out — same as how
+    // Header.tsx / community/page.tsx react to auth state without ever
+    // forcing navigation. Only an explicit SIGNED_OUT event (real
+    // sign-out, or the SDK reporting a failed refresh) redirects.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
+      if (session?.user) {
+        setUser(session.user);
+        loadProfile(session.user.id);
+        return;
+      }
+      if (event === "SIGNED_OUT") {
         // TEMP DEBUG: tracing the "logged out after leaving Community" bug —
         // confirms this is the redirect actually firing, and why. Remove
         // once root cause is confirmed.
-        console.log(`[auth-debug] ${new Date().toISOString()} DashboardLayout redirecting to /login — event=${event} session=${!!session}`);
+        console.log(`[auth-debug] ${new Date().toISOString()} DashboardLayout redirecting to /login — event=${event}`);
         router.push("/login");
-        return;
       }
-      setUser(session.user);
-      loadProfile(session.user.id);
     });
 
     return () => subscription.unsubscribe();
