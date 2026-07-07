@@ -17,6 +17,17 @@ let client: ReturnType<typeof createBrowserSupabaseClient> | undefined;
 export function createClient() {
   if (!client) {
     client = createBrowserSupabaseClient();
+    // TEMP DEBUG: tracing the "logged out after leaving Community" bug —
+    // logs every auth event from the one shared browser client so we can see
+    // whether a SIGNED_OUT fires right after a refresh attempt. Remove once
+    // root cause is confirmed.
+    client.auth.onAuthStateChange((event, session) => {
+      console.log(
+        `[auth-debug] ${new Date().toISOString()} event=${event} ` +
+        `user=${session?.user?.id ?? "none"} ` +
+        `expires_at=${session?.expires_at ?? "n/a"}`
+      );
+    });
   }
   return client;
 }

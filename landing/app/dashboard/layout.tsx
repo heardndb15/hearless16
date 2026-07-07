@@ -47,6 +47,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // React to sign-out or token expiry in real time
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
+        // TEMP DEBUG: tracing the "logged out after leaving Community" bug —
+        // confirms this is the redirect actually firing, and why. Remove
+        // once root cause is confirmed.
+        console.log(`[auth-debug] ${new Date().toISOString()} DashboardLayout redirecting to /login — event=${event} session=${!!session}`);
         router.push("/login");
       }
     });
