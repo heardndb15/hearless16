@@ -22,28 +22,38 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data?.user) {
-        router.push("/login");
+
+    // Same fix as app/dashboard/layout.tsx: getUser()/getSession() called
+    // directly on mount can race the browser client's cookie restore and
+    // false-negative right after navigating in from /community. middleware.ts
+    // already gates this route server-side, so only redirect on a real
+    // SIGNED_OUT event, not on a transient null session at mount.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        supabase
+          .from("users")
+          .select("name, bio, avatar_url, language")
+          .eq("id", session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile) {
+              setName(profile.name || "");
+              setBio(profile.bio || "");
+              setAvatarUrl(profile.avatar_url || "");
+              setAvatarPreview(profile.avatar_url || "");
+              setLanguage((profile.language as "kk" | "ru") || "ru");
+            }
+            setLoading(false);
+          });
         return;
       }
-      setUser(data.user);
-      supabase
-        .from("users")
-        .select("name, bio, avatar_url, language")
-        .eq("id", data.user.id)
-        .single()
-        .then(({ data: profile }) => {
-          if (profile) {
-            setName(profile.name || "");
-            setBio(profile.bio || "");
-            setAvatarUrl(profile.avatar_url || "");
-            setAvatarPreview(profile.avatar_url || "");
-            setLanguage((profile.language as "kk" | "ru") || "ru");
-          }
-          setLoading(false);
-        });
+      if (event === "SIGNED_OUT") {
+        router.push("/login");
+      }
     });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
