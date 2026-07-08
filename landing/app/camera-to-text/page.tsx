@@ -28,7 +28,7 @@ export default function CameraToTextPage() {
         </p>
 
         {/* Camera preview */}
-        <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div className="camera-grid">
           <div style={{ background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: 24, textAlign: "center" }}>
             <div style={{ width: "100%", aspectRatio: "4/3", borderRadius: "var(--radiusSm)", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)", marginBottom: 16, position: "relative", overflow: "hidden" }}>
               {/* Simulated camera view */}
