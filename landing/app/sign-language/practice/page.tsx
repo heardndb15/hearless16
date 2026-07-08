@@ -348,7 +348,7 @@ function GesturePracticeContent() {
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "start" }}>
+        <div className="practice-layout">
           
           {/* ==========================================
               ЛЕВАЯ СТОРОНА: КАМЕРА И ВИЗУАЛИЗАЦИЯ
