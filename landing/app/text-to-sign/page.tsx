@@ -64,7 +64,7 @@ export default function TextToSignPage() {
         {/* Steps */}
         <div style={{ marginTop: 60 }}>
           <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 600, color: "var(--text)", marginBottom: 20 }}>Как это работает</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div className="text-to-sign-steps-grid">
             {[{ step: "01", title: "Ввод текста", desc: "Напиши слово или фразу на казахском, русском или английском языке." },
               { step: "02", title: "AI-анализ", desc: "ИИ разбирает текст на отдельные жесты и строит последовательность показа." },
               { step: "03", title: "3D-анимация", desc: "Аватар воспроизводит жесты с точной артикуляцией и мимикой." },
