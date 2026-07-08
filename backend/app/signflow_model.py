@@ -1,28 +1,68 @@
+import io
+import sys
 import numpy as np
 import random
+from PIL import Image
 
-_mp_hands_module = None
+# The legacy `mediapipe.solutions.hands` API used here previously was removed
+# entirely from the mediapipe package (mediapipe>=0.10.0 no longer ships a
+# `solutions` module at all), so `mp.solutions.hands` raised AttributeError
+# on every call — not caught by the old `except ImportError`, so it
+# propagated up to the route handler's generic except and always fell back
+# to the all-zero response. This uses the replacement Tasks API
+# (`mediapipe.tasks.python.vision.HandLandmarker`), the same one already
+# used by the browser-side tracker in landing/app/sign-language/practice.
+_HAND_LANDMARKER_MODEL_URL = (
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/"
+    "hand_landmarker/float16/1/hand_landmarker.task"
+)
+
+_hand_landmarker = None
+_model_bytes = None
 
 
-def _get_mp_hands():
-    global _mp_hands_module
-    if _mp_hands_module is None:
+def _get_model_bytes():
+    global _model_bytes
+    if _model_bytes is None:
+        import httpx
+        response = httpx.get(_HAND_LANDMARKER_MODEL_URL, timeout=30.0)
+        response.raise_for_status()
+        _model_bytes = response.content
+    return _model_bytes
+
+
+def _get_hand_landmarker():
+    global _hand_landmarker
+    if _hand_landmarker is None:
         try:
             import mediapipe as mp
-            _mp_hands_module = mp.solutions.hands
-        except ImportError:
-            _mp_hands_module = False
-    return _mp_hands_module if _mp_hands_module is not False else None
+
+            model_bytes = _get_model_bytes()
+            options = mp.tasks.vision.HandLandmarkerOptions(
+                base_options=mp.tasks.BaseOptions(model_asset_buffer=model_bytes),
+                running_mode=mp.tasks.vision.RunningMode.IMAGE,
+                num_hands=1,
+                min_hand_detection_confidence=0.5,
+                min_hand_presence_confidence=0.5,
+                min_tracking_confidence=0.5,
+            )
+            _hand_landmarker = mp.tasks.vision.HandLandmarker.create_from_options(options)
+        except Exception as e:
+            print(f"Failed to initialize HandLandmarker: {e}", file=sys.stderr)
+            _hand_landmarker = False
+    return _hand_landmarker if _hand_landmarker is not False else None
 
 
 def _decode_image(frame_data: bytes):
+    # Uses Pillow instead of cv2: mediapipe's own opencv-contrib-python
+    # dependency needs system GUI libraries (libGL.so.1 etc.) that aren't
+    # present on Render's minimal Python runtime, so cv2 always failed to
+    # import there — every /gestures/recognize call silently fell back to
+    # the all-zero "invalid_image" response regardless of the actual image.
+    # Pillow has no such system dependency.
     try:
-        import cv2
-        nparr = np.frombuffer(frame_data, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if img is None:
-            return None
-        return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = Image.open(io.BytesIO(frame_data)).convert("RGB")
+        return np.array(img)
     except Exception:
         return None
 
@@ -77,10 +117,11 @@ def _classify(fingers: dict) -> tuple[str, float]:
 
 
 def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> dict:
-    mp_hands = _get_mp_hands()
+    landmarker = _get_hand_landmarker()
 
-    # Fallback to emulation if mediapipe not installed
-    if mp_hands is None:
+    # Fallback to emulation if the model failed to load (e.g. offline, or
+    # the model download failed)
+    if landmarker is None:
         return recognize_emulate(target_gesture)
 
     img = _decode_image(frame_data)
@@ -92,15 +133,11 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
             "error": "invalid_image",
         }
 
-    with mp_hands.Hands(
-        static_image_mode=True,
-        max_num_hands=1,
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5,
-    ) as hands:
-        result = hands.process(img)
+    import mediapipe as mp
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
+    result = landmarker.detect(mp_image)
 
-    if not result.multi_hand_landmarks:
+    if not result.hand_landmarks:
         return {
             "gesture": None,
             "confidence": 0,
@@ -108,11 +145,22 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
             "error": "no_hand_detected",
         }
 
-    lm = result.multi_hand_landmarks[0].landmark
+    lm = result.hand_landmarks[0]
     fingers = _finger_states(lm)
     gesture_name, base_conf = _classify(fingers)
 
-    avg_visibility = float(np.mean([l.visibility for l in lm]))
+    # The Tasks API's NormalizedLandmark.visibility is optional and this
+    # model doesn't populate it (unlike the old legacy Solutions API), so
+    # fall back to the hand's handedness classification score as the
+    # closest available per-detection confidence signal.
+    visibility_values = [lm_point.visibility for lm_point in lm if lm_point.visibility is not None]
+    if visibility_values:
+        avg_visibility = float(np.mean(visibility_values))
+    elif result.handedness and result.handedness[0]:
+        avg_visibility = float(result.handedness[0][0].score)
+    else:
+        avg_visibility = 1.0
+
     confidence = round(min(100.0, base_conf * avg_visibility * 100), 1)
 
     if target_gesture:
