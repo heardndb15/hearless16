@@ -230,7 +230,7 @@ export default function SignLanguagePage() {
           Пошаговые уроки: смотри эталон жеста, читай подсказки — и сразу проверяй с AI-камерой.
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 24, marginTop: 40, alignItems: "start" }}>
+        <div className="sign-language-layout">
 
           {/* Sidebar */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -322,7 +322,7 @@ export default function SignLanguagePage() {
               padding: 32,
               boxShadow: "var(--shadow)",
             }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 36 }}>
+              <div className="sign-language-lesson-grid">
 
                 {/* Left: reference with SVG hand */}
                 <div>
