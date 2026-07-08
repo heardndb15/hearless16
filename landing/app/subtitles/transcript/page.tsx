@@ -467,7 +467,7 @@ export default function TranscriptPage() {
         </section>
 
         {/* Двухколоночный грид для транскрипта и AI-аналитики */}
-        <div style={{ display: "grid", gridTemplateColumns: (aiSummary || aiResponse) ? "1fr 320px" : "1fr", gap: 24, alignItems: "start" }}>
+        <div className={`transcript-layout ${(aiSummary || aiResponse) ? "transcript-layout--split" : ""}`}>
           
           {/* Главная область вывода */}
           <main
