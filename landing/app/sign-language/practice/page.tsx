@@ -110,9 +110,23 @@ function GesturePracticeContent() {
       setIsModelLoading(false);
       setHandsTrackingActive(true);
 
+      // TEMP DEBUG: tracing the "no dots ever appear" bug — logs once
+      // whether the model loaded and the video is actually producing
+      // frames, then logs the hand-detection count every ~2s so we can
+      // see whether detectForVideo ever finds a hand at all. Remove once
+      // root cause is confirmed.
+      console.log("[hand-tracking-debug] model loaded, video readyState=", videoRef.current?.readyState, "videoWidth=", videoRef.current?.videoWidth, "videoHeight=", videoRef.current?.videoHeight);
+      let frameCount = 0;
+      let handsSeenCount = 0;
+
       const predictLoop = () => {
         if (!videoRef.current || !handLandmarkerRef.current) return;
         const results = handLandmarkerRef.current.detectForVideo(videoRef.current, performance.now());
+        frameCount++;
+        if (results.landmarks && results.landmarks.length > 0) handsSeenCount++;
+        if (frameCount % 120 === 0) {
+          console.log(`[hand-tracking-debug] frames=${frameCount} handsDetected=${handsSeenCount} lastResultHands=${results.landmarks?.length ?? 0}`);
+        }
         handleTrackingResults(results);
         animationFrameIdRef.current = requestAnimationFrame(predictLoop);
       };
@@ -244,6 +258,12 @@ function GesturePracticeContent() {
 
   // Рисование скелета руки поверх видео
   const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: NormalizedLandmark[], success: boolean) => {
+    // TEMP DEBUG: tracing the "no dots ever appear" bug — confirms this
+    // function is actually reached and what canvas size it's drawing
+    // into. Remove once root cause is confirmed.
+    if (Math.random() < 0.02) {
+      console.log(`[hand-tracking-debug] drawHandSkeleton called, canvas=${ctx.canvas.width}x${ctx.canvas.height}, landmarks=${landmarks.length}, first=`, landmarks[0]);
+    }
     const accentColor = success ? "#22C55E" : "#1565C0"; // Зеленый при успехе, ярко-голубой при трекинге
 
     if (!drawingUtilsRef.current) {
