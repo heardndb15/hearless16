@@ -357,7 +357,7 @@ section:nth-child(odd) {
   .lang-grid { grid-template-columns: 1fr; gap: 14px; }
   .gamification-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
-  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
 
   .pricing-compare-scroll { overflow-x: auto; }
   .pricing-compare-grid { min-width: 560px; }
