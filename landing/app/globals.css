@@ -270,6 +270,78 @@ section:nth-child(odd) {
   align-items: stretch;
 }
 
+.pricing-compare-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.pricing-compare-scroll {}
+
+.ai-tutor-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.gamification-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.camera-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.text-to-sign-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.sign-language-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  margin-top: 40px;
+  align-items: start;
+}
+
+.sign-language-lesson-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+}
+
+.subtitles-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.transcript-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.transcript-layout--split {
+  grid-template-columns: 1fr 320px;
+}
+
+.practice-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
   section { padding: 60px 0; }
@@ -285,7 +357,19 @@ section:nth-child(odd) {
   .lang-grid { grid-template-columns: 1fr; gap: 14px; }
   .gamification-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
-  .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
+  .pricing-grid { grid-template-columns: 1fr; }
+
+  .pricing-compare-scroll { overflow-x: auto; }
+  .pricing-compare-grid { min-width: 560px; }
+  .ai-tutor-grid { grid-template-columns: 1fr; }
+  .gamification-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .camera-grid { grid-template-columns: 1fr; }
+  .text-to-sign-steps-grid { grid-template-columns: 1fr; }
+  .sign-language-layout { grid-template-columns: 1fr; }
+  .sign-language-lesson-grid { grid-template-columns: 1fr; }
+  .subtitles-layout { grid-template-columns: 1fr; }
+  .transcript-layout--split { grid-template-columns: 1fr; }
+  .practice-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
