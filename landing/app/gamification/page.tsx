@@ -65,7 +65,7 @@ export default function GamificationPage() {
           </div>
 
           {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div className="gamification-stats-grid">
             {[{ value: "12", label: "Стрик, дней" }, { value: "48", label: "Слов" }, { value: "3", label: "Ачивки" }, { value: "28", label: "Уроков" }].map(s => (
               <div key={s.label} style={{ textAlign: "center", padding: "14px 8px", borderRadius: "var(--radiusSm)", background: "var(--bg)" }}>
                 <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: "var(--accent)" }}>{s.value}</div>
