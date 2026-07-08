@@ -1185,7 +1185,7 @@ export default function SubtitlesPage() {
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 24, alignItems: "start" }} className="grid-cols-1 lg:grid-cols-[1fr_280px]">
+        <div className="subtitles-layout">
           
           {/* ==========================================
               ЛЕВЫЙ БЛОК: ЭКРАН Р ВВОД
