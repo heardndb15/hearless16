@@ -34,16 +34,6 @@ function GesturePracticeContent() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [handsTrackingActive, setHandsTrackingActive] = useState<boolean>(false);
 
-  // TEMP DEBUG: on-screen diagnostic panel for the "no hand-tracking dots
-  // ever appear" report — a non-technical tester can't easily read the
-  // browser console, so this renders the same information directly on the
-  // page instead. Remove once root cause is confirmed.
-  const [debugInfo, setDebugInfo] = useState({ modelLoaded: false, frames: 0, hands: 0, draws: 0 });
-  const debugFrameCountRef = useRef(0);
-  const debugHandsSeenRef = useRef(0);
-  const debugDrawsRef = useRef(0);
-  const debugIntervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   // Режим калибровки (для разработчика)
   const [calibrationMode, setCalibrationMode] = useState<boolean>(false);
   const [calibratedFeatures, setCalibratedFeatures] = useState<string | null>(null);
@@ -96,7 +86,6 @@ function GesturePracticeContent() {
         return;
       }
       handLandmarkerRef.current = handLandmarker;
-      setDebugInfo((d) => ({ ...d, modelLoaded: true }));
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480 },
@@ -121,19 +110,9 @@ function GesturePracticeContent() {
       setIsModelLoading(false);
       setHandsTrackingActive(true);
 
-      // TEMP DEBUG: see the debugInfo state above — updates the on-screen
-      // panel every ~500ms with frame/hand-detection counts. Remove once
-      // root cause is confirmed.
-      const debugIntervalId = setInterval(() => {
-        setDebugInfo((d) => ({ ...d, frames: debugFrameCountRef.current, hands: debugHandsSeenRef.current, draws: debugDrawsRef.current }));
-      }, 500);
-      debugIntervalIdRef.current = debugIntervalId;
-
       const predictLoop = () => {
         if (!videoRef.current || !handLandmarkerRef.current) return;
         const results = handLandmarkerRef.current.detectForVideo(videoRef.current, performance.now());
-        debugFrameCountRef.current++;
-        if (results.landmarks && results.landmarks.length > 0) debugHandsSeenRef.current++;
         handleTrackingResults(results);
         animationFrameIdRef.current = requestAnimationFrame(predictLoop);
       };
@@ -265,9 +244,6 @@ function GesturePracticeContent() {
 
   // Рисование скелета руки поверх видео
   const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: NormalizedLandmark[], success: boolean) => {
-    // TEMP DEBUG: counts how many times this function actually runs, shown
-    // in the on-screen debug panel. Remove once root cause is confirmed.
-    debugDrawsRef.current++;
     const accentColor = success ? "#22C55E" : "#1565C0"; // Зеленый при успехе, ярко-голубой при трекинге
 
     if (!drawingUtilsRef.current) {
@@ -324,9 +300,6 @@ function GesturePracticeContent() {
       cancelled = true;
       if (animationFrameIdRef.current !== null) {
         cancelAnimationFrame(animationFrameIdRef.current);
-      }
-      if (debugIntervalIdRef.current !== null) {
-        clearInterval(debugIntervalIdRef.current);
       }
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -419,19 +392,6 @@ function GesturePracticeContent() {
                   muted
                   autoPlay
                 />
-
-                {/* TEMP DEBUG: on-screen panel for the "no dots ever appear"
-                    report — remove once root cause is confirmed. */}
-                <div style={{
-                  position: "absolute", top: 8, left: 8, zIndex: 20, pointerEvents: "none",
-                  background: "rgba(0,0,0,0.75)", color: "#4ade80", fontFamily: "monospace",
-                  fontSize: 11, lineHeight: 1.6, padding: "8px 10px", borderRadius: 6,
-                }}>
-                  <div>модель: {debugInfo.modelLoaded ? "загружена ✓" : "НЕ загружена ✗"}</div>
-                  <div>кадров обработано: {debugInfo.frames}</div>
-                  <div>кадров с рукой: {debugInfo.hands}</div>
-                  <div>отрисовок скелета: {debugInfo.draws}</div>
-                </div>
 
                 {/* Canvas для рисования скелета (также отзеркален поверх видео) */}
                 <canvas 
