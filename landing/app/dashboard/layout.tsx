@@ -134,9 +134,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-sky-100 shadow-sm shrink-0 z-10 relative">
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-200/60 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-lg shadow-md shadow-accent/20">
-            H
-          </div>
+          <img src="/logo.png" alt="Hearless" className="w-9 h-9 rounded-xl object-cover shadow-md shadow-accent/20" />
           <div>
             <h1 className="font-syne font-bold text-lg text-slate-800 leading-none">Hearless</h1>
             <span className="text-[10px] text-accent font-semibold tracking-widest uppercase">AI Assist</span>
@@ -194,9 +192,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Mobile Header */}
         <header className="flex md:hidden items-center justify-between px-6 py-4 bg-white border-b border-sky-100">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-accent to-purpleBrand flex items-center justify-center font-syne font-extrabold text-white text-md">
-              H
-            </div>
+            <img src="/logo.png" alt="Hearless" className="w-8 h-8 rounded-lg object-cover" />
             <h1 className="font-syne font-bold text-md text-slate-800">Hearless</h1>
           </div>
           <button
@@ -220,9 +216,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <aside className="relative flex flex-col w-72 bg-white h-full border-r border-white/60 shadow-2xl p-6">
               <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-accent/20 border border-accent/30 text-accent flex items-center justify-center font-bold">
-                    H
-                  </div>
+                  <img src="/logo.png" alt="Hearless" className="w-8 h-8 rounded-lg object-cover" />
                   <h2 className="font-syne font-bold text-slate-800 text-md">Навигация</h2>
                 </div>
                 <button

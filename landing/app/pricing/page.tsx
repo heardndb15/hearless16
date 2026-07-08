@@ -107,7 +107,7 @@ export default function PricingPage() {
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "14px 0" }}>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "white" }}>H</div>
+            <img src="/logo.png" alt="Hearless" style={{ width: 34, height: 34, borderRadius: 10, objectFit: "cover" }} />
             <span style={{ fontSize: 20, fontWeight: 700, color: "var(--text)" }}>Hearless</span>
           </Link>
           <div style={{ display: "flex", gap: 10 }}>
