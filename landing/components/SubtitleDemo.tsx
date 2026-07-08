@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useLanguage } from "../lib/LanguageContext";
 
 const PHRASES: Record<string, string[]> = {
   "ҚАЗ": [
@@ -24,6 +25,7 @@ const PHRASES: Record<string, string[]> = {
 };
 
 export default function SubtitleDemo() {
+  const { t } = useLanguage();
   const [lang, setLang] = useState("РУС");
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [chars, setChars] = useState(0);
@@ -55,12 +57,12 @@ export default function SubtitleDemo() {
     <section id="subtitles">
       <div className="container" style={{ maxWidth: 720 }}>
         <div style={{ marginBottom: 40 }}>
-          <div className="section-label">Субтитры</div>
+          <div className="section-label">{t.subtitleDemo.label}</div>
           <h2 className="section-title" style={{ color: "var(--text)" }}>
-            Живые <span style={{ color: "var(--accent)" }}>AI-субтитры</span>
+            {t.subtitleDemo.title} <span style={{ color: "var(--accent)" }}>{t.subtitleDemo.titleHighlight}</span>
           </h2>
           <p className="section-subtitle" style={{ color: "var(--textSecondary)" }}>
-            Введи текст или смотри демо. Так работают субтитры в реальном времени.
+            {t.subtitleDemo.subtitle}
           </p>
         </div>
 
@@ -148,7 +150,7 @@ export default function SubtitleDemo() {
         <textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Введи текст для перевода в субтитры..."
+          placeholder={t.subtitleDemo.inputPlaceholder}
           rows={2}
           style={{
             width: "100%",
@@ -177,7 +179,7 @@ export default function SubtitleDemo() {
             className="btn btn-primary"
             style={{ padding: "12px 28px", fontSize: 13 }}
           >
-            Отправить →
+            {t.subtitleDemo.sendBtn}
           </button>
           <div style={{ display: "flex", gap: 6 }}>
             <span
@@ -219,7 +221,7 @@ export default function SubtitleDemo() {
                 marginBottom: 12,
               }}
             >
-              История
+              {t.subtitleDemo.historyLabel}
             </h4>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {history.map((h, i) => (

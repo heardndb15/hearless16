@@ -1,24 +1,22 @@
 "use client";
 
+import { useLanguage } from "../lib/LanguageContext";
+
 export default function GamificationSection() {
-  const achievements = [
-    { icon: "🔥", label: "День 7", color: "var(--accent)" },
-    { icon: "⭐", label: "50 слов", color: "var(--accent)" },
-    { icon: "🏆", label: "10 уроков", color: "var(--success)" },
-    { icon: "💪", label: "100 XP", color: "var(--accent)" },
-  ];
+  const { t } = useLanguage();
+  const colors = ["var(--accent)", "var(--accent)", "var(--success)", "var(--accent)"];
+  const achievements = t.gamificationSection.achievements.map((a, i) => ({ ...a, color: colors[i] }));
 
   return (
     <section id="gamification">
       <div className="container">
         <div style={{ marginBottom: 48 }}>
-          <div className="section-label">Геймификация</div>
+          <div className="section-label">{t.gamificationSection.label}</div>
           <h2 className="section-title">
-            Учись, играя. <span style={{ color: "var(--accent)" }}>Прогресс</span> — это XP.
+            {t.gamificationSection.title}<span style={{ color: "var(--accent)" }}>{t.gamificationSection.titleHighlight}</span>{t.gamificationSection.titleSuffix}
           </h2>
           <p className="section-subtitle" style={{ color: "var(--textSecondary)" }}>
-            Зарабатывай XP, открывай ачивки, продлевай стрики и соревнуйся с друзьями.
-            Каждый урок — это шаг к новому уровню.
+            {t.gamificationSection.subtitle}
           </p>
         </div>
 
@@ -70,7 +68,7 @@ export default function GamificationSection() {
                   Айгуль
                 </div>
                 <div style={{ fontSize: 13, color: "var(--textSecondary)" }}>
-                  Уровень 4 · Жестовед
+                  {t.gamificationSection.levelLabel}
                 </div>
               </div>
             </div>
@@ -114,7 +112,7 @@ export default function GamificationSection() {
                   marginTop: 4,
                 }}
               >
-                Ещё 760 XP до уровня 5
+                {t.gamificationSection.xpToNext}
               </div>
             </div>
 
@@ -127,11 +125,7 @@ export default function GamificationSection() {
                 marginBottom: 20,
               }}
             >
-              {[
-                { value: "12", label: "Стрик, дней" },
-                { value: "48", label: "Слов выучено" },
-                { value: "3", label: "Ачивки" },
-              ].map((s) => (
+              {t.gamificationSection.stats.map((s) => (
                 <div
                   key={s.label}
                   style={{
@@ -184,14 +178,14 @@ export default function GamificationSection() {
                     color: "var(--text)",
                   }}
                 >
-                  Ежедневное задание
+                  {t.gamificationSection.dailyQuestLabel}
                 </span>
                 <span style={{ fontSize: 12, color: "var(--accent)" }}>
                   +50 XP
                 </span>
               </div>
               <div style={{ fontSize: 13, color: "var(--textSecondary)" }}>
-                Повтори 10 жестов из категории &laquo;Семья&raquo;
+                {t.gamificationSection.dailyQuestDesc}
               </div>
               <div
                 style={{
@@ -255,7 +249,7 @@ export default function GamificationSection() {
                   {a.label}
                 </div>
                 <div style={{ fontSize: 12, color: "var(--textSecondary)" }}>
-                  Ачивка
+                  {t.gamificationSection.achievementCaption}
                 </div>
               </div>
             ))}
@@ -278,10 +272,10 @@ export default function GamificationSection() {
                   marginBottom: 4,
                 }}
               >
-                Начни свой путь
+                {t.gamificationSection.ctaMiniTitle}
               </div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>
-                Зарабатывай XP, открывай ачивки и становись лучше каждый день.
+                {t.gamificationSection.ctaMiniDesc}
               </div>
             </div>
           </div>

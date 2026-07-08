@@ -1,57 +1,7 @@
 "use client";
 
 import Link from "next/link";
-
-const PLANS = [
-  {
-    name: "Free",
-    price: 0,
-    period: "навсегда",
-    badge: null,
-    highlight: false,
-    cta: "Начать бесплатно",
-    ctaHref: "/register",
-    features: [
-      "Субтитры до 30 мин в день",
-      "Базовые уроки жестового языка",
-      "Алфавит и приветствия",
-    ],
-    missing: ["История субтитров", "Уроки среднего уровня", "Полный курс"],
-  },
-  {
-    name: "Basic",
-    price: 990,
-    period: "в месяц",
-    badge: "Популярный",
-    highlight: true,
-    cta: "Попробовать Basic",
-    ctaHref: "/api/checkout?plan=basic",
-    features: [
-      "Субтитры до 2 часов в день",
-      "Все базовые уроки",
-      "Уроки среднего уровня",
-      "История субтитров",
-    ],
-    missing: ["Полный курс жестового языка", "Тесты и прогресс"],
-  },
-  {
-    name: "Pro",
-    price: 2490,
-    period: "в месяц",
-    badge: null,
-    highlight: false,
-    cta: "Выбрать Pro",
-    ctaHref: "/api/checkout?plan=pro",
-    features: [
-      "Субтитры без ограничений",
-      "Полный курс жестового языка",
-      "Тесты и прогресс",
-      "Приоритетная поддержка",
-      "Ранний доступ к функциям",
-    ],
-    missing: [],
-  },
-];
+import { useLanguage } from "../lib/LanguageContext";
 
 function Check({ ok }: { ok: boolean }) {
   return ok ? (
@@ -68,23 +18,25 @@ function Check({ ok }: { ok: boolean }) {
 }
 
 export default function PricingSection() {
+  const { t } = useLanguage();
+  const plans = t.pricingSection.plans.map((p, i) => ({ ...p, highlight: i === 1 }));
+
   return (
     <section id="pricing">
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div className="section-label">Тарифы</div>
+          <div className="section-label">{t.pricingSection.label}</div>
           <h2 className="section-title">
-            Выберите свой{" "}
-            <span className="gradient-text">план</span>
+            {t.pricingSection.title}{" "}
+            <span className="gradient-text">{t.pricingSection.titleHighlight}</span>
           </h2>
           <p className="section-subtitle" style={{ margin: "0 auto" }}>
-            Начните бесплатно и переходите на расширенный план в любой момент.
-            Без скрытых платежей.
+            {t.pricingSection.subtitle}
           </p>
         </div>
 
         <div className="pricing-grid">
-          {PLANS.map((plan) => (
+          {plans.map((plan) => (
             <div
               key={plan.name}
               style={{
@@ -150,7 +102,7 @@ export default function PricingSection() {
                 </div>
                 {plan.price === 0 && (
                   <div style={{ color: plan.highlight ? "rgba(255,255,255,0.7)" : "var(--textSecondary)", fontSize: 13, marginTop: 2 }}>
-                    навсегда
+                    {plan.period}
                   </div>
                 )}
               </div>
@@ -201,7 +153,7 @@ export default function PricingSection() {
 
         <div style={{ textAlign: "center", marginTop: 32 }}>
           <Link href="/pricing" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
-            Полное сравнение тарифов →
+            {t.pricingSection.compareLink}
           </Link>
         </div>
       </div>

@@ -1,13 +1,16 @@
 "use client";
 
+import { useLanguage } from "../lib/LanguageContext";
+
 export default function LanguageSection() {
+  const { t } = useLanguage();
   const langs = [
     {
       code: "ҚАЗ",
       name: "Қазақ тілі",
-      desc: "Полная поддержка казахского языка: субтитры, перевод, жестовый язык. Первая платформа с ИИ на казахском.",
+      desc: "Қазақ тіліне толық қолдау: субтитрлер, аударма, ишара тілі. Қазақ тіліндегі алғашқы ЖИ платформасы.",
       stat: "12M+",
-      statLabel: "говорящих",
+      statLabel: "сөйлеушілер",
     },
     {
       code: "РУС",
@@ -29,13 +32,12 @@ export default function LanguageSection() {
     <section id="languages">
       <div className="container">
         <div style={{ marginBottom: 48 }}>
-          <div className="section-label">Языки</div>
+          <div className="section-label">{t.languageSection.label}</div>
           <h2 className="section-title">
-            Три языка. Один <span style={{ color: "var(--accent)" }}>голос</span>.
+            {t.languageSection.title} <span style={{ color: "var(--accent)" }}>{t.languageSection.titleHighlight}</span>.
           </h2>
           <p className="section-subtitle" style={{ color: "var(--textSecondary)" }}>
-            Hearless говорит на казахском, русском и английском. Автоопределение
-            языка и перевод в реальном времени.
+            {t.languageSection.subtitle}
           </p>
         </div>
 
