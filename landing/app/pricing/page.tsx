@@ -133,7 +133,7 @@ export default function PricingPage() {
 
         {/* Plans */}
         <div className="container" style={{ maxWidth: 1040 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, alignItems: "stretch" }} className="pricing-grid">
+          <div className="pricing-grid">
             {PLANS.map((plan) => (
               <div
                 key={plan.id}
@@ -250,9 +250,10 @@ export default function PricingPage() {
           <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: 800, color: "var(--text)", textAlign: "center", marginBottom: 8 }}>Сравнение тарифов</h2>
           <p style={{ textAlign: "center", color: "var(--accent)", fontSize: 14, marginBottom: 36 }}>Подробное сравнение всех возможностей</p>
 
+          <div className="pricing-compare-scroll">
           <div style={{ background: "white", borderRadius: 20, border: "1px solid rgba(0, 0, 0,0.12)", overflow: "hidden", boxShadow: "0 4px 24px rgba(0, 0, 0,0.07)" }}>
             {/* Header row */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "var(--bg)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "16px 24px" }}>
+            <div className="pricing-compare-grid" style={{ background: "var(--bg)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "16px 24px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1 }}>Функция</div>
               {PLANS.map(p => (
                 <div key={p.id} style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", textAlign: "center" }}>{p.name}</div>
@@ -269,7 +270,7 @@ export default function PricingPage() {
               { label: "Приоритетная поддержка", values: [false, false, true] },
               { label: "Ранний доступ к функциям", values: [false, false, true] },
             ].map((row, i) => (
-              <div key={row.label} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "14px 24px", borderBottom: i < 7 ? "1px solid rgba(0, 0, 0,0.07)" : "none", background: i % 2 === 0 ? "white" : "#FAFEFF" }}>
+              <div key={row.label} className="pricing-compare-grid" style={{ padding: "14px 24px", borderBottom: i < 7 ? "1px solid rgba(0, 0, 0,0.07)" : "none", background: i % 2 === 0 ? "white" : "#FAFEFF" }}>
                 <div style={{ fontSize: 13, color: "var(--textSecondary)", fontWeight: 500 }}>{row.label}</div>
                 {row.values.map((v, j) => (
                   <div key={j} style={{ textAlign: "center" }}>
@@ -289,6 +290,7 @@ export default function PricingPage() {
                 ))}
               </div>
             ))}
+          </div>
           </div>
         </div>
 
