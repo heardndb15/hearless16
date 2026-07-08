@@ -342,6 +342,12 @@ section:nth-child(odd) {
   align-items: start;
 }
 
+.alerts-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
   section { padding: 60px 0; }
@@ -370,6 +376,7 @@ section:nth-child(odd) {
   .subtitles-layout { grid-template-columns: 1fr; }
   .transcript-layout--split { grid-template-columns: 1fr; }
   .practice-layout { grid-template-columns: 1fr; }
+  .alerts-steps-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {

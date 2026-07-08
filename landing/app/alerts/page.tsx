@@ -55,7 +55,7 @@ export default function AlertsPage() {
         {/* How it works */}
         <div style={{ marginTop: 60 }}>
           <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 20 }}>Как это работает</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div className="alerts-steps-grid">
             {[{ step: "01", title: "Запись звука", desc: "Микрофон телефона постоянно слушает окружающую обстановку. Все данные обрабатываются локально." },
               { step: "02", title: "AI-анализ", desc: "Нейросеть классифицирует звук по спектру, частоте и длительности. Точность >95%." },
               { step: "03", title: "Оповещение", desc: "Вибрация, вспышка камеры и push-уведомление. Ничего не пропустишь." },
