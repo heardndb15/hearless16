@@ -5,6 +5,7 @@ import { createClient } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { HandSign } from "../../../components/HandSign";
 import { GESTURE_TUTORIALS } from "../../../lib/gesturesTutorial";
+import { FilesetResolver, HandLandmarker, DrawingUtils, HandLandmarkerResult } from "@mediapipe/tasks-vision";
 
 interface Gesture {
   id: string;
@@ -47,12 +48,20 @@ export default function LearnSignLanguagePage() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const handLandmarkerRef = useRef<HandLandmarker | null>(null);
+  const drawingUtilsRef = useRef<DrawingUtils | null>(null);
+  const trackingFrameIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
       stopCamera();
+      if (handLandmarkerRef.current) {
+        handLandmarkerRef.current.close();
+        handLandmarkerRef.current = null;
+      }
     };
   }, []);
 
@@ -61,6 +70,56 @@ export default function LearnSignLanguagePage() {
       stopCamera();
     }
   }, [selectedGesture]);
+
+  async function ensureHandLandmarker(): Promise<HandLandmarker | null> {
+    if (handLandmarkerRef.current) return handLandmarkerRef.current;
+    try {
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm"
+      );
+      const landmarker = await HandLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        },
+        runningMode: "VIDEO",
+        numHands: 1,
+        minHandDetectionConfidence: 0.6,
+        minHandPresenceConfidence: 0.6,
+        minTrackingConfidence: 0.6,
+      });
+      handLandmarkerRef.current = landmarker;
+      return landmarker;
+    } catch (err) {
+      console.error("Не удалось инициализировать трекер точек руки:", err);
+      return null;
+    }
+  }
+
+  function drawHandOverlay(results: HandLandmarkerResult) {
+    const canvas = overlayCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!results.landmarks || results.landmarks.length === 0) return;
+
+    if (!drawingUtilsRef.current) {
+      drawingUtilsRef.current = new DrawingUtils(ctx);
+    }
+    const landmarks = results.landmarks[0];
+    drawingUtilsRef.current.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
+      color: "#38bdf8",
+      lineWidth: 3,
+    });
+    drawingUtilsRef.current.drawLandmarks(landmarks, {
+      color: "#38bdf8",
+      fillColor: "#ffffff",
+      lineWidth: 1.5,
+      radius: 4,
+    });
+  }
 
   async function startCamera() {
     setVerifyError("");
@@ -82,6 +141,21 @@ export default function LearnSignLanguagePage() {
         captureAndVerify();
       }, 800);
 
+      // Start client-side hand tracking so landmark dots overlay the video feed
+      const landmarker = await ensureHandLandmarker();
+      if (landmarker && videoRef.current) {
+        const trackLoop = () => {
+          const video = videoRef.current;
+          if (!video || !handLandmarkerRef.current) return;
+          if (video.readyState >= 2) {
+            const results = handLandmarkerRef.current.detectForVideo(video, performance.now());
+            drawHandOverlay(results);
+          }
+          trackingFrameIdRef.current = requestAnimationFrame(trackLoop);
+        };
+        trackLoop();
+      }
+
     } catch (err) {
       console.error("Error accessing camera:", err);
       setVerifyError("Не удалось получить доступ к камере. Убедитесь, что разрешения предоставлены.");
@@ -95,9 +169,17 @@ export default function LearnSignLanguagePage() {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    if (trackingFrameIdRef.current !== null) {
+      cancelAnimationFrame(trackingFrameIdRef.current);
+      trackingFrameIdRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
+    }
+    const overlay = overlayCanvasRef.current;
+    if (overlay) {
+      overlay.getContext("2d")?.clearRect(0, 0, overlay.width, overlay.height);
     }
     setIsVerifying(false);
     setCameraMode(false);
@@ -414,6 +496,13 @@ export default function LearnSignLanguagePage() {
                     playsInline
                     muted
                     className="w-full h-full object-cover scale-x-[-1]"
+                  />
+                  {/* Hand landmark dots overlay, mirrored to match the video */}
+                  <canvas
+                    ref={overlayCanvasRef}
+                    width={400}
+                    height={400}
+                    className="absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none"
                   />
                   {/* Corner scan brackets */}
                   <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-accent"></div>
