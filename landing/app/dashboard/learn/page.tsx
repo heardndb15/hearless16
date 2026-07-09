@@ -44,6 +44,7 @@ export default function LearnSignLanguagePage() {
     components: { hand_shape: number; position: number; movement: number };
   } | null>(null);
   const [verifyError, setVerifyError] = useState("");
+  const [trackerError, setTrackerError] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -89,9 +90,11 @@ export default function LearnSignLanguagePage() {
         minTrackingConfidence: 0.6,
       });
       handLandmarkerRef.current = landmarker;
+      setTrackerError(false);
       return landmarker;
     } catch (err) {
       console.error("Не удалось инициализировать трекер точек руки:", err);
+      setTrackerError(true);
       return null;
     }
   }
@@ -124,6 +127,7 @@ export default function LearnSignLanguagePage() {
   async function startCamera() {
     setVerifyError("");
     setVerificationResult(null);
+    setTrackerError(false);
     setCameraMode(true);
     setIsVerifying(true);
 
@@ -144,12 +148,19 @@ export default function LearnSignLanguagePage() {
       // Start client-side hand tracking so landmark dots overlay the video feed
       const landmarker = await ensureHandLandmarker();
       if (landmarker && videoRef.current) {
+        // A single bad frame (MediaPipe can throw transiently, e.g. on an
+        // early/incomplete frame) must not kill the whole loop — always
+        // reschedule the next frame, even if this one errored or wasn't
+        // ready, or the dots stop forever with no visible error.
         const trackLoop = () => {
           const video = videoRef.current;
-          if (!video || !handLandmarkerRef.current) return;
-          if (video.readyState >= 2) {
-            const results = handLandmarkerRef.current.detectForVideo(video, performance.now());
-            drawHandOverlay(results);
+          if (video && handLandmarkerRef.current && video.readyState >= 2) {
+            try {
+              const results = handLandmarkerRef.current.detectForVideo(video, performance.now());
+              drawHandOverlay(results);
+            } catch (err) {
+              console.error("Ошибка трекинга точек руки:", err);
+            }
           }
           trackingFrameIdRef.current = requestAnimationFrame(trackLoop);
         };
@@ -509,6 +520,14 @@ export default function LearnSignLanguagePage() {
                   <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-accent"></div>
                   <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-accent"></div>
                   <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-accent"></div>
+
+                  {/* Tracker load failure notice — otherwise the video plays fine
+                      but the hand-landmark dots silently never appear */}
+                  {trackerError && (
+                    <div className="absolute top-4 left-4 right-4 py-1.5 px-3 rounded-lg bg-amber-500/90 text-white text-[10px] font-bold text-center">
+                      Не удалось загрузить трекер точек руки. Проверьте соединение.
+                    </div>
+                  )}
 
                   {/* Recognition Status Overlay */}
                   {verificationResult && (
