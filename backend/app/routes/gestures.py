@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from fastapi import APIRouter, HTTPException, Depends, Request
 from app.database import get_supabase
@@ -33,7 +34,12 @@ async def get_gesture(gesture_id: str):
 async def recognize(request: Request, data: GestureRecognizeRequest):
     try:
         frame = base64.b64decode(data.image, validate=False)
-        result = recognize_gesture(frame, data.target_gesture)
+        # recognize_gesture is a synchronous, CPU-bound MediaPipe call (and can
+        # block on a model download on first use). Running it inline on the
+        # event loop would stall every other request on this worker — notably
+        # the /ws/transcribe subtitles socket — for as long as it takes, since
+        # Render's free tier runs a single worker/event loop.
+        result = await asyncio.to_thread(recognize_gesture, frame, data.target_gesture)
         return result
     except HTTPException:
         raise
