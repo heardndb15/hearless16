@@ -40,7 +40,7 @@ async def recognize(request: Request, data: GestureRecognizeRequest):
     except Exception as e:
         import sys
         print(f"recognize error: {e}", file=sys.stderr)
-        return {"gesture": None, "confidence": 0, "components": {"hand_shape": 0, "position": 0, "movement": 0}, "error": "processing_error"}
+        return {"gesture": None, "confidence": 0, "components": {"hand_shape": 0, "position": 0, "movement": 0}, "landmarks": None, "error": "processing_error"}
 
 
 @router.post("/progress")

@@ -130,6 +130,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
             "gesture": None,
             "confidence": 0,
             "components": {"hand_shape": 0, "position": 0, "movement": 0},
+            "landmarks": None,
             "error": "invalid_image",
         }
 
@@ -142,10 +143,12 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
             "gesture": None,
             "confidence": 0,
             "components": {"hand_shape": 0, "position": 0, "movement": 0},
+            "landmarks": None,
             "error": "no_hand_detected",
         }
 
     lm = result.hand_landmarks[0]
+    landmarks = [{"x": p.x, "y": p.y, "z": p.z} for p in lm]
     fingers = _finger_states(lm)
     gesture_name, base_conf = _classify(fingers)
 
@@ -177,6 +180,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
             "position":   round(min(100.0, avg_visibility * 100), 1),
             "movement":   round(confidence * 0.9, 1),
         },
+        "landmarks": landmarks,
     }
 
 
@@ -214,4 +218,5 @@ def recognize_emulate(target_gesture: str | None = None) -> dict:
             "position":   round(max(0, min(100, base["position"]   + random.uniform(-8, 8))), 1),
             "movement":   round(max(0, min(100, base["movement"]   + random.uniform(-8, 8))), 1),
         },
+        "landmarks": None,
     }
