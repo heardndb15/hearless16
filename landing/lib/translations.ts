@@ -19,6 +19,7 @@ export const translations = {
       { label: "AI-преподаватель", href: "/ai-tutor", icon: "🎓" },
       { label: "Камера → Текст", href: "/camera-to-text", icon: "📷" },
       { label: "Текст → Жесты", href: "/text-to-sign", icon: "👤" },
+      { label: "Текст → Речь", href: "/text-to-speech", icon: "🔊" },
       { label: "Геймификация", href: "/gamification", icon: "🏆" },
       { label: "Community", href: "/community", icon: "🌐" },
     ],
@@ -41,7 +42,7 @@ export const translations = {
       title: "Всё, что нужно для",
       titleHighlight: "доступного мира",
       subtitle:
-        "Семь ключевых функций, которые превращают твой смартфон в мост между миром звуков и тишины. Нажми на карточку, чтобы узнать больше.",
+        "Восемь ключевых функций, которые превращают твой смартфон в мост между миром звуков и тишины. Нажми на карточку, чтобы узнать больше.",
       items: [
         { icon: "💬", title: "AI-субтитры", desc: "Речь → текст в реальном времени на казахском, русском и английском. Автоопределение языка и перевод.", span: "wide", href: "/subtitles" },
         { icon: "🔔", title: "Умные оповещения", desc: "Распознаёт пожар, звонок, плач, лай, сирену, стекло. Уведомляет вибрацией и вспышкой.", span: "normal", href: "/alerts" },
@@ -49,6 +50,7 @@ export const translations = {
         { icon: "🎓", title: "AI-преподаватель", desc: "Чат с ИИ, видеоразборы, тесты, анимации. Отслеживает твой прогресс и подбирает уроки.", span: "normal", href: "/ai-tutor" },
         { icon: "📷", title: "Камера → Текст", desc: "Распознавание жестов через камеру в реальном времени. Мгновенная обратная связь от ИИ.", span: "normal", href: "/camera-to-text" },
         { icon: "👤", title: "Текст → Жесты", desc: "Введи текст — 3D-аватар покажет его на жестовом языке. Поддержка КАЗ / РУС / ENG.", span: "normal", href: "/text-to-sign" },
+        { icon: "🔊", title: "Текст → Речь", desc: "Введи текст — устройство озвучит его вслух. Поддержка казахского, русского и английского.", span: "normal", href: "/text-to-speech" },
         { icon: "🏆", title: "Геймификация", desc: "XP, стрики, ачивки, ежедневные задания, уровни. Учиться — весело!", span: "normal", href: "/gamification" },
       ],
     },
@@ -153,6 +155,7 @@ export const translations = {
       { label: "AI Tutor", href: "/ai-tutor", icon: "🎓" },
       { label: "Camera → Text", href: "/camera-to-text", icon: "📷" },
       { label: "Text → Signs", href: "/text-to-sign", icon: "👤" },
+      { label: "Text → Speech", href: "/text-to-speech", icon: "🔊" },
       { label: "Gamification", href: "/gamification", icon: "🏆" },
       { label: "Community", href: "/community", icon: "🌐" },
     ],
@@ -175,7 +178,7 @@ export const translations = {
       title: "Everything you need for",
       titleHighlight: "an accessible world",
       subtitle:
-        "Seven key features that turn your smartphone into a bridge between the world of sound and silence. Click on a card to learn more.",
+        "Eight key features that turn your smartphone into a bridge between the world of sound and silence. Click on a card to learn more.",
       items: [
         { icon: "💬", title: "AI Subtitles", desc: "Speech → text in real time in Kazakh, Russian and English. Auto language detection and translation.", span: "wide", href: "/subtitles" },
         { icon: "🔔", title: "Smart Alerts", desc: "Detects fire, doorbell, crying, barking, siren, glass. Notifies via vibration and flash.", span: "normal", href: "/alerts" },
@@ -183,6 +186,7 @@ export const translations = {
         { icon: "🎓", title: "AI Tutor", desc: "AI chat, video lessons, tests, animations. Tracks your progress and selects lessons.", span: "normal", href: "/ai-tutor" },
         { icon: "📷", title: "Camera → Text", desc: "Real-time gesture recognition via camera. Instant AI feedback.", span: "normal", href: "/camera-to-text" },
         { icon: "👤", title: "Text → Signs", desc: "Enter text — a 3D avatar will show it in sign language. KAZ / RUS / ENG support.", span: "normal", href: "/text-to-sign" },
+        { icon: "🔊", title: "Text → Speech", desc: "Enter text — your device will read it out loud. Support for Kazakh, Russian and English.", span: "normal", href: "/text-to-speech" },
         { icon: "🏆", title: "Gamification", desc: "XP, streaks, achievements, daily tasks, levels. Learning is fun!", span: "normal", href: "/gamification" },
       ],
     },
@@ -287,6 +291,7 @@ export const translations = {
       { label: "AI-мұғалім", href: "/ai-tutor", icon: "🎓" },
       { label: "Камера → Мәтін", href: "/camera-to-text", icon: "📷" },
       { label: "Мәтін → Ишара", href: "/text-to-sign", icon: "👤" },
+      { label: "Мәтін → Дыбыс", href: "/text-to-speech", icon: "🔊" },
       { label: "Геймификация", href: "/gamification", icon: "🏆" },
       { label: "Қоғамдастық", href: "/community", icon: "🌐" },
     ],
@@ -309,7 +314,7 @@ export const translations = {
       title: "Қолжетімді әлем үшін",
       titleHighlight: "қажет нәрсенің бәрі",
       subtitle:
-        "Смартфоныңызды дыбыс пен тыныштық әлемі арасындағы көпірге айналдыратын жеті негізгі функция. Көбірек білу үшін картаны басыңыз.",
+        "Смартфоныңызды дыбыс пен тыныштық әлемі арасындағы көпірге айналдыратын сегіз негізгі функция. Көбірек білу үшін картаны басыңыз.",
       items: [
         { icon: "💬", title: "AI-субтитрлер", desc: "Сөз → мәтін нақты уақытта қазақ, орыс және ағылшын тілдерінде. Тілді автоанықтау және аудару.", span: "wide", href: "/subtitles" },
         { icon: "🔔", title: "Ақылды ескертулер", desc: "Өрт, қоңырау, жылау, үру, сирена, шыны дыбысын таниды. Діріл мен жарқыл арқылы хабарлайды.", span: "normal", href: "/alerts" },
@@ -317,6 +322,7 @@ export const translations = {
         { icon: "🎓", title: "AI-мұғалім", desc: "ЖИ чаты, бейне сабақтар, тесттер, анимациялар. Прогрессіңізді бақылап, сабақтарды таңдайды.", span: "normal", href: "/ai-tutor" },
         { icon: "📷", title: "Камера → Мәтін", desc: "Камера арқылы нақты уақытта ишараларды тану. ЖИ-дан жедел кері байланыс.", span: "normal", href: "/camera-to-text" },
         { icon: "👤", title: "Мәтін → Ишара", desc: "Мәтін енгізіңіз — 3D-аватар оны ишара тілінде көрсетеді. ҚАЗ / РУС / ENG қолдауы.", span: "normal", href: "/text-to-sign" },
+        { icon: "🔊", title: "Мәтін → Дыбыс", desc: "Мәтін енгізіңіз — құрылғы оны дауыстап оқиды. Қазақ, орыс және ағылшын тілдерін қолдайды.", span: "normal", href: "/text-to-speech" },
         { icon: "🏆", title: "Геймификация", desc: "XP, стриктер, жетістіктер, күнделікті тапсырмалар, деңгейлер. Оқу — қызықты!", span: "normal", href: "/gamification" },
       ],
     },
