@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "../../lib/supabase";
 import { ChatTab } from "./ChatTab";
 import { DmsTab } from "./DmsTab";
@@ -308,6 +308,14 @@ function PostSkeleton() {
 
 export default function CommunityClient() {
   const router = useRouter();
+  const pathname = usePathname();
+  // Rendered both at the public /community (outside the dashboard shell,
+  // where "back to site" makes sense) and at /dashboard/community (inside
+  // it, where leaving should mean going to another dashboard section, not
+  // out to the public site — that round trip through the public Header is
+  // exactly what the "logged out after leaving Community" bug traced back
+  // to, since it independently re-checks auth state on every fresh mount).
+  const insideDashboard = pathname?.startsWith("/dashboard");
   const [posts, setPosts] = useState<Post[]>([]);
   const [sort, setSort] = useState<"new" | "popular">("new");
   const [offset, setOffset] = useState(0);
@@ -468,7 +476,11 @@ export default function CommunityClient() {
           ) : (
             <Link href="/login" className="community-rail-post-btn">Войти</Link>
           )}
-          <Link href="/" className="community-rail-home-link">← На сайт</Link>
+          {insideDashboard ? (
+            <Link href="/dashboard" className="community-rail-home-link">← В дашборд</Link>
+          ) : (
+            <Link href="/" className="community-rail-home-link">← На сайт</Link>
+          )}
         </div>
       </nav>
 
