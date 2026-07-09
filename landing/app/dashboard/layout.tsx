@@ -106,6 +106,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </svg>
       ),
     },
+    {
+      name: "Текст → Речь",
+      path: "/dashboard/text-to-speech",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5L6 9H2v6h4l5 4V5z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.54 8.46a5 5 0 010 7.07M18.36 5.64a9 9 0 010 12.73" />
+        </svg>
+      ),
+    },
 
     {
       name: "Community",
