@@ -13,6 +13,13 @@ export default function Header() {
   const [dropdown, setDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  // userName starts null before the async session check below resolves,
+  // which used to make the header render the logged-out (Войти/Регистрация)
+  // buttons for a brief moment on every fresh page load — including landing
+  // back on "/" from Community via "← На сайт" — even though the user was
+  // still fully logged in. authChecked lets the header show neither state
+  // until it actually knows, instead of flashing "logged out" first.
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
@@ -30,6 +37,7 @@ export default function Header() {
       const supabase = createClient();
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) loadName(supabase, session.user.id, session.user.email ?? undefined);
+        setAuthChecked(true);
       });
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
@@ -37,10 +45,12 @@ export default function Header() {
         } else {
           setUserName(null);
         }
+        setAuthChecked(true);
       });
       subscription = data.subscription;
     } catch {
       // Supabase not configured
+      setAuthChecked(true);
     }
     return () => subscription?.unsubscribe();
   }, [t.nav.account]);
@@ -103,7 +113,9 @@ export default function Header() {
               ))}
             </div>
 
-            {userName ? (
+            {!authChecked ? (
+              <div style={{ width: 110, height: 38 }} />
+            ) : userName ? (
               <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "#ffffff" }}>
                 <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{userName[0].toUpperCase()}</span>
                 {userName}
@@ -186,7 +198,9 @@ export default function Header() {
 
             {/* Auth buttons */}
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-              {userName ? (
+              {!authChecked ? (
+                <div style={{ flex: 1, height: 48 }} />
+              ) : userName ? (
                 <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   {userName[0].toUpperCase()} · {userName}
                 </Link>

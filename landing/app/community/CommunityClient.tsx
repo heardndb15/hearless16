@@ -315,6 +315,13 @@ export default function CommunityClient() {
   const [fetchError, setFetchError] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [token, setToken] = useState("");
+  // token starts empty and is only populated once the initial getSession()
+  // below resolves. Anything gating on "!token" during that brief async
+  // window (e.g. right after navigating in from another page) would
+  // wrongly treat an already-logged-in user as logged out — sessionChecked
+  // lets those spots wait for the real answer instead of assuming the
+  // worst case first.
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
@@ -333,6 +340,7 @@ export default function CommunityClient() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setToken(session?.access_token ?? "");
       setCurrentUserId(session?.user?.id ?? null);
+      setSessionChecked(true);
       if (session?.user?.id) {
         const { data } = await supabase.from("users").select("name").eq("id", session.user.id).single();
         const name = data?.name ?? "";
@@ -455,7 +463,7 @@ export default function CommunityClient() {
           ))}
         </div>
         <div className="community-rail-bottom">
-          {token ? (
+          {!sessionChecked || token ? (
             <button onClick={() => setShowCreate(true)} className="community-rail-post-btn">+ Пост</button>
           ) : (
             <Link href="/login" className="community-rail-post-btn">Войти</Link>
@@ -483,7 +491,10 @@ export default function CommunityClient() {
       {activeTab === "feed" && (
         <button
           className="community-fab"
-          onClick={() => (token ? setShowCreate(true) : router.push("/login"))}
+          onClick={() => {
+            if (!sessionChecked) return; // still checking — ignore the click rather than guess wrong
+            token ? setShowCreate(true) : router.push("/login");
+          }}
           aria-label="Новый пост"
         >
           +
