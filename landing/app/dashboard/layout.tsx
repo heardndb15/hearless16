@@ -50,11 +50,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return;
       }
       if (event === "SIGNED_OUT") {
-        // TEMP DEBUG: tracing the "logged out after leaving Community" bug —
-        // confirms this is the redirect actually firing, and why. Remove
-        // once root cause is confirmed.
-        console.log(`[auth-debug] ${new Date().toISOString()} DashboardLayout redirecting to /login — event=${event}`);
-        router.push("/login");
+        // A SIGNED_OUT event can fire spuriously: middleware.ts calls
+        // getUser() server-side on every /dashboard/* navigation, which can
+        // silently rotate the refresh token and write new cookies — but
+        // this tab's own GoTrueClient keeps refreshing on its own
+        // independent timer using the token it already had in memory. If
+        // that stale, now-rotated-out token gets used right after the
+        // server rotated it, Supabase rejects it and this client fires
+        // SIGNED_OUT even though the account is still genuinely logged in
+        // server-side (this is the "logged out after leaving Community"
+        // bug — Community sits outside the middleware, so the tab spends
+        // longer than usual before its next server round-trip, widening
+        // the window for this race). Re-verify with a fresh network call
+        // before trusting the event: a real sign-out still confirms as
+        // logged-out here; a racy false one recovers with no redirect.
+        supabase.auth.getUser().then(({ data, error }) => {
+          console.log(
+            `[auth-debug] ${new Date().toISOString()} SIGNED_OUT re-check ` +
+            `user=${data?.user?.id ?? "none"} error=${error?.message ?? "none"}`
+          );
+          if (!data?.user) {
+            router.push("/login");
+          }
+        });
       }
     });
 
