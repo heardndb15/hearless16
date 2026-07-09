@@ -80,6 +80,15 @@ export const translations = {
       sendBtn: "Отправить →",
       historyLabel: "История",
     },
+    textToSpeechSection: {
+      label: "Текст → Речь",
+      title: "Твой текст,",
+      titleHighlight: "их голосом",
+      subtitle: "Напиши фразу — Hearless озвучит её вслух для собеседника. Работающее демо прямо здесь, на казахском, русском и английском.",
+      inputPlaceholder: "Введи текст для озвучивания...",
+      speakBtn: "Озвучить →",
+      speakingBtn: "Озвучиваем…",
+    },
     languageSection: {
       label: "Языки",
       title: "Три языка. Один",
@@ -216,6 +225,15 @@ export const translations = {
       sendBtn: "Send →",
       historyLabel: "History",
     },
+    textToSpeechSection: {
+      label: "Text → Speech",
+      title: "Your words,",
+      titleHighlight: "their voice",
+      subtitle: "Type a phrase — Hearless will read it out loud for the person you're talking to. A real working demo, right here, in Kazakh, Russian and English.",
+      inputPlaceholder: "Type text to read aloud...",
+      speakBtn: "Speak →",
+      speakingBtn: "Speaking…",
+    },
     languageSection: {
       label: "Languages",
       title: "Three languages. One",
@@ -351,6 +369,15 @@ export const translations = {
       inputPlaceholder: "Субтитрге аудару үшін мәтін енгізіңіз...",
       sendBtn: "Жіберу →",
       historyLabel: "Тарих",
+    },
+    textToSpeechSection: {
+      label: "Мәтін → Дыбыс",
+      title: "Сенің мәтініің,",
+      titleHighlight: "олардың дауысымен",
+      subtitle: "Фраза жаз — Hearless оны әңгімелесушің үшін дауыстап оқиды. Нақты жұмыс істейтін демо, қазақ, орыс және ағылшын тілдерінде.",
+      inputPlaceholder: "Дауыстап оқу үшін мәтін енгізіңіз...",
+      speakBtn: "Дыбыстау →",
+      speakingBtn: "Дыбыстауда…",
     },
     languageSection: {
       label: "Тілдер",

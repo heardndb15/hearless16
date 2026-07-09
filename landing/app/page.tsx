@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import Hero from "../components/Hero";
 import FeaturesSection from "../components/Features";
 import SubtitleDemo from "../components/SubtitleDemo";
+import TextToSpeechSection from "../components/TextToSpeechSection";
 import LanguageSection from "../components/LanguageSection";
 import GamificationSection from "../components/GamificationSection";
 import PricingSection from "../components/PricingSection";
@@ -16,6 +17,7 @@ export default function Home() {
         <Hero />
         <FeaturesSection />
         <SubtitleDemo />
+        <TextToSpeechSection />
         <LanguageSection />
         <GamificationSection />
         <PricingSection />
