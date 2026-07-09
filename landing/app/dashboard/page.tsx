@@ -44,6 +44,7 @@ export default function SubtitlesDashboard() {
   const [history, setHistory] = useState<SubtitleHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(true);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
 
   // Recognition States
   const [isRecording, setIsRecording] = useState(false);
@@ -1145,35 +1146,47 @@ export default function SubtitlesDashboard() {
                   Нет сохраненных диалогов.
                 </div>
               ) : (
-                history.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3.5 rounded-2xl bg-white/50 border border-white/80 shadow-sm space-y-2 text-left group transition-all hover:bg-white/70 hover:shadow-md"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                        {new Date(item.created_at).toLocaleString("ru-RU", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-0.5"
-                        aria-label="Удалить запись"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                history.map((item) => {
+                  const isExpanded = expandedHistoryId === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => setExpandedHistoryId(isExpanded ? null : item.id)}
+                      className="p-3.5 rounded-2xl bg-white/50 border border-white/80 shadow-sm space-y-2 text-left group transition-all hover:bg-white/70 hover:shadow-md cursor-pointer"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                          {new Date(item.created_at).toLocaleString("ru-RU", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteItem(item.id);
+                          }}
+                          className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-0.5"
+                          aria-label="Удалить запись"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p className={`font-dm text-xs text-slate-700 leading-relaxed font-semibold whitespace-pre-wrap ${isExpanded ? "" : "line-clamp-3"}`}>
+                        {item.text}
+                      </p>
+                      {!isExpanded && item.text.length > 140 && (
+                        <span className="block text-[9px] font-bold text-accent uppercase tracking-wider">
+                          Развернуть
+                        </span>
+                      )}
                     </div>
-                    <p className="font-dm text-xs text-slate-700 leading-relaxed font-semibold line-clamp-3">
-                      {item.text}
-                    </p>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
