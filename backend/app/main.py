@@ -7,7 +7,7 @@ from fastapi.requests import Request
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from app.limiter import limiter
-from app.routes import users, subtitles, gestures, alerts, transcribe, community, polar, debug_freedomspeech
+from app.routes import users, subtitles, gestures, alerts, transcribe, community, polar
 from app.services.whisper_service import transcribe_audio
 
 
@@ -48,7 +48,6 @@ app.include_router(alerts.router)
 app.include_router(transcribe.router)
 app.include_router(community.router, prefix="/community")
 app.include_router(polar.router)
-app.include_router(debug_freedomspeech.router)  # TEMP DEBUG, see routes/debug_freedomspeech.py
 
 
 @app.websocket("/ws/transcribe")
