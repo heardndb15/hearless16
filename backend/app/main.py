@@ -122,7 +122,56 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     interim_segments: list = []
     chunk_counter = 0
     diarize_state: dict = {"current_speaker": 0, "last_end": 0.0}
-    diarize_lock: asyncio.Lock = asyncio.Lock()
+    # A diarization call (esp. FreedomSpeech for Kazakh) can take multiple
+    # seconds. The receive loop below only reads the next client message
+    # after fully awaiting the current one, so blocking here on every
+    # trigger let chunks pile up in the socket's own buffer — each one only
+    # getting processed (and its delay compounding) once every one before
+    # it finished. diarize_busy guards a background task instead: only one
+    # diarization call runs at a time, and the receive loop keeps consuming
+    # (and accumulating) new chunks immediately regardless of whether a
+    # call is still in flight, instead of stalling on it.
+    diarize_busy = False
+    session_stopped = False
+    # Re-transcribing the whole utterance-so-far on every trigger gets
+    # slower the longer someone talks; capping the window each call
+    # actually processes keeps every individual call's latency bounded.
+    SLIDING_WINDOW_TRIGGER_BYTES = 96000  # 3s at 16kHz/16-bit mono
+    SLIDING_WINDOW_TAIL_BYTES = 32000  # 1s of overlap kept for context
+
+    from app.services.whisper_service import transcribe_with_diarization, pcm_to_wav_bytes, merge_transcripts
+
+    async def run_diarize(wav_bytes: bytes, sliding_window: bool):
+        nonlocal diarize_busy, finalized_text, interim_text, interim_segments, current_full_text
+        try:
+            diarize_result = await asyncio.wait_for(
+                asyncio.to_thread(transcribe_with_diarization, wav_bytes, lang, diarize_state),
+                timeout=12.0,
+            )
+            if sliding_window:
+                finalized_text = merge_transcripts(finalized_text, diarize_result["text"])
+                interim_text = ""
+                interim_segments = []
+            else:
+                interim_text = diarize_result["text"]
+                interim_segments = diarize_result["segments"]
+
+            current_full_text = finalized_text
+            if interim_text:
+                current_full_text = (current_full_text + " " + interim_text).strip()
+
+            if not session_stopped:
+                await websocket.send_json({
+                    "type": "text",
+                    "text": current_full_text,
+                    "full_text": current_full_text,
+                    "segments": interim_segments if interim_text else [],
+                })
+        except Exception as e:
+            import sys
+            print(f"PCM diarization failed/timed out: {e}", file=sys.stderr)
+        finally:
+            diarize_busy = False
 
     try:
         while True:
@@ -148,53 +197,18 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                 if format == "pcm":
                     pcm_buffer.extend(audio_bytes)
                     chunk_counter += 1
-                    
-                    # Transcribe every 2 chunks (~400-600ms of audio) to balance latency and CPU
-                    if chunk_counter % 2 == 0:
-                        from app.services.whisper_service import transcribe_with_diarization, pcm_to_wav_bytes
+
+                    # Transcribe every 2 chunks (~400-600ms of audio) to balance latency and CPU.
+                    # Skip (don't queue) if a previous call is still in flight — see
+                    # diarize_busy comment above for why.
+                    if chunk_counter % 2 == 0 and not diarize_busy:
                         wav_bytes = pcm_to_wav_bytes(bytes(pcm_buffer))
-                        sliding_window = len(pcm_buffer) >= 256000
-
-                        # Every diarization call is serialized behind diarize_lock, so one
-                        # slow/hung call (e.g. a lagging FreedomSpeech request for Kazakh)
-                        # would otherwise stall every later chunk in this session forever.
-                        # Bound it and just skip this chunk's update on timeout/failure.
-                        try:
-                            async with diarize_lock:
-                                diarize_result = await asyncio.wait_for(
-                                    asyncio.to_thread(
-                                        transcribe_with_diarization, wav_bytes, lang, diarize_state
-                                    ),
-                                    timeout=12.0,
-                                )
-                        except Exception as e:
-                            import sys
-                            print(f"PCM diarization failed/timed out: {e}", file=sys.stderr)
-                            if sliding_window:
-                                pcm_buffer = pcm_buffer[-64000:]
-                            continue
-
+                        sliding_window = len(pcm_buffer) >= SLIDING_WINDOW_TRIGGER_BYTES
                         if sliding_window:
-                            # Slide window: keep the last 2 seconds (16000 * 2 * 2 = 64000 bytes) for context overlap
-                            pcm_buffer = pcm_buffer[-64000:]
-                            from app.services.whisper_service import merge_transcripts
-                            finalized_text = merge_transcripts(finalized_text, diarize_result["text"])
-                            interim_text = ""
-                            interim_segments = []
-                        else:
-                            interim_text = diarize_result["text"]
-                            interim_segments = diarize_result["segments"]
+                            pcm_buffer = pcm_buffer[-SLIDING_WINDOW_TAIL_BYTES:]
 
-                        current_full_text = finalized_text
-                        if interim_text:
-                            current_full_text = (current_full_text + " " + interim_text).strip()
-
-                        await websocket.send_json({
-                            "type": "text",
-                            "text": current_full_text,
-                            "full_text": current_full_text,
-                            "segments": interim_segments if interim_text else [],
-                        })
+                        diarize_busy = True
+                        asyncio.create_task(run_diarize(wav_bytes, sliding_window))
                 else:
                     # При первом чанке определяем формат
                     if is_stream is None:
@@ -276,6 +290,14 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
 
             elif action == "stop":
                 if format == "pcm":
+                    # Stop new background diarize tasks from firing, and let any
+                    # still in flight finish before sending "final" — otherwise
+                    # its "text" message could land after (and stomp) "final".
+                    session_stopped = True
+                    for _ in range(30):  # up to ~3s
+                        if not diarize_busy:
+                            break
+                        await asyncio.sleep(0.1)
                     if len(pcm_buffer) > 0:
                         from app.services.whisper_service import transcribe_pcm, merge_transcripts
                         last_text = await asyncio.wait_for(
