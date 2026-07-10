@@ -39,7 +39,7 @@ async def recognize(request: Request, data: GestureRecognizeRequest):
         # event loop would stall every other request on this worker — notably
         # the /ws/transcribe subtitles socket — for as long as it takes, since
         # Render's free tier runs a single worker/event loop.
-        result = await asyncio.to_thread(recognize_gesture, frame, data.target_gesture)
+        result = await asyncio.to_thread(recognize_gesture, frame, data.target_gesture, data.language)
         return result
     except HTTPException:
         raise

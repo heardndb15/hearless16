@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 
 
@@ -30,6 +30,7 @@ class UserProgressCreate(BaseModel):
 class GestureRecognizeRequest(BaseModel):
     image: str
     target_gesture: Optional[str] = None
+    language: Literal["kz", "ru"] = "kz"
 
 
 class TranscriptionRequest(BaseModel):

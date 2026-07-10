@@ -78,8 +78,8 @@ def _finger_states(lm) -> dict:
     }
 
 
-def _classify(fingers: dict) -> tuple[str, float]:
-    """Rule-based classifier. Returns (gesture_name, confidence_0_to_1)."""
+def _classify_kz(fingers: dict) -> tuple[str, float]:
+    """Rule-based classifier for the original (kz) vocabulary. Returns (gesture_name, confidence_0_to_1)."""
     t = fingers["thumb"]
     i = fingers["index"]
     m = fingers["middle"]
@@ -131,13 +131,73 @@ def _classify(fingers: dict) -> tuple[str, float]:
     return "Неизвестно", 0.20
 
 
-def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> dict:
+def _classify_ru(fingers: dict) -> tuple[str, float]:
+    """
+    Rule-based classifier for the "ru" vocabulary — 12 words cited to real
+    SLOVO (github.com/hukenovs/slovo) constants.py class ids, see
+    docs/superpowers/specs/2026-07-10-russian-sign-language-switcher-design.md
+    for the id each word maps to. Single-frame approximations of what are
+    mostly dynamic real-world signs — same caliber of simplification as
+    _classify_kz. Returns (gesture_name, confidence_0_to_1).
+    """
+    t = fingers["thumb"]
+    i = fingers["index"]
+    m = fingers["middle"]
+    r = fingers["ring"]
+    p = fingers["pinky"]
+
+    # Да — closed fist (nod)
+    if not t and not i and not m and not r and not p:
+        return "Да", 0.92
+    # Один — index only
+    if not t and i and not m and not r and not p:
+        return "Один", 0.90
+    # Два — index + middle
+    if not t and i and m and not r and not p:
+        return "Два", 0.88
+    # Три — thumb + index + middle (Russian counting style)
+    if t and i and m and not r and not p:
+        return "Три", 0.85
+    # Четыре — four fingers, thumb tucked
+    if not t and i and m and r and p:
+        return "Четыре", 0.83
+    # Привет! — all five extended, open palm
+    if t and i and m and r and p:
+        return "Привет!", 0.90
+    # Хорошо — thumb up
+    if t and not i and not m and not r and not p:
+        return "Хорошо", 0.78
+    # Плохо — ring only
+    if not t and not i and not m and r and not p:
+        return "Плохо", 0.78
+    # Вода — index + middle + ring
+    if not t and i and m and r and not p:
+        return "Вода", 0.85
+    # Еда — middle only
+    if not t and not i and m and not r and not p:
+        return "Еда", 0.82
+    # Помочь — pinky only
+    if not t and not i and not m and not r and p:
+        return "Помочь", 0.80
+    # Остановить — thumb + pinky
+    if t and not i and not m and not r and p:
+        return "Остановить", 0.80
+    return "Неизвестно", 0.20
+
+
+def _classify(fingers: dict, language: str = "kz") -> tuple[str, float]:
+    if language == "ru":
+        return _classify_ru(fingers)
+    return _classify_kz(fingers)
+
+
+def recognize_gesture(frame_data: bytes, target_gesture: str | None = None, language: str = "kz") -> dict:
     landmarker = _get_hand_landmarker()
 
     # Fallback to emulation if the model failed to load (e.g. offline, or
     # the model download failed)
     if landmarker is None:
-        return recognize_emulate(target_gesture)
+        return recognize_emulate(target_gesture, language)
 
     img = _decode_image(frame_data)
     if img is None:
@@ -165,7 +225,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
     lm = result.hand_landmarks[0]
     landmarks = [{"x": p.x, "y": p.y, "z": p.z} for p in lm]
     fingers = _finger_states(lm)
-    gesture_name, base_conf = _classify(fingers)
+    gesture_name, base_conf = _classify(fingers, language)
 
     # The Tasks API's NormalizedLandmark.visibility is optional and this
     # model doesn't populate it (unlike the old legacy Solutions API), so
@@ -201,7 +261,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None) -> d
 
 # ── Mock fallback (used when mediapipe is unavailable) ──────────────────────
 
-GESTURE_COMPONENTS = {
+GESTURE_COMPONENTS_KZ = {
     "Здравствуйте": {"hand_shape": 92, "position": 88, "movement": 85},
     "Спасибо":      {"hand_shape": 85, "position": 80, "movement": 78},
     "Да":           {"hand_shape": 95, "position": 90, "movement": 88},
@@ -216,13 +276,35 @@ GESTURE_COMPONENTS = {
     "Стоп":         {"hand_shape": 80, "position": 79, "movement": 76},
 }
 
+GESTURE_COMPONENTS_RU = {
+    "Да":           {"hand_shape": 90, "position": 88, "movement": 85},
+    "Один":         {"hand_shape": 88, "position": 85, "movement": 80},
+    "Два":          {"hand_shape": 86, "position": 84, "movement": 80},
+    "Три":          {"hand_shape": 84, "position": 82, "movement": 78},
+    "Четыре":       {"hand_shape": 82, "position": 80, "movement": 76},
+    "Привет!":      {"hand_shape": 90, "position": 87, "movement": 84},
+    "Хорошо":       {"hand_shape": 80, "position": 78, "movement": 75},
+    "Плохо":        {"hand_shape": 78, "position": 76, "movement": 73},
+    "Вода":         {"hand_shape": 84, "position": 80, "movement": 78},
+    "Еда":          {"hand_shape": 80, "position": 77, "movement": 74},
+    "Помочь":       {"hand_shape": 79, "position": 76, "movement": 73},
+    "Остановить":   {"hand_shape": 81, "position": 78, "movement": 75},
+}
 
-def recognize_emulate(target_gesture: str | None = None) -> dict:
+GESTURE_COMPONENTS_BY_LANGUAGE = {
+    "kz": GESTURE_COMPONENTS_KZ,
+    "ru": GESTURE_COMPONENTS_RU,
+}
+
+
+def recognize_emulate(target_gesture: str | None = None, language: str = "kz") -> dict:
+    table = GESTURE_COMPONENTS_BY_LANGUAGE.get(language, GESTURE_COMPONENTS_KZ)
+
     if target_gesture:
-        base = GESTURE_COMPONENTS.get(target_gesture, {"hand_shape": 85, "position": 80, "movement": 80})
+        base = table.get(target_gesture, {"hand_shape": 85, "position": 80, "movement": 80})
     else:
-        chosen = random.choice(list(GESTURE_COMPONENTS.keys()))
-        base = GESTURE_COMPONENTS[chosen]
+        chosen = random.choice(list(table.keys()))
+        base = table[chosen]
         target_gesture = chosen
 
     noise = random.uniform(-5, 5)
