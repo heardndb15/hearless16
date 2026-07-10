@@ -3,10 +3,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
 import type { CameraView as ExpoCameraView, CameraType } from "expo-camera";
-import { GestureRecognizer } from "../components/signLanguageReader/GestureRecognizer";
-import { TextComposer } from "../components/signLanguageReader/TextComposer";
+import { GestureRecognizer } from "../../../shared/signLanguageReader/GestureRecognizer";
+import { TextComposer } from "../../../shared/signLanguageReader/TextComposer";
 import { useHandTracker } from "../components/signLanguageReader/useHandTracker";
-import type { RawSample } from "../components/signLanguageReader/GestureRecognizer";
+import type { RawSample } from "../../../shared/signLanguageReader/GestureRecognizer";
 import { Colors } from "../constants/theme";
 
 export type Quality = "none" | "low" | "medium" | "high";

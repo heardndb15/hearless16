@@ -38,7 +38,7 @@ export class GestureRecognizer {
     }
 
     let majority: string | null = null;
-    for (const [word, count] of counts) {
+    for (const [word, count] of Array.from(counts.entries())) {
       if (count >= MIN_VOTES) {
         majority = word;
         break;

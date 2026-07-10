@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import type { CameraView as ExpoCameraView } from "expo-camera";
 import axios from "axios";
-import type { RawSample } from "./GestureRecognizer";
+import type { RawSample } from "../../../../shared/signLanguageReader/GestureRecognizer";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 const POLL_INTERVAL_MS = 350;
