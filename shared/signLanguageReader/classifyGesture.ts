@@ -7,7 +7,7 @@ export interface ClassifiedGesture {
  * Structurally compatible with @mediapipe/tasks-vision's NormalizedLandmark
  * (same x/y/z shape) without importing that package's types directly —
  * shared/ has no node_modules of its own to resolve them from (no
- * root-level package.json in this repo), and real NormalizedLandmark[]
+ * root-level node_modules in this repo), and real NormalizedLandmark[]
  * values satisfy this type structurally.
  */
 export interface HandLandmarkPoint {

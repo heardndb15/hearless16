@@ -23,6 +23,13 @@ function assertEqual(actual: string, expected: string, label: string) {
   console.log(`PASS ${label}`);
 }
 
+function assertEqualNumber(actual: number, expected: number, label: string) {
+  if (actual !== expected) {
+    throw new Error(`FAIL ${label}: expected ${expected}, got ${actual}`);
+  }
+  console.log(`PASS ${label}`);
+}
+
 const NEW_CASES: [Fingers, string][] = [
   [{ thumb: false, index: false, middle: false, ring: false, pinky: true }, "Пожалуйста"],
   [{ thumb: false, index: false, middle: true, ring: false, pinky: false }, "Хорошо"],
@@ -47,6 +54,11 @@ const EXISTING_CASES: [Fingers, string][] = [
 for (const [fingers, expected] of [...NEW_CASES, ...EXISTING_CASES]) {
   const { gesture } = classifyGesture(makeLandmarks(fingers), 1.0);
   assertEqual(gesture, expected, `${JSON.stringify(fingers)} -> ${expected}`);
+}
+
+{
+  const { confidence } = classifyGesture(makeLandmarks({ thumb: true, index: false, middle: false, ring: false, pinky: false }), 1.0);
+  assertEqualNumber(confidence, 92, "Да at full handedness score yields 92% confidence (0-100 scale)");
 }
 
 console.log("All classifyGesture checks passed");
