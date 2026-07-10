@@ -1,3 +1,5 @@
+import type { SignLanguage } from "./languages";
+
 export interface ClassifiedGesture {
   gesture: string;
   confidence: number;
@@ -34,7 +36,7 @@ function fingerStates(lm: HandLandmarkPoint[]): FingerStates {
   };
 }
 
-function classify(fingers: FingerStates): { gesture: string; baseConfidence: number } {
+function classifyKz(fingers: FingerStates): { gesture: string; baseConfidence: number } {
   const { thumb: t, index: i, middle: m, ring: r, pinky: p } = fingers;
   const nonThumb = [i, m, r, p].filter(Boolean).length;
 
@@ -57,11 +59,45 @@ function classify(fingers: FingerStates): { gesture: string; baseConfidence: num
 }
 
 /**
- * TypeScript port of backend/app/signflow_model.py's _finger_states()/_classify().
- * Keep both in sync if the vocabulary changes.
+ * "ru" vocabulary — 12 words cited to real SLOVO (github.com/hukenovs/slovo)
+ * constants.py class ids, see
+ * docs/superpowers/specs/2026-07-10-russian-sign-language-switcher-design.md
+ * for the id each word maps to. Single-frame approximations of what are
+ * mostly dynamic real-world signs — same caliber of simplification as classifyKz.
+ * Keep in sync with backend/app/signflow_model.py's _classify_ru().
  */
-export function classifyGesture(landmarks: HandLandmarkPoint[], handednessScore: number): ClassifiedGesture {
-  const { gesture, baseConfidence } = classify(fingerStates(landmarks));
+function classifyRu(fingers: FingerStates): { gesture: string; baseConfidence: number } {
+  const { thumb: t, index: i, middle: m, ring: r, pinky: p } = fingers;
+
+  if (!t && !i && !m && !r && !p) return { gesture: "Да", baseConfidence: 0.92 };
+  if (!t && i && !m && !r && !p) return { gesture: "Один", baseConfidence: 0.90 };
+  if (!t && i && m && !r && !p) return { gesture: "Два", baseConfidence: 0.88 };
+  if (t && i && m && !r && !p) return { gesture: "Три", baseConfidence: 0.85 };
+  if (!t && i && m && r && p) return { gesture: "Четыре", baseConfidence: 0.83 };
+  if (t && i && m && r && p) return { gesture: "Привет!", baseConfidence: 0.90 };
+  if (t && !i && !m && !r && !p) return { gesture: "Хорошо", baseConfidence: 0.78 };
+  if (!t && !i && !m && r && !p) return { gesture: "Плохо", baseConfidence: 0.78 };
+  if (!t && i && m && r && !p) return { gesture: "Вода", baseConfidence: 0.85 };
+  if (!t && !i && m && !r && !p) return { gesture: "Еда", baseConfidence: 0.82 };
+  if (!t && !i && !m && !r && p) return { gesture: "Помочь", baseConfidence: 0.80 };
+  if (t && !i && !m && !r && p) return { gesture: "Остановить", baseConfidence: 0.80 };
+  return { gesture: "Неизвестно", baseConfidence: 0.20 };
+}
+
+function classify(fingers: FingerStates, language: SignLanguage): { gesture: string; baseConfidence: number } {
+  return language === "ru" ? classifyRu(fingers) : classifyKz(fingers);
+}
+
+/**
+ * TypeScript port of backend/app/signflow_model.py's _finger_states()/_classify().
+ * Keep both in sync if either vocabulary changes.
+ */
+export function classifyGesture(
+  landmarks: HandLandmarkPoint[],
+  handednessScore: number,
+  language: SignLanguage = "kz"
+): ClassifiedGesture {
+  const { gesture, baseConfidence } = classify(fingerStates(landmarks), language);
   const confidence = Math.round(Math.min(100, baseConfidence * handednessScore * 100) * 10) / 10;
   return { gesture, confidence };
 }
