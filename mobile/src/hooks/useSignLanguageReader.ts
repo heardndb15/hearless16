@@ -7,11 +7,19 @@ import { GestureRecognizer } from "../components/signLanguageReader/GestureRecog
 import { TextComposer } from "../components/signLanguageReader/TextComposer";
 import { useHandTracker } from "../components/signLanguageReader/useHandTracker";
 import type { RawSample } from "../components/signLanguageReader/GestureRecognizer";
+import { Colors } from "../constants/theme";
 
 export type Quality = "none" | "low" | "medium" | "high";
 
+export const QUALITY_COLOR: Record<Quality, string> = {
+  none: "#9CA3AF",
+  low: Colors.sos,
+  medium: "#F5A623",
+  high: "#22c55e",
+};
+
 function qualityFor(sample: RawSample | null): Quality {
-  if (!sample || sample.error === "no_hand_detected") return "none";
+  if (!sample || sample.error) return "none";
   if (sample.confidence < 45) return "low";
   if (sample.confidence < 70) return "medium";
   return "high";

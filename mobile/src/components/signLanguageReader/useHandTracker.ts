@@ -36,7 +36,7 @@ export function useHandTracker(
           error: response.data.error,
         });
       } catch {
-        // Transient network/API error — skip this tick, loop continues.
+        onSample({ gesture: null, confidence: 0, error: "processing_error" });
       } finally {
         inFlightRef.current = false;
       }

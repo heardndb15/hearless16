@@ -2,14 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { BlurView } from "expo-blur";
 import { Colors, FontSize } from "../../constants/theme";
-import type { Quality } from "../../hooks/useSignLanguageReader";
-
-const QUALITY_COLOR: Record<Quality, string> = {
-  none: "#9CA3AF",
-  low: "#ef4444",
-  medium: "#F5A623",
-  high: "#22c55e",
-};
+import { QUALITY_COLOR, type Quality } from "../../hooks/useSignLanguageReader";
 
 interface Props {
   liveGuess: string | null;

@@ -1,20 +1,13 @@
 import React, { useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Animated } from "react-native";
 import { Colors, Spacing, FontSize } from "../../constants/theme";
-import type { Quality } from "../../hooks/useSignLanguageReader";
+import { QUALITY_COLOR, type Quality } from "../../hooks/useSignLanguageReader";
 
 const QUALITY_LABEL: Record<Quality, string> = {
   none: "Наведите камеру на руки",
   low: "Низкое качество",
   medium: "Среднее качество",
   high: "Хорошее качество",
-};
-
-const QUALITY_COLOR: Record<Quality, string> = {
-  none: "#9CA3AF",
-  low: "#ef4444",
-  medium: "#F5A623",
-  high: "#22c55e",
 };
 
 function ActionButton({
