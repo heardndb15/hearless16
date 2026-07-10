@@ -1,0 +1,79 @@
+import { useCallback, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
+import * as Speech from "expo-speech";
+import type { CameraView as ExpoCameraView, CameraType } from "expo-camera";
+import { GestureRecognizer } from "../components/signLanguageReader/GestureRecognizer";
+import { TextComposer } from "../components/signLanguageReader/TextComposer";
+import { useHandTracker } from "../components/signLanguageReader/useHandTracker";
+import type { RawSample } from "../components/signLanguageReader/GestureRecognizer";
+
+export type Quality = "none" | "low" | "medium" | "high";
+
+function qualityFor(sample: RawSample | null): Quality {
+  if (!sample || sample.error === "no_hand_detected") return "none";
+  if (sample.confidence < 45) return "low";
+  if (sample.confidence < 70) return "medium";
+  return "high";
+}
+
+export function useSignLanguageReader() {
+  const cameraRef = useRef<ExpoCameraView>(null);
+  const recognizerRef = useRef(new GestureRecognizer());
+  const composerRef = useRef(new TextComposer());
+
+  const [facing, setFacing] = useState<CameraType>("front");
+  const [sentence, setSentence] = useState("");
+  const [liveSample, setLiveSample] = useState<RawSample | null>(null);
+
+  const handleSample = useCallback((sample: RawSample) => {
+    setLiveSample(sample);
+    const state = recognizerRef.current.pushSample(sample);
+    if (state.changed) {
+      composerRef.current.onConfirmedChange(state.confirmed);
+      setSentence(composerRef.current.sentence);
+    }
+  }, []);
+
+  const { start, stop } = useHandTracker(cameraRef, handleSample);
+
+  useFocusEffect(
+    useCallback(() => {
+      start();
+      return () => stop();
+    }, [start, stop])
+  );
+
+  const clear = useCallback(() => {
+    composerRef.current.clear();
+    recognizerRef.current.reset();
+    setSentence("");
+  }, []);
+
+  const copyToClipboard = useCallback(async () => {
+    if (!sentence) return;
+    await Clipboard.setStringAsync(sentence);
+  }, [sentence]);
+
+  const speak = useCallback(() => {
+    if (!sentence) return;
+    Speech.speak(sentence, { language: "ru-RU" });
+  }, [sentence]);
+
+  const toggleFacing = useCallback(() => {
+    setFacing((prev) => (prev === "front" ? "back" : "front"));
+  }, []);
+
+  return {
+    cameraRef,
+    facing,
+    toggleFacing,
+    sentence,
+    liveGuess: liveSample?.gesture ?? null,
+    liveConfidence: liveSample?.confidence ?? 0,
+    quality: qualityFor(liveSample),
+    clear,
+    copyToClipboard,
+    speak,
+  };
+}
