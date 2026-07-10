@@ -53,7 +53,6 @@ export default function LearnSignLanguagePage() {
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
-  const drawingUtilsRef = useRef<DrawingUtils | null>(null);
   const trackingFrameIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -108,15 +107,20 @@ export default function LearnSignLanguagePage() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!results.landmarks || results.landmarks.length === 0) return;
 
-    if (!drawingUtilsRef.current) {
-      drawingUtilsRef.current = new DrawingUtils(ctx);
-    }
+    // Built fresh every call, not cached in a ref: the overlay <canvas> is
+    // conditionally rendered ({cameraMode ? ... : ...}), so React unmounts
+    // and remounts it every time the camera stops/starts (e.g. switching
+    // gestures). A cached DrawingUtils would keep wrapping the 2D context
+    // of a now-detached canvas from the previous session — draw calls on
+    // it succeed silently but never appear on screen, which is why dots
+    // stopped showing up after switching gestures or restarting the camera.
+    const drawingUtils = new DrawingUtils(ctx);
     const landmarks = results.landmarks[0];
-    drawingUtilsRef.current.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
+    drawingUtils.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
       color: "#38bdf8",
       lineWidth: 3,
     });
-    drawingUtilsRef.current.drawLandmarks(landmarks, {
+    drawingUtils.drawLandmarks(landmarks, {
       color: "#38bdf8",
       fillColor: "#ffffff",
       lineWidth: 1.5,
