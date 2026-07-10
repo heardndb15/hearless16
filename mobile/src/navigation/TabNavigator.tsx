@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import SubtitlesScreen from "../screens/SubtitlesScreen";
 import GesturesScreen from "../screens/GesturesScreen";
+import SignLanguageReaderScreen from "../screens/SignLanguageReaderScreen";
 import StudyScreen from "../screens/StudyScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CommunityFeedScreen from "../screens/CommunityFeedScreen";
@@ -14,6 +15,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Субтитры: "💬",
     Жесты: "🤟",
+    Перевод: "👋",
     Учеба: "🎓",
     Профиль: "👤",
     Комьюнити: "👥",
@@ -65,6 +67,14 @@ export default function TabNavigator() {
         options={{
           tabBarLabel: "Жесты",
           tabBarIcon: ({ focused }) => <TabIcon label="Жесты" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Translate"
+        component={SignLanguageReaderScreen}
+        options={{
+          tabBarLabel: "Перевод",
+          tabBarIcon: ({ focused }) => <TabIcon label="Перевод" focused={focused} />,
         }}
       />
       <Tab.Screen

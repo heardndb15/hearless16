@@ -83,6 +83,7 @@ export interface CommentResponse {
 export type RootTabParamList = {
   Subtitles: undefined;
   Gestures: undefined;
+  Translate: undefined;
   Study: undefined;
   Profile: undefined;
   Community: undefined;
