@@ -30,7 +30,7 @@ async def get_gesture(gesture_id: str):
 
 
 @router.post("/recognize")
-@limiter.limit("60/minute")
+@limiter.limit("120/minute")
 async def recognize(request: Request, data: GestureRecognizeRequest):
     try:
         frame = base64.b64decode(data.image, validate=False)
