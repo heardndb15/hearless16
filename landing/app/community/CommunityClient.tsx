@@ -454,7 +454,7 @@ export default function CommunityClient() {
 
   return (
     <div style={{ minHeight: "100vh", background: bgList }}>
-      <nav className="community-rail">
+      <nav className="community-rail community-rail--right">
         <div className="community-rail-top">
           {TABS.map((tab) => (
             <button
@@ -513,7 +513,7 @@ export default function CommunityClient() {
         </button>
       )}
 
-      <main className="community-main" style={{ paddingTop: 24 }}>
+      <main className="community-main community-main--right" style={{ paddingTop: 24 }}>
         {showUsernameModal && (
           <UsernameModal onSave={(n) => { setUserName(n); setShowUsernameModal(false); }} />
         )}
@@ -639,9 +639,13 @@ export default function CommunityClient() {
         .community-bottombar { display: none; }
         .community-fab { display: none; }
 
+        .community-rail--right { left: auto; right: 0; border-right: none; border-left: 1px solid ${border}; }
+        .community-main--right { margin-left: 0; margin-right: 88px; }
+
         @media (max-width: 768px) {
           .community-rail { display: none; }
           .community-main { margin-left: 0; padding-bottom: 76px; }
+          .community-main--right { margin-right: 0; }
           .community-bottombar {
             display: flex; position: fixed; left: 0; right: 0; bottom: 0; height: 60px;
             background: #FFFFFF; border-top: 1px solid ${border}; z-index: 50;
