@@ -125,6 +125,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       ),
     },
     {
+      name: "Перевод жестов",
+      path: "/dashboard/sign-language-reader",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11V6a1.5 1.5 0 013 0v4m0-5a1.5 1.5 0 013 0v5m0-4a1.5 1.5 0 013 0v5m0-2.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-1a5 5 0 01-4-2l-2-3a1.5 1.5 0 012.4-1.8L7 15" />
+        </svg>
+      ),
+    },
+    {
       name: "Текст → Речь",
       path: "/dashboard/text-to-speech",
       icon: (
