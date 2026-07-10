@@ -39,9 +39,11 @@ GestureRecognizer.ts (pure function/class, no React)
    │  - error === "no_hand_detected" resets the rolling window (no stale carry-over)
    ▼
 TextComposer.ts (pure function/class, no React)
-   │  on confirmed-gesture-changed event:
-   │  - append word if it differs from the last appended word, OR
-   │  - append if ≥1.5s elapsed since the same word was last appended
+   │  called only on GestureRecognizer's edge-triggered "changed" event
+   │  (holding one sign steadily fires "changed" once, not repeatedly):
+   │  - appends the newly-confirmed word
+   │  - a released-then-re-shown sign naturally re-appends, since releasing
+   │    resets GestureRecognizer's window and produces a fresh "changed" edge
    │  - auto-capitalizes the first letter of the sentence
    ▼
 useSignLanguageReader (orchestrator hook)
@@ -113,7 +115,7 @@ No route or request/response shape changes: `POST /gestures/recognize` already r
 - Blue palette from `Colors.accent` (`#1565C0`), consistent with the rest of the app.
 - `expo-blur`'s `BlurView` used for `RecognitionOverlay` and the button toolbar in `ResultPanel` — actual glassmorphism (blurred, translucent), not the flat semi-opaque black badges used elsewhere in the app today.
 - `ResultPanel` is a large rounded (24px) card holding the sentence in big readable text (`FontSize.heading`), matching the "big cards" requirement.
-- Animations via `react-native-reanimated` (already installed, `~3.10.1`): overlay caption fades/slides in when the live guess changes; the confidence ring animates; toolbar buttons scale slightly on press.
+- Animations via core `Animated` from `"react-native"` (`Animated.Value`/`.timing`/`.spring`, `useNativeDriver: true`) — the same API `GesturePracticeScreen.tsx` already uses. `react-native-reanimated` is installed but has no actual usage anywhere in the codebase yet, so this avoids introducing its first usage for no benefit: overlay caption pulses when the live guess changes; toolbar buttons scale slightly on press.
 
 ## New dependencies
 
@@ -133,7 +135,7 @@ All three are standard Expo SDK packages, compatible with the existing managed w
 
 Agent-executable (no camera needed):
 - `cd mobile && npx tsc --noEmit` — typechecks the new screen, components, hooks, and updated `shared/types.ts`.
-- `GestureRecognizer.ts` and `TextComposer.ts` are pure logic — cover with unit tests (confirmation window, low-confidence rejection, duplicate-word suppression, cooldown re-append) run via the existing mobile test setup if one exists, otherwise a small standalone script.
+- `GestureRecognizer.ts` and `TextComposer.ts` are pure logic — cover with a standalone verify script (no test framework exists in this repo): confirmation window, low-confidence rejection, duplicate-word suppression on a held sign, re-append after a release-and-reshow.
 - Backend: a small script/pytest hitting `_classify()` directly with synthetic finger-state dicts for each of the 5 new words, asserting no rule collides with an existing one.
 - `curl` the deployed `/gestures/recognize` (or local backend) to confirm the response shape is unchanged.
 
