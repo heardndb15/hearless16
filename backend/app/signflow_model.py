@@ -105,6 +105,21 @@ def _classify(fingers: dict) -> tuple[str, float]:
     # Numbers by non-thumb finger count
     if non_thumb == 0 and not t:
         return "Спасибо", 0.75   # closed fist = approximate
+    # Пожалуйста — pinky only
+    if not t and not i and not m and not r and p:
+        return "Пожалуйста", 0.80
+    # Хорошо — middle only
+    if not t and not i and m and not r and not p:
+        return "Хорошо", 0.78
+    # Плохо — ring only
+    if not t and not i and not m and r and not p:
+        return "Плохо", 0.78
+    # Помощь — thumb + pinky ("hang loose")
+    if t and not i and not m and not r and p:
+        return "Помощь", 0.82
+    # Стоп — thumb + ring
+    if t and not i and not m and r and not p:
+        return "Стоп", 0.80
     if non_thumb == 1 and i:
         return "Один", 0.90
     if non_thumb == 2 and i and m:
@@ -194,6 +209,11 @@ GESTURE_COMPONENTS = {
     "Помогите":     {"hand_shape": 78, "position": 75, "movement": 72},
     "Вода":         {"hand_shape": 88, "position": 82, "movement": 80},
     "Еда":          {"hand_shape": 80, "position": 78, "movement": 75},
+    "Пожалуйста":   {"hand_shape": 80, "position": 78, "movement": 75},
+    "Хорошо":       {"hand_shape": 78, "position": 76, "movement": 74},
+    "Плохо":        {"hand_shape": 78, "position": 75, "movement": 73},
+    "Помощь":       {"hand_shape": 82, "position": 80, "movement": 77},
+    "Стоп":         {"hand_shape": 80, "position": 79, "movement": 76},
 }
 
 
