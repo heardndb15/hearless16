@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
 import type { CameraView as ExpoCameraView, CameraType } from "expo-camera";
@@ -7,6 +8,7 @@ import { GestureRecognizer } from "../../../shared/signLanguageReader/GestureRec
 import { TextComposer } from "../../../shared/signLanguageReader/TextComposer";
 import { useHandTracker } from "../components/signLanguageReader/useHandTracker";
 import type { RawSample } from "../../../shared/signLanguageReader/GestureRecognizer";
+import { DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, type SignLanguage } from "../../../shared/signLanguageReader/languages";
 import { Colors } from "../constants/theme";
 
 export type Quality = "none" | "low" | "medium" | "high";
@@ -33,6 +35,26 @@ export function useSignLanguageReader() {
   const [facing, setFacing] = useState<CameraType>("front");
   const [sentence, setSentence] = useState("");
   const [liveSample, setLiveSample] = useState<RawSample | null>(null);
+  const [language, setLanguageState] = useState<SignLanguage>(DEFAULT_SIGN_LANGUAGE);
+  const languageRef = useRef<SignLanguage>(DEFAULT_SIGN_LANGUAGE);
+
+  useEffect(() => {
+    AsyncStorage.getItem(SIGN_LANGUAGE_STORAGE_KEY).then((stored) => {
+      if (stored === "kz" || stored === "ru") {
+        languageRef.current = stored;
+        setLanguageState(stored);
+      }
+    });
+  }, []);
+
+  const setLanguage = useCallback((next: SignLanguage) => {
+    languageRef.current = next;
+    setLanguageState(next);
+    AsyncStorage.setItem(SIGN_LANGUAGE_STORAGE_KEY, next);
+    recognizerRef.current.reset();
+    composerRef.current.clear();
+    setSentence("");
+  }, []);
 
   const handleSample = useCallback((sample: RawSample) => {
     setLiveSample(sample);
@@ -43,7 +65,7 @@ export function useSignLanguageReader() {
     }
   }, []);
 
-  const { start, stop } = useHandTracker(cameraRef, handleSample);
+  const { start, stop } = useHandTracker(cameraRef, handleSample, languageRef);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,5 +105,7 @@ export function useSignLanguageReader() {
     clear,
     copyToClipboard,
     speak,
+    language,
+    setLanguage,
   };
 }

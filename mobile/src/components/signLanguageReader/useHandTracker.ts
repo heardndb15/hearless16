@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import type { CameraView as ExpoCameraView } from "expo-camera";
 import axios from "axios";
 import type { RawSample } from "../../../../shared/signLanguageReader/GestureRecognizer";
+import type { SignLanguage } from "../../../../shared/signLanguageReader/languages";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
 const POLL_INTERVAL_MS = 350;
@@ -11,10 +12,15 @@ const POLL_INTERVAL_MS = 350;
  * grabs a still frame from the camera and posts it to the backend, skipping
  * a tick if the previous request hasn't resolved yet (same backpressure
  * pattern as GesturePracticeScreen.tsx).
+ *
+ * `languageRef` (not a plain `language` value) is used so a mid-session
+ * language switch is picked up by the already-running interval without
+ * needing to stop/restart it.
  */
 export function useHandTracker(
   cameraRef: React.RefObject<ExpoCameraView>,
-  onSample: (sample: RawSample) => void
+  onSample: (sample: RawSample) => void,
+  languageRef: React.MutableRefObject<SignLanguage>
 ) {
   const inFlightRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -29,6 +35,7 @@ export function useHandTracker(
         if (!photo?.base64) return;
         const response = await axios.post(`${API_URL}/gestures/recognize`, {
           image: photo.base64,
+          language: languageRef.current,
         });
         onSample({
           gesture: response.data.gesture,
@@ -41,7 +48,7 @@ export function useHandTracker(
         inFlightRef.current = false;
       }
     }, POLL_INTERVAL_MS);
-  }, [cameraRef, onSample]);
+  }, [cameraRef, onSample, languageRef]);
 
   const stop = useCallback(() => {
     if (intervalRef.current) {
