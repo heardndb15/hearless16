@@ -1,4 +1,4 @@
-import type { SignLanguage } from "./languages";
+import { DEFAULT_SIGN_LANGUAGE, type SignLanguage } from "./languages";
 
 export interface ClassifiedGesture {
   gesture: string;
@@ -95,7 +95,7 @@ function classify(fingers: FingerStates, language: SignLanguage): { gesture: str
 export function classifyGesture(
   landmarks: HandLandmarkPoint[],
   handednessScore: number,
-  language: SignLanguage = "kz"
+  language: SignLanguage = DEFAULT_SIGN_LANGUAGE
 ): ClassifiedGesture {
   const { gesture, baseConfidence } = classify(fingerStates(landmarks), language);
   const confidence = Math.round(Math.min(100, baseConfidence * handednessScore * 100) * 10) / 10;

@@ -37,9 +37,11 @@ export function useSignLanguageReader() {
   const [liveSample, setLiveSample] = useState<RawSample | null>(null);
   const [language, setLanguageState] = useState<SignLanguage>(DEFAULT_SIGN_LANGUAGE);
   const languageRef = useRef<SignLanguage>(DEFAULT_SIGN_LANGUAGE);
+  const userChangedLanguageRef = useRef(false);
 
   useEffect(() => {
     AsyncStorage.getItem(SIGN_LANGUAGE_STORAGE_KEY).then((stored) => {
+      if (userChangedLanguageRef.current) return;
       if (stored === "kz" || stored === "ru") {
         languageRef.current = stored;
         setLanguageState(stored);
@@ -48,6 +50,7 @@ export function useSignLanguageReader() {
   }, []);
 
   const setLanguage = useCallback((next: SignLanguage) => {
+    userChangedLanguageRef.current = true;
     languageRef.current = next;
     setLanguageState(next);
     AsyncStorage.setItem(SIGN_LANGUAGE_STORAGE_KEY, next);

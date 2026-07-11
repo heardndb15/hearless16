@@ -71,4 +71,13 @@ for (const [fingers, expected] of RU_CASES) {
   assertEqual(gesture, expected, `ru ${JSON.stringify(fingers)} -> ${expected}`);
 }
 
+{
+  const fingers: Fingers = { thumb: true, index: false, middle: false, ring: false, pinky: false };
+  const { confidence } = classifyGesture(makeLandmarks(fingers), 1.0, "kz");
+  if (confidence !== 92) {
+    throw new Error(`FAIL confidence check: expected 92, got ${confidence}`);
+  }
+  console.log("PASS Да at full handedness score yields 92% confidence (0-100 scale)");
+}
+
 console.log("All classifyGesture checks passed");
