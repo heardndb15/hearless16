@@ -5,6 +5,7 @@ import { FilesetResolver, HandLandmarker, DrawingUtils, HandLandmarkerResult } f
 import { GestureRecognizer, type RawSample } from "../../../../shared/signLanguageReader/GestureRecognizer";
 import { TextComposer } from "../../../../shared/signLanguageReader/TextComposer";
 import { classifyGesture } from "../../../../shared/signLanguageReader/classifyGesture";
+import { SIGN_LANGUAGES, DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, type SignLanguage } from "../../../../shared/signLanguageReader/languages";
 
 const SAMPLE_INTERVAL_MS = 300;
 
@@ -43,6 +44,13 @@ export default function SignLanguageReaderPage() {
   const recognizerRef = useRef(new GestureRecognizer());
   const composerRef = useRef(new TextComposer());
 
+  const [language, setLanguageState] = useState<SignLanguage>(() => {
+    if (typeof window === "undefined") return DEFAULT_SIGN_LANGUAGE;
+    const stored = window.localStorage.getItem(SIGN_LANGUAGE_STORAGE_KEY);
+    return stored === "kz" || stored === "ru" ? stored : DEFAULT_SIGN_LANGUAGE;
+  });
+  const languageRef = useRef<SignLanguage>(language);
+
   const [isModelLoading, setIsModelLoading] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [sentence, setSentence] = useState("");
@@ -55,6 +63,15 @@ export default function SignLanguageReaderPage() {
       composerRef.current.onConfirmedChange(state.confirmed);
       setSentence(composerRef.current.sentence);
     }
+  }, []);
+
+  const setLanguage = useCallback((next: SignLanguage) => {
+    languageRef.current = next;
+    setLanguageState(next);
+    window.localStorage.setItem(SIGN_LANGUAGE_STORAGE_KEY, next);
+    recognizerRef.current.reset();
+    composerRef.current.clear();
+    setSentence("");
   }, []);
 
   const handleTrackingResults = useCallback(
@@ -85,7 +102,7 @@ export default function SignLanguageReaderPage() {
 
         if (shouldSample) {
           lastSampleAtRef.current = now;
-          const { gesture, confidence } = classifyGesture(landmarks, handednessScore);
+          const { gesture, confidence } = classifyGesture(landmarks, handednessScore, languageRef.current);
           handleSample({ gesture, confidence });
         }
       } else if (shouldSample) {
@@ -193,11 +210,28 @@ export default function SignLanguageReaderPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2">
-        <h2 className="font-syne font-extrabold text-3xl text-slate-800">Перевод жестов</h2>
-        <p className="text-slate-500 text-sm max-w-2xl font-medium">
-          Покажите жест перед камерой — приложение распознает его и добавит слово в предложение.
-        </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <h2 className="font-syne font-extrabold text-3xl text-slate-800">Перевод жестов</h2>
+          <p className="text-slate-500 text-sm max-w-2xl font-medium">
+            Покажите жест перед камерой — приложение распознает его и добавит слово в предложение.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {SIGN_LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => setLanguage(lang.code)}
+              className={
+                lang.code === language
+                  ? "px-4 py-2 rounded-xl bg-accent text-white text-xs font-bold"
+                  : "px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold"
+              }
+            >
+              {lang.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
