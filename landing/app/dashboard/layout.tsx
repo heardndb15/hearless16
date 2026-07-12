@@ -188,9 +188,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={item.path}
                 className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all duration-200 group ${
                   isActive
-                    ? "bg-sky-100 border border-sky-200 text-sky-700 shadow-sm"
+                    ? "border border-sky-200 text-sky-700 shadow-sm"
                     : "border border-transparent text-sky-800 hover:bg-sky-50 hover:text-sky-900"
                 }`}
+                style={isActive ? { background: "var(--gradient-soft)" } : undefined}
               >
                 <span className={`transition-transform duration-200 group-hover:scale-110 ${isActive ? "" : "opacity-80"}`}>
                   {item.icon}
