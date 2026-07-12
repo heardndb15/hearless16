@@ -45,6 +45,7 @@ function GesturePracticeContent() {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const animationFrameIdRef = useRef<number | null>(null);
   const drawingUtilsRef = useRef<DrawingUtils | null>(null);
+  const lastVideoTimeRef = useRef<number>(-1);
 
   // Математическая функция расчета евклидова расстояния
   const getDistance3D = (pt1: NormalizedLandmark, pt2: NormalizedLandmark) => {
@@ -112,8 +113,25 @@ function GesturePracticeContent() {
 
       const predictLoop = () => {
         if (!videoRef.current || !handLandmarkerRef.current) return;
-        const results = handLandmarkerRef.current.detectForVideo(videoRef.current, performance.now());
-        handleTrackingResults(results);
+        const video = videoRef.current;
+        // requestAnimationFrame can fire more often than the camera actually
+        // produces new frames (e.g. a 60Hz+ display outpacing a 30fps webcam).
+        // Re-submitting the same frame to detectForVideo() with a new
+        // performance.now() timestamp can throw ("timestamps must be
+        // monotonically increasing"), and since that call wasn't guarded,
+        // the exception used to skip the requestAnimationFrame() below,
+        // permanently killing the loop — the skeleton dots would freeze or
+        // vanish and never come back for the rest of the session even
+        // though the video kept playing fine.
+        if (video.currentTime !== lastVideoTimeRef.current) {
+          lastVideoTimeRef.current = video.currentTime;
+          try {
+            const results = handLandmarkerRef.current.detectForVideo(video, performance.now());
+            handleTrackingResults(results);
+          } catch (err) {
+            console.error("MediaPipe detectForVideo error:", err);
+          }
+        }
         animationFrameIdRef.current = requestAnimationFrame(predictLoop);
       };
       predictLoop();

@@ -40,6 +40,7 @@ export default function SignLanguageReaderPage() {
   const animationFrameIdRef = useRef<number | null>(null);
   const drawingUtilsRef = useRef<DrawingUtils | null>(null);
   const lastSampleAtRef = useRef(0);
+  const lastVideoTimeRef = useRef<number>(-1);
 
   const recognizerRef = useRef(new GestureRecognizer());
   const composerRef = useRef(new TextComposer());
@@ -161,8 +162,22 @@ export default function SignLanguageReaderPage() {
 
         const loop = () => {
           if (!videoRef.current || !handLandmarkerRef.current) return;
-          const results = handLandmarkerRef.current.detectForVideo(videoRef.current, performance.now());
-          handleTrackingResults(results);
+          const video = videoRef.current;
+          // Guard against re-submitting the same video frame with a new
+          // timestamp (rAF can fire faster than the camera produces new
+          // frames) — detectForVideo() requires strictly increasing
+          // timestamps and throws otherwise, which without a try/catch
+          // used to skip the requestAnimationFrame() call below and
+          // permanently freeze/clear the hand-tracking overlay.
+          if (video.currentTime !== lastVideoTimeRef.current) {
+            lastVideoTimeRef.current = video.currentTime;
+            try {
+              const results = handLandmarkerRef.current.detectForVideo(video, performance.now());
+              handleTrackingResults(results);
+            } catch (err) {
+              console.error("MediaPipe detectForVideo error:", err);
+            }
+          }
           animationFrameIdRef.current = requestAnimationFrame(loop);
         };
         loop();
