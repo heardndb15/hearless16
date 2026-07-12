@@ -51,7 +51,7 @@ export default function CTASection() {
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="/register"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "white", border: "none", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--gradient-accent)", color: "white", border: "none", transition: "all 0.3s ease" }}
           >
             {t.cta.btn1}
             <span style={{ fontSize: 18 }}>→</span>
