@@ -395,11 +395,6 @@ export default function SubtitlesPage() {
       setIsTextStale(false);
       setScreenCaptureText("");
 
-      // Открываем PiP автоматически
-      if (!document.pictureInPictureElement) {
-        setTimeout(() => togglePipSubtitles(), 300);
-      }
-
       // A single continuous recorder (never stopped mid-session) emits a
       // small blob every WINDOW_TIMESLICE_MS. The very first blob carries
       // the WebM header required to decode any blob built from these chunks
@@ -1728,6 +1723,12 @@ export default function SubtitlesPage() {
                 <span>Открыть транскрипт на весь экран</span>
               </Link>
             </div>
+
+            {isScreenCapturing && !isPipActive && (
+              <p style={{ marginTop: 10, fontSize: 12, color: "var(--textSecondary)" }}>
+                Захват звука запущен. Нажмите «Открыть в плавающем окне (PiP)», чтобы видеть субтитры поверх других окон.
+              </p>
+            )}
           </div>
 
           {/* ==========================================
