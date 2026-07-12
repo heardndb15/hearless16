@@ -277,9 +277,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all group ${
                         isActive
-                          ? "bg-sky-100 border border-sky-200 text-sky-700"
+                          ? "border border-sky-200 text-sky-700"
                           : "border border-transparent text-sky-800 hover:bg-sky-50 hover:text-sky-900"
                       }`}
+                      style={isActive ? { background: "var(--gradient-soft)" } : undefined}
                     >
                       <span>{item.icon}</span>
                       <span>{item.name}</span>
