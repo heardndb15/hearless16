@@ -70,9 +70,11 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                 await websocket.close()
                 return
         except Exception as e:
+            import sys
+            print(f"WS auth error: {e}", file=sys.stderr)
             await websocket.send_json({
                 "type": "error",
-                "message": f"Ошибка авторизации: {str(e)}"
+                "message": "Ошибка авторизации. Попробуйте войти заново."
             })
             await websocket.close()
             return

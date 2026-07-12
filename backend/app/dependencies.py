@@ -15,7 +15,9 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     try:
         user_res = db.auth.get_user(token)
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Ошибка авторизации: {str(e)}")
+        import sys
+        print(f"get_current_user auth error: {e}", file=sys.stderr)
+        raise HTTPException(status_code=401, detail="Ошибка авторизации. Попробуйте войти заново.")
 
     if not user_res or not getattr(user_res, "user", None):
         raise HTTPException(status_code=401, detail="Неверный или просроченный токен авторизации")
