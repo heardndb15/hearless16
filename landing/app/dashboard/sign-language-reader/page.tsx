@@ -9,6 +9,13 @@ import { SIGN_LANGUAGES, DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, type 
 
 const SAMPLE_INTERVAL_MS = 300;
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
+}
+
 type Quality = "none" | "low" | "medium" | "high";
 
 const QUALITY_LABEL: Record<Quality, string> = {
@@ -123,10 +130,18 @@ export default function SignLanguageReaderPage() {
       setIsModelLoading(true);
 
       try {
-        const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm"
+        // A blocked/failed WASM or model fetch (ad-blocker, corporate proxy,
+        // flaky mobile network) can leave these promises pending forever —
+        // with no timeout, that left users staring at "Инициализация..."
+        // indefinitely with zero feedback, no error, and no way to retry.
+        const vision = await withTimeout(
+          FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm"
+          ),
+          20000,
+          "Не удалось загрузить модуль трекера рук (WASM). Проверьте соединение."
         );
-        const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+        const handLandmarker = await withTimeout(HandLandmarker.createFromOptions(vision, {
           baseOptions: {
             // Self-hosted (see /public/models) instead of fetched from
             // storage.googleapis.com on every page load — that host is
@@ -141,7 +156,7 @@ export default function SignLanguageReaderPage() {
           minHandDetectionConfidence: 0.6,
           minHandPresenceConfidence: 0.6,
           minTrackingConfidence: 0.6,
-        });
+        }), 20000, "Не удалось загрузить модель трекера рук. Проверьте соединение.");
 
         if (cancelled) {
           handLandmarker.close();
