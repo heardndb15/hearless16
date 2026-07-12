@@ -79,8 +79,13 @@ export default function LearnSignLanguagePage() {
       );
       const landmarker = await HandLandmarker.createFromOptions(vision, {
         baseOptions: {
-          modelAssetPath:
-            "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+          // Self-hosted (see /public/models) instead of fetched from
+          // storage.googleapis.com on every page load — that host is
+          // reliably slow/throttled on some ISPs (measured ~240KB/s on one,
+          // sometimes not completing a ~7.8MB download inside 30s at all),
+          // which left users staring at the loading state for a minute or
+          // more with no feedback and no timeout.
+          modelAssetPath: "/models/hand_landmarker.task",
         },
         runningMode: "VIDEO",
         numHands: 1,
