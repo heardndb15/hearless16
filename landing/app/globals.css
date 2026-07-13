@@ -65,12 +65,8 @@ section {
   position: relative;
 }
 
-section:nth-child(even) {
-  background: var(--gradient-soft);
-}
-
-section:nth-child(odd) {
-  background: #FFFFFF;
+section {
+  background: transparent;
 }
 
 /* Used by the dashboard's recording-in-progress indicator (functional status,

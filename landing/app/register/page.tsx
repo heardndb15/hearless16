@@ -232,7 +232,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "var(--background)",
+    background: "var(--gradient-soft)",
     padding: "20px",
   },
   card: {

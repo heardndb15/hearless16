@@ -83,7 +83,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
-    background: "var(--background)",
+    background: "var(--gradient-soft)",
     padding: "60px 20px",
   },
   backLink: {
