@@ -351,7 +351,7 @@ export default function SubtitlesPage() {
           if (isMicActiveRef.current) startRecorder();
           sendChunk();
         }
-      }, 3000);
+      }, 1500);
     } catch { setIsMicActive(false); isMicActiveRef.current = false; setWhisperStatus("idle"); alert("Нет доступа к микрофону"); }
   };
 
