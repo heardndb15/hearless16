@@ -35,7 +35,7 @@ export default function GesturePracticeScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootStackParamList, "GesturePractice">>();
   const { gestureId, gestureName } = route.params;
-  const [permission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissions();
 
   const [phase, setPhase] = useState<"countdown" | "practice" | "result">("countdown");
   const [countdownIdx, setCountdownIdx] = useState(0);
@@ -188,8 +188,11 @@ export default function GesturePracticeScreen() {
           <View style={styles.permissionWrap}>
             <Text style={styles.permissionTitle}>Нет доступа к камере</Text>
             <Text style={styles.permissionText}>
-              Разрешите доступ к камере в настройках для практики жестов
+              Разрешите доступ к камере, чтобы практиковать жесты
             </Text>
+            <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+              <Text style={styles.permissionButtonText}>Разрешить доступ к камере</Text>
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
@@ -561,5 +564,17 @@ const styles = StyleSheet.create({
     fontSize: FontSize.body,
     color: "#9CA3AF",
     textAlign: "center",
+    marginBottom: Spacing.md,
+  },
+  permissionButton: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  permissionButtonText: {
+    color: Colors.white,
+    fontWeight: "600",
+    fontSize: FontSize.body,
   },
 });

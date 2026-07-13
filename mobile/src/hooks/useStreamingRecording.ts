@@ -103,6 +103,24 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
       if (wsRef.current === ws) {
         wsRef.current = null;
       }
+      if (isActiveRef.current) {
+        // Socket dropped (network loss, server recycle) while a recording
+        // session was still meant to be active. Without this, the send
+        // interval keeps firing but silently no-ops (wsRef.current is now
+        // null), so the mic keeps recording forever with isRecording stuck
+        // true and no feedback that anything went wrong.
+        isActiveRef.current = false;
+        setIsRecording(false);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        if (recordingRef.current) {
+          recordingRef.current.stopAndUnloadAsync().catch(() => {});
+          recordingRef.current = null;
+        }
+        setError("Соединение потеряно. Проверьте интернет и начните запись заново.");
+      }
     };
     wsRef.current = ws;
     return ws;
