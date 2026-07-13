@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.database import get_supabase
+from app.database import get_supabase, run_query
 from app.models import SubtitleRequest
 from app.dependencies import get_current_user
 
@@ -10,11 +10,11 @@ router = APIRouter(prefix="/subtitles", tags=["subtitles"])
 async def save_subtitle(data: SubtitleRequest, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
     try:
-        response = db.table("subtitles_history").insert({
+        response = await run_query(db.table("subtitles_history").insert({
             "user_id": current_user["id"],
             "text": data.text,
             "language": data.language,
-        }).execute()
+        }))
         return response.data
     except Exception as e:
         msg = str(e)
@@ -28,12 +28,11 @@ async def get_history(user_id: str, current_user: dict = Depends(get_current_use
     if current_user["id"] != user_id:
         raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
-    response = (
+    response = await run_query(
         db.table("subtitles_history")
         .select("*")
         .eq("user_id", user_id)
         .order("created_at", desc=True)
-        .execute()
     )
     return response.data
 

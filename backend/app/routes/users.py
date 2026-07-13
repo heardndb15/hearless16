@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
-from app.database import get_supabase, fetch_single
+from app.database import get_supabase, fetch_single, run_query
 from app.models import UserCreate
 from app.dependencies import get_current_user
 
@@ -18,7 +18,7 @@ async def create_user(data: UserCreate, current_user: dict = Depends(get_current
     db = get_supabase()
     payload = data.model_dump()
     payload["id"] = current_user["id"]
-    response = db.table("users").insert(payload).execute()
+    response = await run_query(db.table("users").insert(payload))
     return response.data
 
 
@@ -30,18 +30,18 @@ async def update_username(data: UsernameUpdate, current_user: dict = Depends(get
     if len(name) > 32:
         raise HTTPException(status_code=422, detail="Имя не может быть длиннее 32 символов")
     db = get_supabase()
-    existing = db.table("users").select("id").eq("id", current_user["id"]).execute()
+    existing = await run_query(db.table("users").select("id").eq("id", current_user["id"]))
     if existing.data:
-        db.table("users").update({"name": name}).eq("id", current_user["id"]).execute()
+        await run_query(db.table("users").update({"name": name}).eq("id", current_user["id"]))
     else:
-        db.table("users").insert({"id": current_user["id"], "name": name, "language": "ru"}).execute()
+        await run_query(db.table("users").insert({"id": current_user["id"], "name": name, "language": "ru"}))
     return {"name": name}
 
 
 @router.get("/me")
 async def get_me(current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    row = fetch_single(
+    row = await fetch_single(
         db.table("users").select("name, bio, avatar_url, plan, plan_expires_at").eq("id", current_user["id"]).single()
     ) or {}
     plan = row.get("plan", "free")
@@ -72,7 +72,7 @@ async def get_user(user_id: str, current_user: dict = Depends(get_current_user))
     if current_user["id"] != user_id:
         raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
-    response = db.table("users").select("*").eq("id", user_id).execute()
+    response = await run_query(db.table("users").select("*").eq("id", user_id))
     if not response.data:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     return response.data[0]
@@ -83,11 +83,10 @@ async def update_user(user_id: str, data: UserCreate, current_user: dict = Depen
     if current_user["id"] != user_id:
         raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
-    response = (
+    response = await run_query(
         db.table("users")
         .update(data.model_dump())
         .eq("id", user_id)
-        .execute()
     )
     return response.data
 

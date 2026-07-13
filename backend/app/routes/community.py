@@ -1,8 +1,9 @@
+import asyncio
 import uuid
 from typing import Optional, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
 from pydantic import BaseModel
-from app.database import get_supabase, fetch_single
+from app.database import get_supabase, fetch_single, run_query
 from app.dependencies import get_current_user
 from app.limiter import limiter
 
@@ -30,7 +31,7 @@ async def get_optional_user(request: Request) -> Optional[dict]:
     token = auth[7:]
     try:
         db = get_supabase()
-        user_res = db.auth.get_user(token)
+        user_res = await asyncio.to_thread(db.auth.get_user, token)
         if user_res and getattr(user_res, "user", None):
             return {"id": str(user_res.user.id)}
     except Exception:
@@ -78,7 +79,7 @@ async def list_posts(
             query = query.order("likes_count", desc=True).order("created_at", desc=True)
         else:
             query = query.order("created_at", desc=True)
-        response = query.range(offset, offset + limit - 1).execute()
+        response = await run_query(query.range(offset, offset + limit - 1))
         posts = response.data or []
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {str(e)}")
@@ -88,7 +89,7 @@ async def list_posts(
     if posts:
         user_ids = list({str(p["user_id"]) for p in posts})
         try:
-            users_res = db.table("users").select("id, name").in_("id", user_ids).execute()
+            users_res = await run_query(db.table("users").select("id, name").in_("id", user_ids))
             users_map = {str(u["id"]): u for u in (users_res.data or [])}
         except Exception:
             pass
@@ -97,12 +98,11 @@ async def list_posts(
     if current_user and posts:
         post_ids = [p["id"] for p in posts]
         try:
-            likes_res = (
+            likes_res = await run_query(
                 db.table("post_likes")
                 .select("post_id")
                 .eq("user_id", current_user["id"])
                 .in_("post_id", post_ids)
-                .execute()
             )
             liked_set = {row["post_id"] for row in (likes_res.data or [])}
         except Exception:
@@ -122,24 +122,24 @@ async def create_post(request: Request, data: PostCreate, current_user: dict = D
 
     try:
         # Use user JWT so insert satisfies RLS even if SUPABASE_KEY is anon key
-        row = db.postgrest.auth(user_token).from_("posts").insert({
+        row = await run_query(db.postgrest.auth(user_token).from_("posts").insert({
             "user_id": current_user["id"],
             "text": data.text.strip(),
             "image_url": data.image_url,
-        }).execute()
+        }))
     except Exception:
         # Fallback: try with default client (works when SUPABASE_KEY is service role key)
-        row = db.table("posts").insert({
+        row = await run_query(db.table("posts").insert({
             "user_id": current_user["id"],
             "text": data.text.strip(),
             "image_url": data.image_url,
-        }).execute()
+        }))
 
     if not row.data:
         raise HTTPException(status_code=500, detail="Не удалось создать пост")
 
     post = row.data[0]
-    user_row = fetch_single(db.table("users").select("name").eq("id", current_user["id"]).single())
+    user_row = await fetch_single(db.table("users").select("name").eq("id", current_user["id"]).single())
     author_name = (user_row or {}).get("name", "Пользователь")
 
     return {
@@ -157,12 +157,12 @@ async def create_post(request: Request, data: PostCreate, current_user: dict = D
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    existing = fetch_single(db.table("posts").select("user_id").eq("id", post_id).single())
+    existing = await fetch_single(db.table("posts").select("user_id").eq("id", post_id).single())
     if not existing:
         raise HTTPException(status_code=404, detail="Пост не найден")
     if existing["user_id"] != current_user["id"]:
         raise HTTPException(status_code=403, detail="Нельзя удалить чужой пост")
-    db.table("posts").delete().eq("id", post_id).execute()
+    await run_query(db.table("posts").delete().eq("id", post_id))
     return {"ok": True}
 
 
@@ -170,34 +170,33 @@ async def delete_post(post_id: str, current_user: dict = Depends(get_current_use
 async def toggle_like(post_id: str, request: Request, current_user: dict = Depends(get_current_user)):
     user_token = request.headers.get("Authorization", "")[7:]
     db = get_supabase()
-    if not fetch_single(db.table("posts").select("id").eq("id", post_id).single()):
+    if not await fetch_single(db.table("posts").select("id").eq("id", post_id).single()):
         raise HTTPException(status_code=404, detail="Пост не найден")
     authed = db.postgrest.auth(user_token)
-    existing = (
+    existing = await run_query(
         db.table("post_likes")
         .select("user_id")
         .eq("user_id", current_user["id"])
         .eq("post_id", post_id)
-        .execute()
     )
     if existing.data:
         try:
-            authed.from_("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id).execute()
+            await run_query(authed.from_("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id))
         except Exception:
-            db.table("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id).execute()
+            await run_query(db.table("post_likes").delete().eq("user_id", current_user["id"]).eq("post_id", post_id))
         liked = False
     else:
         try:
-            authed.from_("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
+            await run_query(authed.from_("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}))
             liked = True
         except Exception:
             try:
-                db.table("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}).execute()
+                await run_query(db.table("post_likes").insert({"user_id": current_user["id"], "post_id": post_id}))
                 liked = True
             except Exception:
                 liked = True  # Unique constraint — already liked
 
-    post_row = fetch_single(db.table("posts").select("likes_count").eq("id", post_id).single())
+    post_row = await fetch_single(db.table("posts").select("likes_count").eq("id", post_id).single())
     likes_count = (post_row or {}).get("likes_count", 0)
     return {"liked": liked, "likes_count": likes_count}
 
@@ -206,12 +205,11 @@ async def toggle_like(post_id: str, request: Request, current_user: dict = Depen
 async def list_comments(post_id: str):
     db = get_supabase()
     try:
-        response = (
+        response = await run_query(
             db.table("post_comments")
             .select("id, text, created_at, user_id")
             .eq("post_id", post_id)
             .order("created_at", desc=False)
-            .execute()
         )
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {str(e)}")
@@ -223,7 +221,7 @@ async def list_comments(post_id: str):
     if comments:
         user_ids = list({str(c["user_id"]) for c in comments})
         try:
-            users_res = db.table("users").select("id, name").in_("id", user_ids).execute()
+            users_res = await run_query(db.table("users").select("id, name").in_("id", user_ids))
             users_map = {str(u["id"]): u for u in (users_res.data or [])}
         except Exception:
             pass
@@ -254,24 +252,24 @@ async def create_comment(
         raise HTTPException(status_code=422, detail="Комментарий не может быть пустым")
     user_token = request.headers.get("Authorization", "")[7:]
     db = get_supabase()
-    if not fetch_single(db.table("posts").select("id").eq("id", post_id).single()):
+    if not await fetch_single(db.table("posts").select("id").eq("id", post_id).single()):
         raise HTTPException(status_code=404, detail="Post not found")
     try:
-        row = db.postgrest.auth(user_token).from_("post_comments").insert({
+        row = await run_query(db.postgrest.auth(user_token).from_("post_comments").insert({
             "post_id": post_id,
             "user_id": current_user["id"],
             "text": data.text.strip(),
-        }).execute()
+        }))
     except Exception:
-        row = db.table("post_comments").insert({
+        row = await run_query(db.table("post_comments").insert({
             "post_id": post_id,
             "user_id": current_user["id"],
             "text": data.text.strip(),
-        }).execute()
+        }))
     if not row.data:
         raise HTTPException(status_code=500, detail="Не удалось создать комментарий")
     c = row.data[0]
-    user_row = fetch_single(db.table("users").select("name").eq("id", current_user["id"]).single())
+    user_row = await fetch_single(db.table("users").select("name").eq("id", current_user["id"]).single())
     author_name = (user_row or {}).get("name", "Пользователь")
     return {
         "id": c["id"],
@@ -284,12 +282,12 @@ async def create_comment(
 @router.delete("/comments/{comment_id}")
 async def delete_comment(comment_id: str, current_user: dict = Depends(get_current_user)):
     db = get_supabase()
-    existing = fetch_single(db.table("post_comments").select("user_id").eq("id", comment_id).single())
+    existing = await fetch_single(db.table("post_comments").select("user_id").eq("id", comment_id).single())
     if not existing:
         raise HTTPException(status_code=404, detail="Комментарий не найден")
     if existing["user_id"] != current_user["id"]:
         raise HTTPException(status_code=403, detail="Нельзя удалить чужой комментарий")
-    db.table("post_comments").delete().eq("id", comment_id).execute()
+    await run_query(db.table("post_comments").delete().eq("id", comment_id))
     return {"ok": True}
 
 
@@ -310,7 +308,9 @@ async def upload_image(
 
     db = get_supabase()
     try:
-        db.storage.from_("community-media").upload(path, content, {"content-type": file.content_type})
+        await asyncio.to_thread(
+            db.storage.from_("community-media").upload, path, content, {"content-type": file.content_type}
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Не удалось загрузить файл: {str(e)}")
 

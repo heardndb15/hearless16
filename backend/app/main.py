@@ -56,10 +56,11 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     
     is_authenticated = False
     if token:
+        import asyncio
         from app.database import get_supabase
         db = get_supabase()
         try:
-            user_res = db.auth.get_user(token)
+            user_res = await asyncio.to_thread(db.auth.get_user, token)
             if user_res and getattr(user_res, "user", None):
                 is_authenticated = True
             else:
@@ -135,6 +136,12 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     # call is still in flight, instead of stalling on it.
     diarize_busy = False
     session_stopped = False
+    # Fire-and-forget diarize tasks (below) were never tracked, so a client
+    # disconnect mid-transcription left them running to completion — up to
+    # 12s of wasted MediaPipe/Whisper work plus a doomed websocket.send_json
+    # on a closed socket. Tracking them lets the disconnect handler cancel
+    # whatever's still in flight instead of leaking it.
+    diarize_tasks: set[asyncio.Task] = set()
     # Re-transcribing the whole utterance-so-far on every trigger gets
     # slower the longer someone talks; capping the window each call
     # actually processes keeps every individual call's latency bounded.
@@ -210,7 +217,9 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                             pcm_buffer = pcm_buffer[-SLIDING_WINDOW_TAIL_BYTES:]
 
                         diarize_busy = True
-                        asyncio.create_task(run_diarize(wav_bytes, sliding_window))
+                        task = asyncio.create_task(run_diarize(wav_bytes, sliding_window))
+                        diarize_tasks.add(task)
+                        task.add_done_callback(diarize_tasks.discard)
                 else:
                     # При первом чанке определяем формат
                     if is_stream is None:
@@ -302,11 +311,15 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                         await asyncio.sleep(0.1)
                     if len(pcm_buffer) > 0:
                         from app.services.whisper_service import transcribe_pcm, merge_transcripts
-                        last_text = await asyncio.wait_for(
-                            asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang),
-                            timeout=15.0
-                        )
-                        current_full_text = merge_transcripts(finalized_text, last_text)
+                        try:
+                            last_text = await asyncio.wait_for(
+                                asyncio.to_thread(transcribe_pcm, bytes(pcm_buffer), lang),
+                                timeout=15.0
+                            )
+                            current_full_text = merge_transcripts(finalized_text, last_text)
+                        except (asyncio.TimeoutError, Exception) as e:
+                            import sys
+                            print(f"Error in ws stop transcribe (pcm): {e}", file=sys.stderr)
                     await websocket.send_json({
                         "type": "final",
                         "text": current_full_text,
@@ -347,7 +360,8 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                 break
 
     except WebSocketDisconnect:
-        pass
+        for task in diarize_tasks:
+            task.cancel()
 
 
 @app.get("/health")

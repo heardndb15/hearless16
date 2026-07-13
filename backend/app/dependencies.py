@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.database import get_supabase, fetch_single
@@ -13,7 +14,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     db = get_supabase()
 
     try:
-        user_res = db.auth.get_user(token)
+        # db.auth.get_user is a blocking HTTP call too; this dependency runs
+        # on every authenticated request, so leaving it inline on the event
+        # loop would stall the whole single-worker process just as often as
+        # the .execute() calls this same fix targets elsewhere.
+        user_res = await asyncio.to_thread(db.auth.get_user, token)
     except Exception as e:
         import sys
         print(f"get_current_user auth error: {e}", file=sys.stderr)
@@ -25,7 +30,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     user = user_res.user
 
     # Fetch plan from users table
-    row = fetch_single(db.table("users").select("plan").eq("id", user.id).single())
+    row = await fetch_single(db.table("users").select("plan").eq("id", user.id).single())
     plan = (row or {}).get("plan", "free")
 
     return {"id": user.id, "email": user.email, "plan": plan}

@@ -14,7 +14,7 @@ from app.config import (
     POLAR_BASIC_PRODUCT_ID,
     POLAR_PRO_PRODUCT_ID,
 )
-from app.database import get_supabase
+from app.database import get_supabase, run_query
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/polar", tags=["polar"])
@@ -91,17 +91,17 @@ async def polar_webhook(request: Request):
         ends_at = data.get("current_period_end") or data.get("ends_at")
         customer_id = data.get("customer_id", "")
 
-        db.table("users").update({
+        await run_query(db.table("users").update({
             "plan": plan,
             "plan_expires_at": ends_at,
             "polar_customer_id": customer_id,
-        }).eq("id", user_id).execute()
+        }).eq("id", user_id))
 
     elif event_type in ("subscription.canceled", "subscription.revoked"):
-        db.table("users").update({
+        await run_query(db.table("users").update({
             "plan": "free",
             "plan_expires_at": None,
-        }).eq("id", user_id).execute()
+        }).eq("id", user_id))
 
     return {"ok": True}
 

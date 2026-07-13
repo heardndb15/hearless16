@@ -1,7 +1,7 @@
 import asyncio
 import base64
 from fastapi import APIRouter, HTTPException, Depends, Request
-from app.database import get_supabase
+from app.database import get_supabase, run_query
 from app.models import UserProgressCreate, GestureRecognizeRequest
 from app.signflow_model import recognize_gesture
 from app.dependencies import get_current_user
@@ -16,14 +16,14 @@ async def get_gestures(category: str | None = None):
     query = db.table("gestures").select("*")
     if category:
         query = query.eq("category", category)
-    response = query.execute()
+    response = await run_query(query)
     return response.data
 
 
 @router.get("/{gesture_id}")
 async def get_gesture(gesture_id: str):
     db = get_supabase()
-    response = db.table("gestures").select("*").eq("id", gesture_id).execute()
+    response = await run_query(db.table("gestures").select("*").eq("id", gesture_id))
     if not response.data:
         raise HTTPException(status_code=404, detail="Жест не найден")
     return response.data[0]
@@ -54,7 +54,7 @@ async def save_progress(data: UserProgressCreate, current_user: dict = Depends(g
     db = get_supabase()
     payload = data.model_dump()
     payload["user_id"] = current_user["id"]
-    response = db.table("user_progress").upsert(payload).execute()
+    response = await run_query(db.table("user_progress").upsert(payload))
     return response.data
 
 
@@ -63,11 +63,10 @@ async def get_progress(user_id: str, current_user: dict = Depends(get_current_us
     if current_user["id"] != user_id:
         raise HTTPException(status_code=403, detail="Доступ запрещен")
     db = get_supabase()
-    response = (
+    response = await run_query(
         db.table("user_progress")
         .select("*")
         .eq("user_id", user_id)
-        .execute()
     )
     return response.data
 
