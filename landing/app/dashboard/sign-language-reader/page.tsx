@@ -5,7 +5,7 @@ import { FilesetResolver, HandLandmarker, DrawingUtils, HandLandmarkerResult } f
 import { GestureRecognizer, type RawSample } from "../../../../shared/signLanguageReader/GestureRecognizer";
 import { TextComposer } from "../../../../shared/signLanguageReader/TextComposer";
 import { classifyGesture } from "../../../../shared/signLanguageReader/classifyGesture";
-import { SIGN_LANGUAGES, DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, type SignLanguage } from "../../../../shared/signLanguageReader/languages";
+import { SIGN_LANGUAGES, DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, SIGN_LANGUAGE_TTS_LOCALE, type SignLanguage } from "../../../../shared/signLanguageReader/languages";
 
 const SAMPLE_INTERVAL_MS = 150;
 
@@ -239,7 +239,7 @@ export default function SignLanguageReaderPage() {
   function handleSpeak() {
     if (!sentence) return;
     const utterance = new SpeechSynthesisUtterance(sentence);
-    utterance.lang = "ru-RU";
+    utterance.lang = SIGN_LANGUAGE_TTS_LOCALE[language];
     window.speechSynthesis.speak(utterance);
   }
 

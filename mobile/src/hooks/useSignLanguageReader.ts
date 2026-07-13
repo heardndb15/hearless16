@@ -8,7 +8,7 @@ import { GestureRecognizer } from "../../../shared/signLanguageReader/GestureRec
 import { TextComposer } from "../../../shared/signLanguageReader/TextComposer";
 import { useHandTracker } from "../components/signLanguageReader/useHandTracker";
 import type { RawSample } from "../../../shared/signLanguageReader/GestureRecognizer";
-import { DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, type SignLanguage } from "../../../shared/signLanguageReader/languages";
+import { DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, SIGN_LANGUAGE_TTS_LOCALE, type SignLanguage } from "../../../shared/signLanguageReader/languages";
 import { Colors } from "../constants/theme";
 
 export type Quality = "none" | "low" | "medium" | "high";
@@ -90,7 +90,7 @@ export function useSignLanguageReader() {
 
   const speak = useCallback(() => {
     if (!sentence) return;
-    Speech.speak(sentence, { language: "ru-RU" });
+    Speech.speak(sentence, { language: SIGN_LANGUAGE_TTS_LOCALE[languageRef.current] });
   }, [sentence]);
 
   const toggleFacing = useCallback(() => {
