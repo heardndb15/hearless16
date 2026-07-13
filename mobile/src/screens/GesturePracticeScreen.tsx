@@ -122,7 +122,7 @@ export default function GesturePracticeScreen() {
       } catch {} finally {
         recognizeInFlightRef.current = false;
       }
-    }, 300);
+    }, 150);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);

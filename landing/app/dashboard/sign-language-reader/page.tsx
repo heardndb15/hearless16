@@ -7,7 +7,7 @@ import { TextComposer } from "../../../../shared/signLanguageReader/TextComposer
 import { classifyGesture } from "../../../../shared/signLanguageReader/classifyGesture";
 import { SIGN_LANGUAGES, DEFAULT_SIGN_LANGUAGE, SIGN_LANGUAGE_STORAGE_KEY, type SignLanguage } from "../../../../shared/signLanguageReader/languages";
 
-const SAMPLE_INTERVAL_MS = 300;
+const SAMPLE_INTERVAL_MS = 150;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
   return Promise.race([

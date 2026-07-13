@@ -5,7 +5,7 @@ import type { RawSample } from "../../../../shared/signLanguageReader/GestureRec
 import type { SignLanguage } from "../../../../shared/signLanguageReader/languages";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
-const POLL_INTERVAL_MS = 350;
+const POLL_INTERVAL_MS = 175;
 
 /**
  * Owns the continuous capture-and-recognize loop: every POLL_INTERVAL_MS,
