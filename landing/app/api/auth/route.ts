@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+// req.headers.get("origin") is not reliably present on every request path
+// (proxies/edge configs can drop it), which silently produced a relative
+// redirectTo/emailRedirectTo ("/auth/callback...") instead of an absolute
+// URL - Supabase then can't send the user back after Google OAuth or an
+// email confirmation. Falling back to the known production domain keeps
+// these links absolute even when the header is missing.
+const SITE_URL_FALLBACK = "https://www.hearless.live";
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { action } = body;
@@ -32,7 +40,7 @@ export async function POST(req: NextRequest) {
     if (action === "register") {
       const supabase = createSupabase();
       const { email, password, name, language } = body;
-      const origin = req.headers.get("origin") || "";
+      const origin = req.headers.get("origin") || SITE_URL_FALLBACK;
       const { data, error } = await supabase.auth.signUp({
         email, password,
         options: {
@@ -60,7 +68,7 @@ export async function POST(req: NextRequest) {
       const supabase = createSupabase();
       const { email } = body;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${req.headers.get("origin") || ""}/login`,
+        redirectTo: `${req.headers.get("origin") || SITE_URL_FALLBACK}/login`,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
       const res = NextResponse.json({ message: "Письмо отправлено. Проверьте почту." });
@@ -78,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "google") {
       const supabase = createSupabase();
-      const origin = process.env.NEXT_PUBLIC_SITE_URL || req.headers.get("origin") || "";
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || req.headers.get("origin") || SITE_URL_FALLBACK;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${origin}/auth/callback?next=/dashboard` },
