@@ -30,7 +30,7 @@
   --headerBg: rgba(255, 255, 255, 0.92);
   --shadow: 0 2px 12px rgba(0,0,0,0.07);
   --gradient-accent: linear-gradient(135deg, #1565C0, #22C1C3);
-  --gradient-soft: linear-gradient(135deg, #EAF4FF, #D9F5F0);
+  --gradient-soft: linear-gradient(135deg, #CFE4FF, #A9EBDA);
 }
 
 * {
