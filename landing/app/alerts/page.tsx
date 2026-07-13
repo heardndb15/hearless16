@@ -16,7 +16,7 @@ export default function AlertsPage() {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--gradient-soft)" }}>
       <div style={{ padding: "120px 24px 60px", maxWidth: 900, margin: "0 auto" }}>
         <Link href="/" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24 }}>
           ← На главную

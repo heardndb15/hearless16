@@ -354,7 +354,7 @@ function GesturePracticeContent() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--gradient-soft)", color: "var(--text)" }}>
       <div style={{ padding: "100px 24px 60px", maxWidth: 1100, margin: "0 auto" }}>
         <Link href="/sign-language" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24, fontWeight: 600, transition: "color 0.2s" }}
           onMouseEnter={(e) => e.currentTarget.style.color = "var(--text)"}

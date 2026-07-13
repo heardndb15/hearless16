@@ -34,7 +34,7 @@ const DAILY_QUESTS = [
 
 export default function GamificationPage() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--gradient-soft)" }}>
       <div style={{ padding: "120px 24px 60px", maxWidth: 960, margin: "0 auto" }}>
         <Link href="/" style={{ color: "var(--accent)", textDecoration: "none", fontSize: 14, display: "inline-block", marginBottom: 24 }}>
           ← На главную

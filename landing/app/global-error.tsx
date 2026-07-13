@@ -21,7 +21,7 @@ export default function GlobalError({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "var(--bg)",
+        background: "var(--gradient-soft)",
         fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
       }}>
         <div style={{ textAlign: "center", padding: 24 }}>

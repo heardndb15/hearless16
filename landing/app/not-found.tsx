@@ -7,7 +7,7 @@ export default function NotFound() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "var(--bg)",
+      background: "var(--gradient-soft)",
       padding: "24px",
     }}>
       <div style={{

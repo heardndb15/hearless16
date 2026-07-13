@@ -45,7 +45,8 @@ html {
 
 body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+  background: var(--gradient-soft);
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -65,7 +66,7 @@ section {
 }
 
 section:nth-child(even) {
-  background: var(--bg);
+  background: var(--gradient-soft);
 }
 
 section:nth-child(odd) {
@@ -226,7 +227,7 @@ section:nth-child(odd) {
 }
 
 .glass-card-dark {
-  background: var(--bg);
+  background: var(--gradient-soft);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
