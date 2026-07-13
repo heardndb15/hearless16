@@ -64,11 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // the window for this race). Re-verify with a fresh network call
         // before trusting the event: a real sign-out still confirms as
         // logged-out here; a racy false one recovers with no redirect.
-        supabase.auth.getUser().then(({ data, error }) => {
-          console.log(
-            `[auth-debug] ${new Date().toISOString()} SIGNED_OUT re-check ` +
-            `user=${data?.user?.id ?? "none"} error=${error?.message ?? "none"}`
-          );
+        supabase.auth.getUser().then(({ data }) => {
           if (!data?.user) {
             router.push("/login");
           }

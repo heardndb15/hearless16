@@ -29,16 +29,7 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  const { data, error } = await supabase.auth.getUser();
-
-  // TEMP DEBUG: tracing the "logged out after leaving Community" bug — logs
-  // every protected-route check so we can see whether getUser() is failing
-  // (and why) right when the user navigates out of /community. Check with
-  // `vercel logs` or the Vercel dashboard. Remove once root cause is confirmed.
-  console.log(
-    `[auth-debug] middleware ${new Date().toISOString()} path=${pathname} ` +
-    `user=${data?.user?.id ?? "none"} error=${error?.message ?? "none"}`
-  );
+  const { data } = await supabase.auth.getUser();
 
   if (!data?.user) {
     return NextResponse.redirect(new URL("/login", req.url));

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { identifyRequest, checkRateLimit } from "../../../lib/apiAuth";
 
 const BOSON_API_KEY = process.env.BOSON_API_KEY;
 const TTS_VOICE = "nora";
 
 export async function POST(req: NextRequest) {
+  const identity = await identifyRequest(req);
+  if (!checkRateLimit(`tts:${identity.key}`, identity.anonymous ? 5 : 20)) {
+    return NextResponse.json({ error: "Слишком много запросов, попробуйте позже" }, { status: 429 });
+  }
+
   try {
     const body = await req.json().catch(() => null);
     const text = typeof body?.text === "string" ? body.text.trim() : "";

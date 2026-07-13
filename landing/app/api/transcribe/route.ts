@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { identifyRequest, checkRateLimit } from "../../../lib/apiAuth";
 
 const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN;
 const FREEDOMSPEECH_API_KEY = process.env.FREEDOMSPEECH_API_KEY;
@@ -46,6 +47,11 @@ async function pollPrediction(id: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await identifyRequest(req);
+  if (!checkRateLimit(`transcribe:${identity.key}`, identity.anonymous ? 5 : 20)) {
+    return NextResponse.json({ error: "Слишком много запросов, попробуйте позже" }, { status: 429 });
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

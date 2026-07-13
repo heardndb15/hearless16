@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 // req.headers.get("origin") is not reliably present on every request path
-// (proxies/edge configs can drop it), which silently produced a relative
-// redirectTo/emailRedirectTo ("/auth/callback...") instead of an absolute
-// URL - Supabase then can't send the user back after Google OAuth or an
-// email confirmation. Falling back to the known production domain keeps
-// these links absolute even when the header is missing.
+// (proxies/edge configs can drop it) and can reflect a non-canonical host
+// (e.g. the bare apex domain, which Vercel then 307-redirects to the
+// canonical www host) - both silently point Supabase's redirectTo /
+// emailRedirectTo at the wrong absolute URL, which can break the OAuth PKCE
+// cookie (host-scoped) or just fail to bring the user back after email
+// confirmation. NEXT_PUBLIC_SITE_URL pins these links to the known-good
+// canonical domain; the header and the hardcoded fallback are only a safety
+// net for when it isn't set.
 const SITE_URL_FALLBACK = "https://www.hearless.live";
 
 export async function POST(req: NextRequest) {
@@ -17,6 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Supabase не настроен" }, { status: 500 });
   }
 
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || req.headers.get("origin") || SITE_URL_FALLBACK;
   const cookieStore: { name: string; value: string; options: any }[] = [];
 
   function createSupabase() {
@@ -38,9 +42,17 @@ export async function POST(req: NextRequest) {
 
   try {
     if (action === "register") {
+      const { email, password, name, language, terms } = body;
+      if (terms !== true) {
+        return NextResponse.json({ error: "Необходимо принять условия использования" }, { status: 400 });
+      }
+      if (typeof name !== "string" || name.trim().length < 1 || name.length > 50) {
+        return NextResponse.json({ error: "Некорректное имя" }, { status: 400 });
+      }
+      if (typeof password !== "string" || password.length < 6) {
+        return NextResponse.json({ error: "Пароль должен быть не менее 6 символов" }, { status: 400 });
+      }
       const supabase = createSupabase();
-      const { email, password, name, language } = body;
-      const origin = req.headers.get("origin") || SITE_URL_FALLBACK;
       const { data, error } = await supabase.auth.signUp({
         email, password,
         options: {
@@ -68,7 +80,7 @@ export async function POST(req: NextRequest) {
       const supabase = createSupabase();
       const { email } = body;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${req.headers.get("origin") || SITE_URL_FALLBACK}/login`,
+        redirectTo: `${origin}/login`,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
       const res = NextResponse.json({ message: "Письмо отправлено. Проверьте почту." });
@@ -86,7 +98,6 @@ export async function POST(req: NextRequest) {
 
     if (action === "google") {
       const supabase = createSupabase();
-      const origin = process.env.NEXT_PUBLIC_SITE_URL || req.headers.get("origin") || SITE_URL_FALLBACK;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${origin}/auth/callback?next=/dashboard` },

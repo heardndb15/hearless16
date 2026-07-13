@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { identifyRequest, checkRateLimit } from "../../../lib/apiAuth";
 
 const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN;
 
@@ -21,6 +22,11 @@ async function pollPrediction(id: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const identity = await identifyRequest(req);
+  if (!checkRateLimit(`ai:${identity.key}`, identity.anonymous ? 5 : 20)) {
+    return NextResponse.json({ error: "Слишком много запросов, попробуйте позже" }, { status: 429 });
+  }
+
   if (!REPLICATE_TOKEN) {
     return NextResponse.json({ error: "Replicate not configured" }, { status: 500 });
   }
