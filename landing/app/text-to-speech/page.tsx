@@ -1,66 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-
-type Lang = "kk" | "ru" | "en";
-
-const DEMO_PHRASES: Record<Lang, string[]> = {
-  kk: ["Сәлем", "Рахмет", "Көмектесіңізші", "Су", "Тамақ", "Отбасы"],
-  ru: ["Привет", "Спасибо", "Помогите", "Вода", "Еда", "Семья"],
-  en: ["Hello", "Thank you", "Help me", "Water", "Food", "Family"],
-};
-
-const LANGUAGES: { key: Lang; label: string }[] = [
-  { key: "kk", label: "Қазақша" },
-  { key: "ru", label: "Русский" },
-  { key: "en", label: "English" },
-];
+import { useTextToSpeech, TTS_LANGUAGES, TTS_DEMO_PHRASES } from "../../lib/useTextToSpeech";
 
 export default function TextToSpeechPage() {
-  const [lang, setLang] = useState<Lang>("ru");
-  const [text, setText] = useState("");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function resetOutput() {
-    setAudioUrl(null);
-    setError(null);
-  }
-
-  function selectLanguage(key: Lang) {
-    setLang(key);
-    setText("");
-    resetOutput();
-  }
-
-  async function handleSpeak() {
-    if (!text.trim()) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language: lang }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Request failed: ${res.status}`);
-      }
-      const blob = await res.blob();
-      const newUrl = URL.createObjectURL(blob);
-      setAudioUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return newUrl;
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Не удалось озвучить текст");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { lang, text, audioUrl, loading, error, selectLanguage, updateText, handleSpeak } = useTextToSpeech();
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--gradient-soft)" }}>
@@ -75,7 +19,7 @@ export default function TextToSpeechPage() {
         </p>
 
         <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
-          {LANGUAGES.map(l => (
+          {TTS_LANGUAGES.map(l => (
             <button key={l.key} onClick={() => selectLanguage(l.key)}
               style={{
                 padding: "8px 18px", borderRadius: 50, fontSize: 13, cursor: "pointer",
@@ -89,12 +33,12 @@ export default function TextToSpeechPage() {
         </div>
 
         <div style={{ marginTop: 20, background: "var(--bgCard)", borderRadius: "var(--radius)", border: "1px solid var(--border)", padding: "32px 28px" }}>
-          <textarea value={text} onChange={e => { setText(e.target.value); resetOutput(); }} placeholder="Введи текст для озвучивания..." rows={3}
+          <textarea value={text} onChange={e => updateText(e.target.value)} placeholder="Введи текст для озвучивания..." rows={3}
             style={{ width: "100%", padding: "14px 18px", borderRadius: "var(--radiusSm)", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 16, fontFamily: "'Plus Jakarta Sans', sans-serif", resize: "none", outline: "none", marginBottom: 16 }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {DEMO_PHRASES[lang].map(w => (
-                <button key={w} onClick={() => { setText(w); resetOutput(); }}
+              {TTS_DEMO_PHRASES[lang].map(w => (
+                <button key={w} onClick={() => updateText(w)}
                   style={{ padding: "6px 14px", borderRadius: 50, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--textSecondary)", fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--textSecondary)"; }}>

@@ -50,7 +50,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш-anon-key
 - `gestures` — каталог жестов (20 начальных)
 - `user_progress` — прогресс изучения жестов
 - `sound_alerts` — звуковые оповещения
-- `sos_events` — SOS сигналы
 
 ## Мобильное приложение
 
@@ -62,10 +61,11 @@ npx expo start     # сканируйте QR-код в Expo Go
 
 Экраны:
 - `SubtitlesScreen` — субтитры в реальном времени (WebSocket)
-- `GesturesScreen` — каталог жестов с прогрессом
-- `GesturePracticeScreen` — практика через камеру
-- `AlertsScreen` — звуковые оповещения + SOS
-- `ProfileScreen` — настройки пользователя
+- `GesturesScreen` / `GesturePracticeScreen` / `GestureDictionaryScreen` — каталог, практика через камеру и словарь жестов
+- `SignLanguageReaderScreen` — перевод жестов в текст (камера)
+- `StudyScreen` — обучение
+- `CommunityFeedScreen` — лента сообщества
+- `ProfileScreen` — настройки пользователя, вход/регистрация не обязательны (основные экраны доступны анонимно)
 
 ### Переменные окружения (мобильное)
 ```
@@ -91,12 +91,14 @@ uvicorn app.main:app --reload  # http://localhost:8000
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| POST | `/auth` | регистрация/вход |
 | WebSocket | `/ws/transcribe` | стриминг субтитров |
 | POST | `/gestures/recognize` | распознавание жеста |
-| POST | `/sos/alert` | обычный SOS |
-| POST | `/sos/silent` | тихий SOS |
-| POST | `/alerts` | звуковые оповещения |
+| POST | `/subtitles/` | сохранение истории субтитров |
+| POST | `/alerts/` | звуковые оповещения |
+| POST | `/users/` | создание профиля пользователя |
+| POST | `/polar/checkout`, `/polar/webhook` | подписки (Polar) |
+
+Авторизация — через Supabase (`supabase.auth.*`) напрямую с клиента, отдельного `/auth`-эндпоинта на бэкенде нет. SOS-функциональность была удалена из проекта.
 
 ### Переменные окружения (бэкенд)
 ```

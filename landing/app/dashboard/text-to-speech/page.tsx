@@ -1,65 +1,9 @@
 "use client";
 
-import { useState } from "react";
-
-type Lang = "kk" | "ru" | "en";
-
-const DEMO_PHRASES: Record<Lang, string[]> = {
-  kk: ["Сәлем", "Рахмет", "Көмектесіңізші", "Су", "Тамақ", "Отбасы"],
-  ru: ["Привет", "Спасибо", "Помогите", "Вода", "Еда", "Семья"],
-  en: ["Hello", "Thank you", "Help me", "Water", "Food", "Family"],
-};
-
-const LANGUAGES: { key: Lang; label: string }[] = [
-  { key: "kk", label: "Қазақша" },
-  { key: "ru", label: "Русский" },
-  { key: "en", label: "English" },
-];
+import { useTextToSpeech, TTS_LANGUAGES, TTS_DEMO_PHRASES } from "../../../lib/useTextToSpeech";
 
 export default function DashboardTextToSpeechPage() {
-  const [lang, setLang] = useState<Lang>("ru");
-  const [text, setText] = useState("");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function resetOutput() {
-    setAudioUrl(null);
-    setError(null);
-  }
-
-  function selectLanguage(key: Lang) {
-    setLang(key);
-    setText("");
-    resetOutput();
-  }
-
-  async function handleSpeak() {
-    if (!text.trim()) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language: lang }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Request failed: ${res.status}`);
-      }
-      const blob = await res.blob();
-      const newUrl = URL.createObjectURL(blob);
-      setAudioUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return newUrl;
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Не удалось озвучить текст");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { lang, text, audioUrl, loading, error, selectLanguage, updateText, handleSpeak } = useTextToSpeech();
 
   return (
     <div className="space-y-8">
@@ -73,7 +17,7 @@ export default function DashboardTextToSpeechPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
           <div className="flex gap-2">
-            {LANGUAGES.map(l => (
+            {TTS_LANGUAGES.map(l => (
               <button
                 key={l.key}
                 onClick={() => selectLanguage(l.key)}
@@ -90,7 +34,7 @@ export default function DashboardTextToSpeechPage() {
 
           <textarea
             value={text}
-            onChange={e => { setText(e.target.value); resetOutput(); }}
+            onChange={e => updateText(e.target.value)}
             placeholder="Введи текст для озвучивания..."
             rows={4}
             className="w-full rounded-xl border border-slate-200 bg-white/60 px-4 py-3.5 text-sm text-slate-800 font-medium resize-none outline-none focus:border-accent transition-colors"
@@ -98,10 +42,10 @@ export default function DashboardTextToSpeechPage() {
 
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex gap-2 flex-wrap">
-              {DEMO_PHRASES[lang].map(w => (
+              {TTS_DEMO_PHRASES[lang].map(w => (
                 <button
                   key={w}
-                  onClick={() => { setText(w); resetOutput(); }}
+                  onClick={() => updateText(w)}
                   className="px-3 py-1.5 rounded-full border border-slate-200 bg-white/50 text-slate-500 text-xs font-semibold hover:border-accent hover:text-accent transition-colors"
                 >
                   {w}

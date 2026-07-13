@@ -6,21 +6,9 @@ import type { User } from "@supabase/supabase-js";
 import { HandSign } from "../../../components/HandSign";
 import { GESTURE_TUTORIALS } from "../../../lib/gesturesTutorial";
 import { FilesetResolver, HandLandmarker, DrawingUtils, HandLandmarkerResult } from "@mediapipe/tasks-vision";
+import type { Gesture, UserProgress } from "../../../../shared/types";
 
-interface Gesture {
-  id: string;
-  name: string;
-  category: string;
-  difficulty: "easy" | "medium" | "hard";
-  image_url?: string;
-}
-
-interface Progress {
-  gesture_id: string;
-  learned: boolean;
-  attempts: number;
-  accuracy: number;
-}
+type Progress = Pick<UserProgress, "gesture_id" | "learned" | "attempts" | "accuracy">;
 
 export default function LearnSignLanguagePage() {
   const [user, setUser] = useState<User | null>(null);

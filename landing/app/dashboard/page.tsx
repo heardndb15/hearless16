@@ -3,12 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
-
-interface SubtitleHistoryItem {
-  id: string;
-  text: string;
-  created_at: string;
-}
+import type { SubtitleEntry } from "../../../shared/types";
 
 const WINDOW_TIMESLICE_MS = 500;
 const WINDOW_INTERVAL_MS = 3000;
@@ -41,7 +36,7 @@ function mergeTranscripts(oldText: string, newText: string): string {
 
 export default function SubtitlesDashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [history, setHistory] = useState<SubtitleHistoryItem[]>([]);
+  const [history, setHistory] = useState<SubtitleEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(true);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);

@@ -26,7 +26,6 @@ export default function ProfileScreen() {
   // Profile fields
   const [name, setName] = useState("");
   const [language, setLanguage] = useState<"kk" | "ru">("ru");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const [message, setMessage] = useState("");
 
@@ -218,44 +217,6 @@ export default function ProfileScreen() {
                     ]}
                   >
                     Русский
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Тема</Text>
-              <View style={styles.toggleRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.toggleOption,
-                    theme === "light" && styles.toggleActive,
-                  ]}
-                  onPress={() => setTheme("light")}
-                >
-                  <Text
-                    style={[
-                      styles.toggleText,
-                      theme === "light" && styles.toggleTextActive,
-                    ]}
-                  >
-                    ☀️ Светлая
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.toggleOption,
-                    theme === "dark" && styles.toggleActive,
-                  ]}
-                  onPress={() => setTheme("dark")}
-                >
-                  <Text
-                    style={[
-                      styles.toggleText,
-                      theme === "dark" && styles.toggleTextActive,
-                    ]}
-                  >
-                    🌙 Тёмная
                   </Text>
                 </TouchableOpacity>
               </View>

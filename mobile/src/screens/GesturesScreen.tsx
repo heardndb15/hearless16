@@ -11,7 +11,7 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Colors, Spacing, FontSize } from "../constants/theme";
-import type { RootStackParamList } from "../../../shared/types";
+import type { RootStackParamList, Gesture, UserProgress } from "../../../shared/types";
 import GestureHero from "../components/GestureHero";
 import GestureCard from "../components/GestureCard";
 import LearningPath from "../components/LearningPath";
@@ -98,24 +98,24 @@ export default function GesturesScreen() {
           setIsLoggedIn(!!session?.user);
 
           // Fetch all gestures from backend database
-          const gesturesRes = await axios.get(`${API_URL}/gestures`);
+          const gesturesRes = await axios.get<Gesture[]>(`${API_URL}/gestures`);
           const dbGestures = gesturesRes.data;
 
-          let progressMap: Record<string, any> = {};
+          let progressMap: Record<string, UserProgress> = {};
           if (session?.user) {
             // Fetch learning progress from backend database
-            const progressRes = await axios.get(`${API_URL}/gestures/progress/${session.user.id}`, {
+            const progressRes = await axios.get<UserProgress[]>(`${API_URL}/gestures/progress/${session.user.id}`, {
               headers: {
                 Authorization: `Bearer ${session.access_token}`,
               },
             });
             const dbProgress = progressRes.data;
-            dbProgress.forEach((p: any) => {
+            dbProgress.forEach((p) => {
               progressMap[p.gesture_id] = p;
             });
           }
 
-          const mapped: GestureData[] = dbGestures.map((g: any) => {
+          const mapped: GestureData[] = dbGestures.map((g) => {
             const prog = progressMap[g.id];
             let status: Status = "not_learned";
             let progVal = 0;

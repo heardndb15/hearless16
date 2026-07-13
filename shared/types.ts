@@ -19,7 +19,7 @@ export interface Gesture {
   id: string;
   name: string;
   category: string;
-  image_url: string;
+  image_url?: string | null;
   gif_url?: string | null;
   difficulty: 'easy' | 'medium' | 'hard';
 }
@@ -30,6 +30,8 @@ export interface UserProgress {
   gesture_id: string;
   learned: boolean;
   accuracy: number;
+  attempts: number;
+  best_accuracy: number;
 }
 
 // Звуковое оповещение
@@ -38,13 +40,6 @@ export interface SoundAlert {
   user_id: string;
   sound_type: 'fire' | 'door' | 'phone' | 'car' | 'alarm' | 'baby';
   detected_at: string;
-}
-
-// Настройки пользователя
-export interface UserSettings {
-  theme: 'light' | 'dark';
-  language: 'kk' | 'ru';
-  notificationsEnabled: boolean;
 }
 
 // Лекция для режима учебы
