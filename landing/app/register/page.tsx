@@ -150,8 +150,8 @@ export default function RegisterPage() {
           {googleLoading ? "Загрузка..." : "Зарегистрироваться через Google"}
         </button>
 
-        <div style={{ textAlign: "center", margin: "16px 0", borderBottom: "1px solid rgba(0, 0, 0,0.15)", lineHeight: "0.1em" }}>
-          <span style={{ background: "var(--white)", padding: "0 10px", fontSize: 13, color: "var(--textSecondary, #5a7a8f)" }}>или заполните форму</span>
+        <div style={{ textAlign: "center", margin: "16px 0", borderBottom: "1px solid var(--border)", lineHeight: "0.1em" }}>
+          <span style={{ background: "var(--bgCard)", padding: "0 10px", fontSize: 13, color: "var(--textSecondary, #5a7a8f)" }}>или заполните форму</span>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} style={styles.form}>
@@ -238,7 +238,7 @@ const styles: Record<string, React.CSSProperties> = {
   card: {
     width: "100%",
     maxWidth: 440,
-    background: "var(--white)",
+    background: "var(--bgCard)",
     borderRadius: 20,
     padding: "40px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
@@ -313,8 +313,8 @@ const styles: Record<string, React.CSSProperties> = {
     width: "100%",
     padding: "12px",
     borderRadius: 12,
-    border: "1px solid rgba(0, 0, 0,0.2)",
-    background: "white",
+    border: "1px solid var(--border)",
+    background: "var(--bgCard)",
     fontSize: 15,
     fontWeight: 600,
     color: "var(--text)",
