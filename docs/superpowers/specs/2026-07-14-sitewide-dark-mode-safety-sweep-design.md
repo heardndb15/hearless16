@@ -47,7 +47,7 @@
 | `--card` | `#FFFFFF` | `#131316` (= `--bgCard`) |
 | `--heading` | `#1A1A2E` | `#F5F5F7` (= `--text`) |
 | `--button` | `#1565C0` | `#4C8DDB` (= `--accent`) |
-| `--dark` | `#1A1A2E` | `#F5F5F7` (= `--text`) |
+| `--dark` | `#1A1A2E` | `#1A1A2E` (**без изменений** — см. ниже, почему это не алиас `--text`) |
 | `--success` | `#22C55E` | `#22C55E` (без изменений) |
 | `--danger` | *(новый токен)* `#DC2626` | `#F87171` |
 | `--headerBg` | `rgba(255, 255, 255, 0.92)` | `rgba(10, 10, 11, 0.85)` |
@@ -56,6 +56,8 @@
 | `--shadowStrong` | *(новый токен)* `0 16px 48px rgba(0,0,0,0.28)` | `0 16px 48px rgba(0,0,0,0.5)` |
 
 `--radius`, `--radiusSm`, `--radiusXl` — без изменений, темы не касаются (форма, не цвет).
+
+**Почему `--dark` не флипается:** в `Download.tsx` он используется как *постоянно тёмный* фон кнопки в паре с `var(--white)` (постоянно белым) текстом — `background: var(--dark)`, `color: var(--white)`. Если бы `--dark` алиасился на `--text` (флипающийся токен), в dark-теме он стал бы почти белым — и белый текст на почти-белом фоне снова стал бы невидимым, тот же класс бага, который мы чиним. Название токена («dark») само по себе описывает константу, а не адаптивный «текущий текстовый цвет» — поэтому он остаётся неизменным в обеих темах. Если где-то ещё в скоупе `--dark` используется как алиас заголовочного текста (а не как гарантированно-тёмный фон), там текст в light-теме останется прежним (регрессии нет), а в dark-теме — тем же тёмным навy, что и в light (не идеально, но не невидимо); такие места — кандидаты на замену на `var(--text)` **точечно**, если найдутся при ручной проверке (см. «Проверка»).
 
 ## Механическая замена литералов
 
@@ -77,7 +79,11 @@
 
 ## Файлы в скоупе
 
-**Компоненты** (`landing/components/`): `Header.tsx`, `Hero.tsx`, `Features.tsx`, `SubtitleDemo.tsx`, `TextToSpeechSection.tsx`, `LanguageSection.tsx`, `GamificationSection.tsx`, `PricingSection.tsx`, `CTASection.tsx`, `Footer.tsx`, `Download.tsx`, `HandSign.tsx`, `VideoWithSubtitles.tsx`.
+**Компоненты** (`landing/components/`): `Header.tsx`, `Hero.tsx`, `Features.tsx`, `SubtitleDemo.tsx`, `PricingSection.tsx`, `CTASection.tsx`, `Footer.tsx`, `Download.tsx`, `VideoWithSubtitles.tsx`.
+
+**Явно исключены из этого списка (с обоснованием):**
+- `TextToSpeechSection.tsx`, `LanguageSection.tsx`, `GamificationSection.tsx` — используются только в `app/page.tsx` (подтверждено grep'ом) и целиком удаляются следующим спеком (`landing-premium-redesign`, IA-раздел). Тратить время на их dark-safety бессмысленно — тратим на файлы, которые проживут.
+- `HandSign.tsx` — декоративная SVG-иконка руки (`#CBD5E1`, `#E2E8F0`, `#D1D5DB` — заливки формы, не пары фон/текст). Не создаёт риска невидимого текста, только слегка не будет гармонировать с dark-темой визуально — это косметика, вне цели этого спека (см. «Не цель»).
 
 **Страницы** (`landing/app/`): `error.tsx`, `global-error.tsx`, `not-found.tsx`, `login/page.tsx`, `register/page.tsx`, `reset-password/page.tsx`, `features/page.tsx`, `pricing/page.tsx`, `gamification/page.tsx`, `ai-tutor/page.tsx`, `text-to-speech/page.tsx`, `subtitles/page.tsx`, `subtitles/transcript/page.tsx`, `sign-language/page.tsx`, `blog/page.tsx`, `blog/[slug]/page.tsx`, `dashboard/page.tsx`, `dashboard/learn/page.tsx`, `dashboard/sign-language-reader/page.tsx`, `camera-to-text/page.tsx`, `alerts/page.tsx`, `contact/page.tsx`, `about/page.tsx`, `text-to-sign/page.tsx`.
 
