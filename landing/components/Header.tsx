@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
+import { useTheme } from "../lib/ThemeContext";
 import type { Lang } from "../lib/translations";
 
 const LANG_LABELS: Record<Lang, string> = { ru: "РУС", en: "ENG", kz: "ҚАЗ" };
 
 export default function Header() {
   const { lang, setLang, t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [dropdown, setDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export default function Header() {
 
   return (
     <>
-      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 0", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", boxShadow: "0 2px 16px rgba(0, 0, 0,0.06)" }}>
+      <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 0", background: "var(--headerBg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)", boxShadow: "0 2px 16px rgba(0, 0, 0,0.06)" }}>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* Logo */}
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
@@ -73,7 +75,7 @@ export default function Header() {
                 <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s", color: "var(--textSecondary)" }}>▼</span>
               </button>
               {dropdown && (
-                <div style={{ position: "absolute", top: "calc(100% + 12px)", left: -120, width: 280, background: "#FFFFFF", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(0, 0, 0,0.12)", borderRadius: "var(--radius)", padding: "8px", boxShadow: "0 8px 24px rgba(0, 0, 0,0.1)" }}>
+                <div style={{ position: "absolute", top: "calc(100% + 12px)", left: -120, width: 280, background: "var(--bgCard)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px", boxShadow: "0 8px 24px rgba(0, 0, 0,0.1)" }}>
                   {t.featureLinks.map(f => (
                     <Link key={f.href} href={f.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: "var(--radiusSm)", textDecoration: "none", color: "var(--textSecondary)", fontSize: 13, transition: "all 0.2s" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "var(--bg)"; e.currentTarget.style.color = "var(--accent)"; }}
@@ -89,7 +91,7 @@ export default function Header() {
             <Link href="/pricing" style={{ color: "var(--textSecondary)", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{t.nav.pricing}</Link>
 
             {/* Language switcher */}
-            <div style={{ display: "flex", gap: 3, background: "var(--bg)", borderRadius: 10, padding: 3, border: "1px solid rgba(0, 0, 0,0.15)" }}>
+            <div style={{ display: "flex", gap: 3, background: "var(--bg)", borderRadius: 10, padding: 3, border: "1px solid var(--border)" }}>
               {(["ru", "en", "kz"] as Lang[]).map((l) => (
                 <button
                   key={l}
@@ -113,6 +115,27 @@ export default function Header() {
               ))}
             </div>
 
+            <button
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label={theme === "light" ? "Тёмная тема" : "Светлая тема"}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--bgCard)",
+                color: "var(--textSecondary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: 15,
+                flexShrink: 0,
+              }}
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+
             {!authChecked ? (
               <div style={{ width: 110, height: 38 }} />
             ) : userName ? (
@@ -133,7 +156,7 @@ export default function Header() {
             className="nav-mobile-btn"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={t.nav.openMenu}
-            style={{ background: "none", border: "1px solid rgba(0, 0, 0,0.2)", borderRadius: 10, width: 42, height: 42, alignItems: "center", justifyContent: "center", cursor: "pointer", flexDirection: "column", gap: 5, padding: "10px 9px" }}
+            style={{ background: "none", border: "1px solid var(--border)", borderRadius: 10, width: 42, height: 42, alignItems: "center", justifyContent: "center", cursor: "pointer", flexDirection: "column", gap: 5, padding: "10px 9px" }}
           >
             <span style={{ display: "block", width: 22, height: 2, background: "var(--accent)", borderRadius: 2, transition: "all 0.25s", transform: mobileOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
             <span style={{ display: "block", width: 22, height: 2, background: "var(--accent)", borderRadius: 2, transition: "all 0.25s", opacity: mobileOpen ? 0 : 1 }} />
@@ -146,15 +169,15 @@ export default function Header() {
       {mobileOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 99 }}>
           {/* Backdrop */}
-          <div style={{ position: "absolute", inset: 0, background: "rgba(12,74,110,0.35)", backdropFilter: "blur(2px)" }} onClick={() => setMobileOpen(false)} />
+          <div style={{ position: "absolute", inset: 0, background: "var(--overlay)", backdropFilter: "blur(2px)" }} onClick={() => setMobileOpen(false)} />
 
           {/* Panel */}
-          <div style={{ position: "absolute", top: 64, left: 0, right: 0, background: "white", borderRadius: "0 0 24px 24px", padding: "8px 16px 24px", boxShadow: "0 16px 40px rgba(0, 0, 0,0.15)", maxHeight: "calc(100vh - 64px)", overflowY: "auto" }}>
+          <div style={{ position: "absolute", top: 64, left: 0, right: 0, background: "var(--bgCard)", borderRadius: "0 0 24px 24px", padding: "8px 16px 24px", boxShadow: "0 16px 40px rgba(0, 0, 0,0.15)", maxHeight: "calc(100vh - 64px)", overflowY: "auto" }}>
             {/* Feature links */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: "8px 0" }}>
               {t.featureLinks.map(f => (
                 <Link key={f.href} href={f.href} onClick={() => setMobileOpen(false)}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, background: "#F8FBFF", border: "1px solid rgba(0, 0, 0,0.08)" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, background: "var(--chipBg)", border: "1px solid var(--border)" }}>
                   <span style={{ fontSize: 18 }}>{f.icon}</span>
                   <span>{f.label}</span>
                 </Link>
@@ -166,9 +189,9 @@ export default function Header() {
 
             {/* Pages */}
             <div style={{ display: "flex", gap: 8, padding: "4px 0 8px" }}>
-              <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(0, 0, 0,0.08)" }}>{t.nav.about}</Link>
-              <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, textAlign: "center", background: "#F8FBFF", border: "1px solid rgba(0, 0, 0,0.08)" }}>{t.nav.blog}</Link>
-              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--accent)", fontSize: 14, fontWeight: 600, textAlign: "center", background: "var(--chipBg)", border: "1px solid rgba(0, 0, 0,0.15)" }}>{t.nav.pricing}</Link>
+              <Link href="/about" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, textAlign: "center", background: "var(--chipBg)", border: "1px solid var(--border)" }}>{t.nav.about}</Link>
+              <Link href="/blog" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--textSecondary)", fontSize: 14, fontWeight: 500, textAlign: "center", background: "var(--chipBg)", border: "1px solid var(--border)" }}>{t.nav.blog}</Link>
+              <Link href="/pricing" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: 12, textDecoration: "none", color: "var(--accent)", fontSize: 14, fontWeight: 600, textAlign: "center", background: "var(--chipBg)", border: "1px solid var(--border)" }}>{t.nav.pricing}</Link>
             </div>
 
             {/* Mobile language switcher */}
@@ -195,6 +218,25 @@ export default function Header() {
                 </button>
               ))}
             </div>
+
+            <button
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label={theme === "light" ? "Тёмная тема" : "Светлая тема"}
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+                background: "var(--chipBg)",
+                color: "var(--textSecondary)",
+                fontSize: 14,
+                fontWeight: 500,
+                cursor: "pointer",
+                marginBottom: 10,
+              }}
+            >
+              {theme === "light" ? "🌙 Тёмная тема" : "☀️ Светлая тема"}
+            </button>
 
             {/* Auth buttons */}
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
