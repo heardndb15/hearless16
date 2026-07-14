@@ -215,7 +215,7 @@ export default function PricingPage() {
                           </svg>
                         ) : (
                           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                            <path d="M1 1L7 7M7 1L1 7" stroke={plan.highlight ? "rgba(255,255,255,0.5)" : "rgba(0, 0, 0,0.4)"} strokeWidth="1.5" strokeLinecap="round" />
+                            <path d="M1 1L7 7M7 1L1 7" stroke={plan.highlight ? "rgba(255,255,255,0.5)" : "var(--textMuted)"} strokeWidth="1.5" strokeLinecap="round" />
                           </svg>
                         )}
                       </span>
