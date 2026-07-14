@@ -11,8 +11,8 @@ const PLANS = [
     period: "навсегда",
     badge: null,
     color: "var(--textSecondary)",
-    bg: "#FFFFFF",
-    border: "rgba(0, 0, 0,0.15)",
+    bg: "var(--bgCard)",
+    border: "var(--border)",
     highlight: false,
     cta: "Начать бесплатно",
     ctaHref: "/register",
@@ -33,7 +33,7 @@ const PLANS = [
     price: 990,
     period: "в месяц",
     badge: "Популярный",
-    color: "#FFFFFF",
+    color: "var(--white)",
     bg: "var(--accent)",
     border: "transparent",
     highlight: true,
@@ -57,8 +57,8 @@ const PLANS = [
     period: "в месяц",
     badge: null,
     color: "var(--textSecondary)",
-    bg: "#FFFFFF",
-    border: "rgba(0, 0, 0,0.15)",
+    bg: "var(--bgCard)",
+    border: "var(--border)",
     highlight: false,
     cta: "Выбрать Pro",
     ctaHref: "/api/checkout?plan=pro",
@@ -104,7 +104,7 @@ export default function PricingPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--gradient-soft)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* Nav */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "14px 0" }}>
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: "var(--headerBg)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)", padding: "14px 0" }}>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <img src="/logo.png" alt="Hearless" style={{ width: 34, height: 34, borderRadius: 10, objectFit: "cover" }} />
@@ -112,7 +112,7 @@ export default function PricingPage() {
           </Link>
           <div style={{ display: "flex", gap: 10 }}>
             <Link href="/login" style={{ padding: "10px 20px", borderRadius: 50, border: "1.5px solid var(--border)", color: "var(--accent)", textDecoration: "none", fontWeight: 600, fontSize: 13 }}>Войти</Link>
-            <Link href="/register" style={{ padding: "10px 20px", borderRadius: 12, background: "var(--accent)", color: "white", textDecoration: "none", fontWeight: 600, fontSize: 13 }}>Начать</Link>
+            <Link href="/register" style={{ padding: "10px 20px", borderRadius: 12, background: "var(--accent)", color: "var(--white)", textDecoration: "none", fontWeight: 600, fontSize: 13 }}>Начать</Link>
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@ export default function PricingPage() {
               >
                 {/* Badge */}
                 {plan.badge && (
-                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "var(--text)", color: "white", fontSize: 11, fontWeight: 700, padding: "5px 16px", borderRadius: 20, letterSpacing: 1, whiteSpace: "nowrap" }}>
+                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "var(--dark)", color: "var(--white)", fontSize: 11, fontWeight: 700, padding: "5px 16px", borderRadius: 20, letterSpacing: 1, whiteSpace: "nowrap" }}>
                     ★ {plan.badge}
                   </div>
                 )}
@@ -168,7 +168,7 @@ export default function PricingPage() {
                 {/* Price */}
                 <div style={{ marginBottom: 28 }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                    <span style={{ fontSize: 42, fontWeight: 800, color: plan.highlight ? "white" : "var(--text)", lineHeight: 1 }}>
+                    <span style={{ fontSize: 42, fontWeight: 800, color: plan.highlight ? "var(--white)" : "var(--text)", lineHeight: 1 }}>
                       {plan.price === 0 ? "0" : plan.price.toLocaleString("ru-KZ")}
                     </span>
                     <span style={{ fontSize: 16, fontWeight: 600, color: plan.highlight ? "rgba(255,255,255,0.8)" : "var(--textSecondary)" }}>
@@ -193,7 +193,7 @@ export default function PricingPage() {
                     fontSize: 14,
                     marginBottom: 28,
                     background: plan.highlight ? "rgba(255,255,255,0.18)" : "var(--accent)",
-                    color: plan.highlight ? "white" : "white",
+                    color: plan.highlight ? "var(--white)" : "var(--white)",
                     border: plan.highlight ? "1.5px solid rgba(255,255,255,0.35)" : "none",
                     transition: "all 0.2s",
                   }}
@@ -202,16 +202,16 @@ export default function PricingPage() {
                 </Link>
 
                 {/* Divider */}
-                <div style={{ borderTop: `1px solid ${plan.highlight ? "rgba(255,255,255,0.2)" : "rgba(0, 0, 0,0.1)"}`, marginBottom: 24 }} />
+                <div style={{ borderTop: `1px solid ${plan.highlight ? "rgba(255,255,255,0.2)" : "var(--border)"}`, marginBottom: 24 }} />
 
                 {/* Features */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
                   {plan.features.map((f, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, opacity: f.ok ? 1 : 0.4 }}>
-                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: f.ok ? (plan.highlight ? "rgba(255,255,255,0.25)" : "var(--chipBg)") : "transparent", border: f.ok ? "none" : `1.5px solid ${plan.highlight ? "rgba(255,255,255,0.3)" : "rgba(0, 0, 0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11 }}>
+                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: f.ok ? (plan.highlight ? "rgba(255,255,255,0.25)" : "var(--chipBg)") : "transparent", border: f.ok ? "none" : `1.5px solid ${plan.highlight ? "rgba(255,255,255,0.3)" : "var(--border)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11 }}>
                         {f.ok ? (
                           <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
-                            <path d="M1 4L4 7L10 1" stroke={plan.highlight ? "white" : "var(--accent)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M1 4L4 7L10 1" stroke={plan.highlight ? "var(--white)" : "var(--accent)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : (
                           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -219,7 +219,7 @@ export default function PricingPage() {
                           </svg>
                         )}
                       </span>
-                      <span style={{ fontSize: 13, color: plan.highlight ? (f.ok ? "white" : "rgba(255,255,255,0.5)") : (f.ok ? "var(--textSecondary)" : "#94B8C8"), fontWeight: f.ok ? 500 : 400 }}>
+                      <span style={{ fontSize: 13, color: plan.highlight ? (f.ok ? "var(--white)" : "rgba(255,255,255,0.5)") : (f.ok ? "var(--textSecondary)" : "var(--textMuted)"), fontWeight: f.ok ? 500 : 400 }}>
                         {f.text}
                       </span>
                     </div>
@@ -251,9 +251,9 @@ export default function PricingPage() {
           <p style={{ textAlign: "center", color: "var(--accent)", fontSize: 14, marginBottom: 36 }}>Подробное сравнение всех возможностей</p>
 
           <div className="pricing-compare-scroll">
-          <div style={{ background: "white", borderRadius: 20, border: "1px solid rgba(0, 0, 0,0.12)", overflow: "hidden", boxShadow: "0 4px 24px rgba(0, 0, 0,0.07)" }}>
+          <div style={{ background: "var(--bgCard)", borderRadius: 20, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "0 4px 24px rgba(0, 0, 0,0.07)" }}>
             {/* Header row */}
-            <div className="pricing-compare-grid" style={{ background: "var(--bg)", borderBottom: "1px solid rgba(0, 0, 0,0.1)", padding: "16px 24px" }}>
+            <div className="pricing-compare-grid" style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "16px 24px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1 }}>Функция</div>
               {PLANS.map(p => (
                 <div key={p.id} style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", textAlign: "center" }}>{p.name}</div>
@@ -270,7 +270,7 @@ export default function PricingPage() {
               { label: "Приоритетная поддержка", values: [false, false, true] },
               { label: "Ранний доступ к функциям", values: [false, false, true] },
             ].map((row, i) => (
-              <div key={row.label} className="pricing-compare-grid" style={{ padding: "14px 24px", borderBottom: i < 7 ? "1px solid rgba(0, 0, 0,0.07)" : "none", background: i % 2 === 0 ? "white" : "#FAFEFF" }}>
+              <div key={row.label} className="pricing-compare-grid" style={{ padding: "14px 24px", borderBottom: i < 7 ? "1px solid var(--border)" : "none", background: i % 2 === 0 ? "var(--bgCard)" : "var(--bg)" }}>
                 <div style={{ fontSize: 13, color: "var(--textSecondary)", fontWeight: 500 }}>{row.label}</div>
                 {row.values.map((v, j) => (
                   <div key={j} style={{ textAlign: "center" }}>
@@ -281,7 +281,7 @@ export default function PricingPage() {
                           <path d="M5 8.5L7 10.5L11 6.5" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : (
-                        <span style={{ color: "#CBD5E1", fontSize: 16 }}>—</span>
+                        <span style={{ color: "var(--textMuted)", fontSize: 16 }}>—</span>
                       )
                     ) : (
                       <span style={{ fontSize: 12, fontWeight: 600, color: j === 1 ? "var(--accent)" : "var(--textSecondary)" }}>{v}</span>
@@ -301,7 +301,7 @@ export default function PricingPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FAQ.map((item, i) => (
-              <div key={i} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(0, 0, 0,0.12)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0, 0, 0,0.05)" }}>
+              <div key={i} style={{ background: "var(--bgCard)", borderRadius: 16, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0, 0, 0,0.05)" }}>
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 16 }}
@@ -310,7 +310,7 @@ export default function PricingPage() {
                   <span style={{ fontSize: 18, color: "var(--accent)", transform: openFaq === i ? "rotate(45deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>+</span>
                 </button>
                 {openFaq === i && (
-                  <div style={{ padding: "0 22px 18px", fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7, borderTop: "1px solid rgba(0, 0, 0,0.08)" }}>
+                  <div style={{ padding: "0 22px 18px", fontSize: 14, color: "var(--textSecondary)", lineHeight: 1.7, borderTop: "1px solid var(--border)" }}>
                     <div style={{ paddingTop: 14 }}>{item.a}</div>
                   </div>
                 )}
@@ -321,12 +321,12 @@ export default function PricingPage() {
 
         {/* CTA */}
         <div style={{ background: "var(--accent)", padding: "64px 24px", textAlign: "center" }}>
-          <h2 style={{ fontSize: "clamp(24px, 5vw, 38px)", fontWeight: 800, color: "white", marginBottom: 12 }}>Готов начать?</h2>
+          <h2 style={{ fontSize: "clamp(24px, 5vw, 38px)", fontWeight: 800, color: "var(--white)", marginBottom: 12 }}>Готов начать?</h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.85)", marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>
             Зарегистрируйся бесплатно и начни пользоваться Hearless уже сегодня.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/register" style={{ padding: "16px 36px", borderRadius: 12, background: "white", color: "var(--accent)", fontWeight: 700, fontSize: 15, textDecoration: "none" }}>
+            <Link href="/register" style={{ padding: "16px 36px", borderRadius: 12, background: "var(--bgCard)", color: "var(--accent)", fontWeight: 700, fontSize: 15, textDecoration: "none" }}>
               Начать бесплатно
             </Link>
             <Link href="/contact" style={{ padding: "16px 36px", borderRadius: 12, background: "rgba(255,255,255,0.15)", color: "white", border: "1.5px solid rgba(255,255,255,0.35)", fontWeight: 700, fontSize: 15, textDecoration: "none" }}>
