@@ -40,7 +40,7 @@ export default function AiTutorPage() {
             <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 10, overflow: "auto" }}>
               {chat.map((m, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-                  <div style={{ maxWidth: "80%", padding: "12px 16px", borderRadius: 14, background: m.role === "user" ? "var(--accent)" : "var(--bg)", color: m.role === "user" ? "white" : "var(--text)", fontSize: 14, lineHeight: 1.5, border: m.role === "user" ? "none" : "1px solid var(--border)" }}>
+                  <div style={{ maxWidth: "80%", padding: "12px 16px", borderRadius: 14, background: m.role === "user" ? "var(--accent)" : "var(--bg)", color: m.role === "user" ? "var(--white)" : "var(--text)", fontSize: 14, lineHeight: 1.5, border: m.role === "user" ? "none" : "1px solid var(--border)" }}>
                     {m.text}
                   </div>
                 </div>
