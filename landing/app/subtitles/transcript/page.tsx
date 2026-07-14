@@ -285,7 +285,7 @@ export default function TranscriptPage() {
                   padding: "4px 8px",
                   borderRadius: 12,
                   background: isConnected ? "rgba(34, 197, 94, 0.15)" : "rgba(148, 163, 184, 0.15)",
-                  color: isConnected ? "#22c55e" : "#94a3b8",
+                  color: isConnected ? "#22c55e" : "var(--textMuted)",
                   fontWeight: 600
                 }}
               >
@@ -419,7 +419,7 @@ export default function TranscriptPage() {
                   borderRadius: 8,
                   border: "none",
                   background: theme.accent,
-                  color: themeMode === "contrast" ? "#000000" : "#ffffff",
+                  color: themeMode === "contrast" ? "#000000" : "var(--white)",
                   fontSize: 11,
                   fontWeight: 700,
                   cursor: "pointer",
@@ -503,7 +503,7 @@ export default function TranscriptPage() {
                     const isEven = seg.speaker % 2 === 0;
                     return (
                       <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 12, flexDirection: isEven ? "row" : "row-reverse" }}>
-                        <div style={{ width: 38, height: 38, borderRadius: "50%", background: SPEAKER_COLORS[si], display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                        <div style={{ width: 38, height: 38, borderRadius: "50%", background: SPEAKER_COLORS[si], display: "flex", alignItems: "center", justifyContent: "center", color: "var(--white)", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
                           S{seg.speaker + 1}
                         </div>
                         <div style={{ maxWidth: "70%" }}>

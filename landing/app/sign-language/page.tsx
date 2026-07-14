@@ -302,7 +302,7 @@ export default function SignLanguagePage() {
                   <HandSign
                     fingers={g.fingers}
                     size={58}
-                    color={activeStep === i ? "var(--accent)" : "#94A3B8"}
+                    color={activeStep === i ? "var(--accent)" : "var(--textMuted)"}
                   />
                   <div style={{
                     fontSize: 10, fontWeight: 700, marginTop: 6, lineHeight: 1.3,
@@ -342,7 +342,7 @@ export default function SignLanguagePage() {
                     gap: 6,
                   }}>
                     <HandSign fingers={gesture.fingers} size={148} color="var(--accent)" />
-                    <span style={{ fontSize: 13, color: "#94A3B8" }}>{gesture.emoji} {gesture.name}</span>
+                    <span style={{ fontSize: 13, color: "var(--textMuted)" }}>{gesture.emoji} {gesture.name}</span>
                   </div>
                   <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>
                     {gesture.name}
@@ -398,7 +398,7 @@ export default function SignLanguagePage() {
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 8,
                         padding: "12px 24px", borderRadius: 12,
-                        background: "var(--accent)", color: "white",
+                        background: "var(--accent)", color: "var(--white)",
                         fontWeight: 700, fontSize: 14, textDecoration: "none",
                       }}
                     >
@@ -419,7 +419,7 @@ export default function SignLanguagePage() {
                   disabled={activeStep === 0}
                   style={{
                     padding: "10px 20px", borderRadius: 10,
-                    border: "1px solid var(--border)", background: "white",
+                    border: "1px solid var(--border)", background: "var(--bgCard)",
                     color: activeStep === 0 ? "var(--textMuted)" : "var(--text)",
                     cursor: activeStep === 0 ? "not-allowed" : "pointer",
                     fontWeight: 600, fontSize: 13, opacity: activeStep === 0 ? 0.45 : 1,
@@ -435,7 +435,7 @@ export default function SignLanguagePage() {
                   disabled={activeStep === tutorial.gestures.length - 1}
                   style={{
                     padding: "10px 20px", borderRadius: 10,
-                    border: "1px solid var(--accent)", background: "var(--accent)", color: "white",
+                    border: "1px solid var(--accent)", background: "var(--accent)", color: "var(--white)",
                     cursor: activeStep === tutorial.gestures.length - 1 ? "not-allowed" : "pointer",
                     fontWeight: 600, fontSize: 13,
                     opacity: activeStep === tutorial.gestures.length - 1 ? 0.45 : 1,
