@@ -51,14 +51,14 @@ export default function CTASection() {
         <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="/register"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--gradient-accent)", color: "white", border: "none", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--gradient-accent)", color: "var(--white)", border: "none", transition: "all 0.3s ease" }}
           >
             {t.cta.btn1}
             <span style={{ fontSize: 18 }}>→</span>
           </a>
           <a
             href="/features"
-            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "var(--accent)", border: "1.5px solid var(--border)", transition: "all 0.3s ease" }}
+            style={{ padding: "16px 40px", fontSize: 15, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--bgCard)", color: "var(--accent)", border: "1.5px solid var(--border)", transition: "all 0.3s ease" }}
           >
             {t.cta.btn2}
           </a>
@@ -87,8 +87,8 @@ export default function CTASection() {
                 gap: 12,
                 padding: "12px 24px",
                 borderRadius: "var(--radiusSm)",
-                background: "#FFFFFF",
-                border: "1.5px solid rgba(0, 0, 0,0.12)",
+                background: "var(--bgCard)",
+                border: "1.5px solid var(--border)",
                 boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
                 textDecoration: "none",
                 transition: "all 0.3s ease",
@@ -98,8 +98,8 @@ export default function CTASection() {
                 e.currentTarget.style.background = "var(--bg)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.12)";
-                e.currentTarget.style.background = "#FFFFFF";
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.background = "var(--bgCard)";
               }}
             >
               <span style={{ fontSize: 24 }}>{store.icon}</span>
