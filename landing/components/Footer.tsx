@@ -10,7 +10,7 @@ export default function Footer() {
     <footer
       style={{
         background: "var(--bg)",
-        borderTop: "1px solid rgba(0, 0, 0,0.12)",
+        borderTop: "1px solid var(--border)",
         padding: "60px 0 32px",
       }}
     >
@@ -39,7 +39,7 @@ export default function Footer() {
                   justifyContent: "center",
                   fontSize: 16,
                   fontWeight: 800,
-                  color: "white",
+                  color: "var(--white)",
                 }}
               >
                 H
@@ -112,7 +112,7 @@ export default function Footer() {
         <div
           style={{
             paddingTop: 24,
-            borderTop: "1px solid rgba(0, 0, 0,0.12)",
+            borderTop: "1px solid var(--border)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
