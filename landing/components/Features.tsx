@@ -25,10 +25,10 @@ export default function FeaturesSection() {
               href={feat.href}
               style={{
                 gridColumn: feat.span === "wide" ? "1 / -1" : undefined,
-                background: "#FFFFFF",
+                background: "var(--bgCard)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid rgba(0, 0, 0,0.12)",
+                border: "1px solid var(--border)",
                 boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
                 transition: "all 0.3s ease",
                 textDecoration: "none",
@@ -36,14 +36,14 @@ export default function FeaturesSection() {
                 overflow: "hidden",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.3)";
+                e.currentTarget.style.borderColor = "var(--accent)";
                 e.currentTarget.style.background = "var(--bg)";
                 e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0,0.12)";
                 e.currentTarget.style.transform = "translateY(-3px)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.12)";
-                e.currentTarget.style.background = "#FFFFFF";
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.background = "var(--bgCard)";
                 e.currentTarget.style.boxShadow = "0 2px 16px rgba(0, 0, 0,0.07)";
                 e.currentTarget.style.transform = "translateY(0)";
               }}
