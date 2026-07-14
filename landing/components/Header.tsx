@@ -101,7 +101,7 @@ export default function Header() {
                     borderRadius: 7,
                     border: "none",
                     background: lang === l ? "var(--accent)" : "transparent",
-                    color: lang === l ? "#ffffff" : "var(--textSecondary)",
+                    color: lang === l ? "var(--white)" : "var(--textSecondary)",
                     fontSize: 11,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -139,14 +139,14 @@ export default function Header() {
             {!authChecked ? (
               <div style={{ width: 110, height: 38 }} />
             ) : userName ? (
-              <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "#ffffff" }}>
+              <Link href="/dashboard" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "var(--white)" }}>
                 <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{userName[0].toUpperCase()}</span>
                 {userName}
               </Link>
             ) : (
               <>
-                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "white", color: "var(--accent)", border: "1.5px solid var(--border)" }}>{t.nav.login}</Link>
-                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "#ffffff" }}>{t.nav.register}</Link>
+                <Link href="/login" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 50, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--bgCard)", color: "var(--accent)", border: "1.5px solid var(--border)" }}>{t.nav.login}</Link>
+                <Link href="/register" style={{ padding: "10px 22px", fontSize: 13, display: "inline-flex", alignItems: "center", borderRadius: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, textDecoration: "none", background: "var(--accent)", color: "var(--white)" }}>{t.nav.register}</Link>
               </>
             )}
           </nav>
@@ -185,7 +185,7 @@ export default function Header() {
             </div>
 
             {/* Divider */}
-            <div style={{ borderTop: "1px solid rgba(0, 0, 0,0.1)", margin: "8px 0" }} />
+            <div style={{ borderTop: "1px solid var(--border)", margin: "8px 0" }} />
 
             {/* Pages */}
             <div style={{ display: "flex", gap: 8, padding: "4px 0 8px" }}>
@@ -204,8 +204,8 @@ export default function Header() {
                     flex: 1,
                     padding: "10px",
                     borderRadius: 12,
-                    border: lang === l ? "1.5px solid var(--accent)" : "1px solid rgba(0, 0, 0,0.15)",
-                    background: lang === l ? "var(--chipBg)" : "#F8FBFF",
+                    border: lang === l ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+                    background: lang === l ? "var(--chipBg)" : "var(--bg)",
                     color: lang === l ? "var(--accent)" : "var(--textSecondary)",
                     fontSize: 13,
                     fontWeight: 700,
@@ -243,13 +243,13 @@ export default function Header() {
               {!authChecked ? (
                 <div style={{ flex: 1, height: 48 }} />
               ) : userName ? (
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "var(--white)", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   {userName[0].toUpperCase()} · {userName}
                 </Link>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "var(--accent)", border: "1.5px solid var(--border)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.login}</Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "white", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.register}</Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} style={{ flex: 1, padding: "14px", borderRadius: 12, textDecoration: "none", color: "var(--white)", background: "var(--accent)", fontWeight: 600, textAlign: "center", fontSize: 15, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t.nav.register}</Link>
                 </>
               )}
             </div>
