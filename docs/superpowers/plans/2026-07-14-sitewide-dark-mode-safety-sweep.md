@@ -309,6 +309,16 @@ In `landing/components/Header.tsx`, apply these exact replacements (line numbers
 7. Mobile feature-link cards (around lines 157, 169, 170): `background: "#F8FBFF"` → `background: "var(--chipBg)"`; `border: "1px solid rgba(0, 0, 0,0.08)"` → `border: "1px solid var(--border)"`.
 8. Mobile pricing link (around line 171): `border: "1px solid rgba(0, 0, 0,0.15)"` → `border: "1px solid var(--border)"` (its `background: "var(--chipBg)"` is already a token, leave it).
 
+**Corrected 2026-07-14 after Task 3's first implementation pass:** the file scan that produced items 1-8 above missed the following. These are real gaps (found by the implementer's own grep verification in Step 3, which correctly did not match the brief's "expected" claim) — apply them too:
+
+9. Language-switcher active-tab text (around line 104): `color: lang === l ? "#ffffff" : "var(--textSecondary)"` → replace `"#ffffff"` with `"var(--white)"` (text sitting on the accent-colored active tab — safe either way since accent never inverts, but the master table's rule for "text on accent background" calls for `var(--white)` explicitly).
+10. Dashboard link text (around line 142): `color: "#ffffff"` → `color: "var(--white)"` (same on-accent-background role as item 9). Leave the avatar-badge `background: "rgba(255,255,255,0.25)"` on the same line unchanged — translucent white on an accent surface, already safe per the master table.
+11. Desktop login link (around line 148): `background: "white"` → `background: "var(--bgCard)"` (a real gap — this is a neutral button surface, not an on-accent case).
+12. Desktop register link (around line 149): `color: "#ffffff"` → `color: "var(--white)"` (on-accent text, same role as item 9).
+13. Mobile drawer divider (around line 188): `borderTop: "1px solid rgba(0, 0, 0,0.1)"` → `borderTop: "1px solid var(--border)"`.
+14. Mobile language-switcher inactive-tab state (around lines 207-208, the sibling of item 3's active-tab styling — same ternary, different branch): `border: lang === l ? "1.5px solid var(--accent)" : "1px solid rgba(0, 0, 0,0.15)"` → replace the inactive branch with `"1px solid var(--border)"`; `background: lang === l ? "var(--chipBg)" : "#F8FBFF"` → replace `"#F8FBFF"` with `"var(--chipBg)"`.
+15. Mobile dashboard/register links (around lines 246, 252): `color: "white"` → `color: "var(--white)"` in both (on-accent text, same role as item 9).
+
 - [ ] **Step 2: Add the theme toggle**
 
 Add the import at the top of the file, alongside the existing `useLanguage` import:
