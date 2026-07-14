@@ -17,6 +17,7 @@
   --border: #E8EDF5;
   --borderLight: #E8EDF5;
   --sos: #ef4444;
+  --danger: #DC2626;
   --background: var(--bg);
   --white: #FFFFFF;
   --card: #FFFFFF;
@@ -28,9 +29,35 @@
   --radiusSm: 12px;
   --radiusXl: 16px;
   --headerBg: rgba(255, 255, 255, 0.92);
+  --overlay: rgba(12, 74, 110, 0.35);
   --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --shadowStrong: 0 16px 48px rgba(0,0,0,0.28);
   --gradient-accent: linear-gradient(135deg, #1565C0, #22C1C3);
   --gradient-soft: linear-gradient(135deg, #CFE4FF, #FFFFFF);
+}
+
+[data-theme="dark"] {
+  --bg: #0A0A0B;
+  --bgCard: #131316;
+  --bgCardHover: #1A1A1D;
+  --bgLight: #0A0A0B;
+  --accent: #4C8DDB;
+  --chipBg: rgba(76, 141, 219, 0.15);
+  --text: #F5F5F7;
+  --textSecondary: #9A9AA2;
+  --textMuted: #9A9AA2;
+  --border: rgba(255, 255, 255, 0.08);
+  --borderLight: rgba(255, 255, 255, 0.08);
+  --danger: #F87171;
+  --card: #131316;
+  --heading: #F5F5F7;
+  --button: #4C8DDB;
+  --headerBg: rgba(10, 10, 11, 0.85);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+  --shadowStrong: 0 16px 48px rgba(0,0,0,0.5);
+  --gradient-accent: linear-gradient(135deg, #4C8DDB, #22C1C3);
+  --gradient-soft: linear-gradient(135deg, #0F1720, #0A0A0B);
 }
 
 * {
@@ -204,7 +231,7 @@ section {
 }
 
 .btn-outline {
-  background: white;
+  background: var(--bgCard);
   color: var(--accent);
   border: 1.5px solid var(--border);
 }
@@ -216,7 +243,7 @@ section {
 }
 
 .glass-card {
-  background: #FFFFFF;
+  background: var(--bgCard);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
