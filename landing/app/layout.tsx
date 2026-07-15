@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "../components/Providers";
+import StarfieldBackground from "../components/StarfieldBackground";
 
 export const metadata: Metadata = {
   title: "Hearless — AI-платформа для глухих и слабослышащих",
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body>
+        <StarfieldBackground />
         <Providers>{children}</Providers>
       </body>
     </html>
