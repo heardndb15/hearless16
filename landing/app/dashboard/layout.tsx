@@ -88,14 +88,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] text-sky-900">
+      <div className="min-h-screen flex items-center justify-center text-[#F5F5F7]">
         {/* Decorative background blobs */}
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-cyan-200/50 rounded-full blur-[80px] pointer-events-none"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-purple-200/40 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-accent/20 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[80px] pointer-events-none"></div>
         
         <div className="relative z-10 flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-t-accent border-r-transparent border-slate-200 rounded-full animate-spin"></div>
-          <p className="text-slate-500 font-syne text-xs font-bold tracking-widest uppercase">Hearless AI ...</p>
+          <div className="w-12 h-12 border-4 border-t-accent border-r-transparent border-white/10 rounded-full animate-spin"></div>
+          <p className="text-[#9AA5BD] font-syne text-xs font-bold tracking-widest uppercase">Hearless AI ...</p>
         </div>
       </div>
     );
@@ -161,15 +161,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] font-dm flex text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen font-dm flex text-[#F5F5F7] relative overflow-hidden">
 
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-72 bg-white border-r border-sky-100 shadow-sm shrink-0 z-10 relative">
+      <aside className="hidden md:flex flex-col w-72 bg-[#12182A] border-r border-white/10 shadow-sm shrink-0 z-10 relative">
         {/* Brand Header */}
-        <div className="p-6 border-b border-slate-200/60 flex items-center gap-3">
+        <div className="p-6 border-b border-white/10 flex items-center gap-3">
           <img src="/logo.png" alt="Hearless" className="w-9 h-9 rounded-xl object-cover shadow-md shadow-accent/20" />
           <div>
-            <h1 className="font-syne font-bold text-lg text-slate-800 leading-none">Hearless</h1>
+            <h1 className="font-syne font-bold text-lg text-[#F5F5F7] leading-none">Hearless</h1>
             <span className="text-[10px] text-accent font-semibold tracking-widest uppercase">AI Assist</span>
           </div>
         </div>
@@ -184,8 +184,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href={item.path}
                 className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all duration-200 group ${
                   isActive
-                    ? "border border-sky-200 text-sky-700 shadow-sm"
-                    : "border border-transparent text-sky-800 hover:bg-sky-50 hover:text-sky-900"
+                    ? "border border-[#4C8DDB]/30 text-[#4C8DDB] shadow-sm"
+                    : "border border-transparent text-[#4C8DDB] hover:bg-[#12182A] hover:text-[#F5F5F7]"
                 }`}
                 style={isActive ? { background: "var(--gradient-soft)" } : undefined}
               >
@@ -199,19 +199,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User Card */}
-        <div className="p-4 border-t border-slate-200/60 bg-white">
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-sky-50 border border-sky-100 shadow-sm mb-3">
+        <div className="p-4 border-t border-white/10 bg-[#12182A]">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#12182A] border border-white/10 shadow-sm mb-3">
             <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/20 text-accent flex items-center justify-center font-extrabold font-syne">
               {profile?.name ? profile.name[0].toUpperCase() : user?.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-syne text-sm font-bold text-slate-800 truncate">{profile?.name || "Пользователь"}</p>
-              <p className="text-[10px] text-slate-400 font-semibold truncate mt-0.5">{user?.email}</p>
+              <p className="font-syne text-sm font-bold text-[#F5F5F7] truncate">{profile?.name || "Пользователь"}</p>
+              <p className="text-[10px] text-[#9AA5BD] font-semibold truncate mt-0.5">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 bg-white/50 text-slate-600 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-bold text-xs shadow-sm transition-colors duration-200"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/10 bg-[#12182A]/50 text-[#9AA5BD] hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-bold text-xs shadow-sm transition-colors duration-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -224,14 +224,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0 z-10 relative">
         {/* Mobile Header */}
-        <header className="flex md:hidden items-center justify-between px-6 py-4 bg-white border-b border-sky-100">
+        <header className="flex md:hidden items-center justify-between px-6 py-4 bg-[#12182A] border-b border-white/10">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Hearless" className="w-8 h-8 rounded-lg object-cover" />
-            <h1 className="font-syne font-bold text-md text-slate-800">Hearless</h1>
+            <h1 className="font-syne font-bold text-md text-[#F5F5F7]">Hearless</h1>
           </div>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 bg-white/50"
+            className="p-1.5 rounded-lg border border-white/10 text-[#9AA5BD] hover:text-[#F5F5F7] bg-[#12182A]/50"
             aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,15 +247,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
 
             {/* Sidebar Content */}
-            <aside className="relative flex flex-col w-72 bg-white h-full border-r border-white/60 shadow-2xl p-6">
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+            <aside className="relative flex flex-col w-72 bg-[#12182A] h-full border-r border-white/10 shadow-2xl p-6">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <img src="/logo.png" alt="Hearless" className="w-8 h-8 rounded-lg object-cover" />
-                  <h2 className="font-syne font-bold text-slate-800 text-md">Навигация</h2>
+                  <h2 className="font-syne font-bold text-[#F5F5F7] text-md">Навигация</h2>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 rounded-lg border border-slate-200 text-slate-500"
+                  className="p-1 rounded-lg border border-white/10 text-[#9AA5BD]"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -273,8 +273,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-4 px-4 py-3 rounded-xl font-syne font-bold text-sm transition-all group ${
                         isActive
-                          ? "border border-sky-200 text-sky-700"
-                          : "border border-transparent text-sky-800 hover:bg-sky-50 hover:text-sky-900"
+                          ? "border border-[#4C8DDB]/30 text-[#4C8DDB]"
+                          : "border border-transparent text-[#4C8DDB] hover:bg-[#12182A] hover:text-[#F5F5F7]"
                       }`}
                       style={isActive ? { background: "var(--gradient-soft)" } : undefined}
                     >
@@ -285,19 +285,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 })}
               </nav>
 
-              <div className="mt-auto pt-4 border-t border-slate-200">
-                <div className="flex items-center gap-3 p-2 rounded-xl bg-sky-50 border border-sky-100 shadow-sm mb-3">
+              <div className="mt-auto pt-4 border-t border-white/10">
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-[#12182A] border border-white/10 shadow-sm mb-3">
                   <div className="w-9 h-9 rounded-lg bg-accent/20 text-accent flex items-center justify-center font-bold text-sm">
                     {profile?.name ? profile.name[0].toUpperCase() : user?.email?.[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-syne text-sm font-bold text-slate-800 truncate">{profile?.name || "Пользователь"}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+                    <p className="font-syne text-sm font-bold text-[#F5F5F7] truncate">{profile?.name || "Пользователь"}</p>
+                    <p className="text-[10px] text-[#9AA5BD] truncate">{user?.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-slate-200 text-slate-500 font-bold text-xs"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-white/10 text-[#9AA5BD] font-bold text-xs"
                 >
                   Выйти из аккаунта
                 </button>

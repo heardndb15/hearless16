@@ -783,8 +783,8 @@ export default function SubtitlesDashboard() {
                 )}
                 {aiStatus === "ready" && (
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-slate-500"></span>
-                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-slate-400 uppercase">
+                    <span className="h-2 w-2 rounded-full bg-[#9AA5BD]"></span>
+                    <span className="text-[10px] font-syne font-extrabold tracking-widest text-[#9AA5BD] uppercase">
                       ● Готов к работе
                     </span>
                   </div>
@@ -798,7 +798,7 @@ export default function SubtitlesDashboard() {
                 {(isRecording || isBackgroundCapturing) ? (
                   rollingLines.length > 0 ? (
                     <div className={`transition-all duration-300 w-full ${
-                      bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/5 p-6 rounded-2xl backdrop-blur-[2px]" : ""
+                      bgColor === "dark" ? "bg-slate-900/80 border border-white/10 p-6 rounded-2xl backdrop-blur-md" : bgColor === "semi" ? "bg-black/40 border border-white/10 p-6 rounded-2xl backdrop-blur-[2px]" : ""
                     }`}>
                       <p style={{
                         fontSize: fontSize === "sm" ? "18px" : fontSize === "lg" ? "30px" : fontSize === "xl" ? "38px" : "24px",
@@ -844,18 +844,18 @@ export default function SubtitlesDashboard() {
                       <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/35 flex items-center justify-center mx-auto text-cyan-400 text-xl">
                         {isRecording ? "🎙️" : "🎬"}
                       </div>
-                      <p className="text-slate-400 font-syne text-sm font-bold tracking-wider">
+                      <p className="text-[#9AA5BD] font-syne text-sm font-bold tracking-wider">
                         {isRecording ? "Говорите, ИИ расшифровывает..." : "Слушаем звук вкладки, ИИ расшифровывает..."}
                       </p>
                     </div>
                   )
                 ) : (
                   <div className="my-auto space-y-4 py-8 text-center w-full">
-                    <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center mx-auto text-2xl shadow-xl">
+                    <div className="w-16 h-16 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center mx-auto text-2xl shadow-xl">
                       🎬
                     </div>
                     <h3 className="font-syne font-extrabold text-white text-lg">Запуск ИИ-Субтитров</h3>
-                    <p className="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed font-semibold">
+                    <p className="text-[#9AA5BD] text-xs max-w-xs mx-auto leading-relaxed font-semibold">
                       Нажмите круглую кнопку записи внизу для запуска распознавания речи в кино-режиме.
                     </p>
                   </div>
@@ -885,20 +885,20 @@ export default function SubtitlesDashboard() {
 
           {/* Subtitles Design Settings Panel */}
           {settingsOpen && (
-            <div className="bg-white/70 backdrop-blur-xl border border-white/80 shadow-lg rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-[slide-up_0.2s_ease-out]">
+            <div className="bg-[#12182A]/70 backdrop-blur-xl border border-white/10 shadow-lg rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 animate-[slide-up_0.2s_ease-out]">
               <div className="flex flex-col gap-4 w-full">
-                <h4 className="font-syne font-bold text-xs text-slate-700 uppercase tracking-wider">Настройка стиля и качества субтитров</h4>
+                <h4 className="font-syne font-bold text-xs text-[#F5F5F7] uppercase tracking-wider">Настройка стиля и качества субтитров</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 w-full">
                   {/* Font Size Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Размер шрифта</span>
-                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                    <span className="text-[10px] text-[#9AA5BD] font-bold uppercase">Размер шрифта</span>
+                    <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
                       {["sm", "md", "lg", "xl"].map((sz) => (
                         <button
                           key={sz}
                           onClick={() => changeFontSize(sz)}
                           className={`flex-1 text-[10px] font-bold py-1 rounded ${
-                            fontSize === sz ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                            fontSize === sz ? "bg-[#12182A] text-[#F5F5F7] shadow-sm" : "text-[#9AA5BD] hover:text-[#F5F5F7]"
                           }`}
                         >
                           {sz.toUpperCase()}
@@ -909,8 +909,8 @@ export default function SubtitlesDashboard() {
 
                   {/* Text Color Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Цвет текста</span>
-                    <div className="flex gap-1.5 bg-slate-200/50 p-1 rounded-lg">
+                    <span className="text-[10px] text-[#9AA5BD] font-bold uppercase">Цвет текста</span>
+                    <div className="flex gap-1.5 bg-white/5 p-1 rounded-lg">
                       {["white", "yellow", "cyan", "green"].map((col) => (
                         <button
                           key={col}
@@ -931,8 +931,8 @@ export default function SubtitlesDashboard() {
 
                   {/* Background Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Фон</span>
-                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                    <span className="text-[10px] text-[#9AA5BD] font-bold uppercase">Фон</span>
+                    <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
                       {[
                         { key: "dark", label: "Темный" },
                         { key: "semi", label: "Полупроз." },
@@ -942,7 +942,7 @@ export default function SubtitlesDashboard() {
                           key={bg.key}
                           onClick={() => changeBgColor(bg.key)}
                           className={`flex-1 text-[9px] font-bold py-1 rounded ${
-                            bgColor === bg.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                            bgColor === bg.key ? "bg-[#12182A] text-[#F5F5F7] shadow-sm" : "text-[#9AA5BD] hover:text-[#F5F5F7]"
                           }`}
                         >
                           {bg.label}
@@ -953,13 +953,13 @@ export default function SubtitlesDashboard() {
 
                   {/* Glow Toggle */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Свечение текста</span>
+                    <span className="text-[10px] text-[#9AA5BD] font-bold uppercase">Свечение текста</span>
                     <button
                       onClick={() => changeTextGlow(!textGlow)}
                       className={`text-[10px] font-bold py-1.5 px-3 rounded-lg border transition-all ${
                         textGlow
                           ? "bg-cyan-500/15 border-cyan-500/20 text-cyan-600 font-extrabold"
-                          : "bg-white/50 border-slate-200 text-slate-500"
+                          : "bg-[#12182A]/50 border-white/10 text-[#9AA5BD]"
                       }`}
                     >
                       {textGlow ? "✨ ВКЛЮЧЕНО" : "🔇 ВЫКЛЮЧЕНО"}
@@ -968,8 +968,8 @@ export default function SubtitlesDashboard() {
 
                   {/* Language Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Язык</span>
-                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                    <span className="text-[10px] text-[#9AA5BD] font-bold uppercase">Язык</span>
+                    <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
                       {[
                         { key: "ru", label: "Русский" },
                         { key: "kk", label: "Қазақша" },
@@ -978,7 +978,7 @@ export default function SubtitlesDashboard() {
                           key={l.key}
                           onClick={() => changeUserLanguage(l.key as "ru" | "kk")}
                           className={`flex-1 text-[9px] font-bold py-1.5 rounded transition-all ${
-                            userLanguage === l.key ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                            userLanguage === l.key ? "bg-[#12182A] text-[#F5F5F7] shadow-sm" : "text-[#9AA5BD] hover:text-[#F5F5F7]"
                           }`}
                         >
                           {l.label}
@@ -989,8 +989,8 @@ export default function SubtitlesDashboard() {
 
                   {/* Recognition Engine Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Движок распознавания</span>
-                    <div className="flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                    <span className="text-[10px] text-[#9AA5BD] font-bold uppercase">Движок распознавания</span>
+                    <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
                       {[
                         { key: "browser", label: "Браузер" },
                         { key: "whisper", label: "Whisper ИИ" }
@@ -1004,7 +1004,7 @@ export default function SubtitlesDashboard() {
                             disabled={disabled}
                             title={disabled ? "Для казахского доступен только Whisper ИИ (FreedomSpeech)" : undefined}
                             className={`flex-1 text-[9px] font-bold py-1.5 rounded transition-all ${
-                              isActive ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                              isActive ? "bg-[#12182A] text-[#F5F5F7] shadow-sm" : "text-[#9AA5BD] hover:text-[#F5F5F7]"
                             } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
                           >
                             {eng.label}
@@ -1019,7 +1019,7 @@ export default function SubtitlesDashboard() {
           )}
 
           {/* Unified Floating Controller Dock */}
-          <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 z-10">
+          <div className="bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 z-10">
             {/* Left Section: Record control */}
             <div className="flex items-center gap-3">
               <button
@@ -1027,7 +1027,7 @@ export default function SubtitlesDashboard() {
                 disabled={isBackgroundCapturing}
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 relative ${
                   isRecording
-                    ? "bg-slate-900 border border-slate-700 text-red-500 hover:bg-slate-800 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                    ? "bg-red-500/15 border border-red-500/40 text-red-500 hover:bg-red-500/25 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                     : "bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20"
                 } ${isBackgroundCapturing ? "opacity-40 cursor-not-allowed" : ""}`}
                 style={{
@@ -1045,10 +1045,10 @@ export default function SubtitlesDashboard() {
                 )}
               </button>
               <div className="text-left">
-                <p className="font-syne font-bold text-xs text-slate-800">
+                <p className="font-syne font-bold text-xs text-[#F5F5F7]">
                   {isRecording ? "Запись активна" : "Микрофон отключен"}
                 </p>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                <p className="text-[10px] text-[#9AA5BD] font-semibold uppercase tracking-wider">
                   {isRecording ? "Слушаем собеседника" : "Нажмите для запуска"}
                 </p>
               </div>
@@ -1058,7 +1058,7 @@ export default function SubtitlesDashboard() {
                 className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border flex items-center gap-1.5 ${
                   isBackgroundCapturing
                     ? "bg-red-500 border-red-500 text-white hover:bg-red-600"
-                    : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                    : "bg-[#12182A]/60 border-white/10 text-[#9AA5BD] hover:text-[#F5F5F7]"
                 } ${isRecording ? "opacity-40 cursor-not-allowed" : ""}`}
               >
                 {isBackgroundCapturing ? "⏹ Остановить фоновые субтитры" : "🎬 Фоновые субтитры"}
@@ -1069,7 +1069,7 @@ export default function SubtitlesDashboard() {
                   className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border ${
                     isPipActive
                       ? "bg-accent/15 border-accent/20 text-accent"
-                      : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                      : "bg-[#12182A]/60 border-white/10 text-[#9AA5BD] hover:text-[#F5F5F7]"
                   }`}
                 >
                   {isPipActive ? "Закрыть PiP" : "Открыть в PiP"}
@@ -1090,7 +1090,7 @@ export default function SubtitlesDashboard() {
               {transcriptionText.trim() && (
                 <button
                   onClick={() => setTranscriptionText("")}
-                  className="px-4 py-2.5 rounded-xl bg-white/60 border border-slate-200 text-slate-600 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-syne font-bold text-xs shadow-sm transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-[#12182A]/60 border border-white/10 text-[#9AA5BD] hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 font-syne font-bold text-xs shadow-sm transition-all"
                 >
                   Очистить экран
                 </button>
@@ -1100,7 +1100,7 @@ export default function SubtitlesDashboard() {
                 className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border flex items-center gap-1.5 ${
                   settingsOpen
                     ? "bg-accent/15 border-accent/20 text-accent font-extrabold"
-                    : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                    : "bg-[#12182A]/60 border-white/10 text-[#9AA5BD] hover:text-[#F5F5F7]"
                 }`}
               >
                 ⚙️ Дизайн
@@ -1110,7 +1110,7 @@ export default function SubtitlesDashboard() {
                 className={`px-4 py-2.5 rounded-xl font-syne font-bold text-xs shadow-sm transition-all border ${
                   historyOpen
                     ? "bg-accent/15 border-accent/20 text-accent"
-                    : "bg-white/60 border-slate-200 text-slate-500 hover:text-slate-800"
+                    : "bg-[#12182A]/60 border-white/10 text-[#9AA5BD] hover:text-[#F5F5F7]"
                 }`}
               >
                 📜 История ({history.length})
@@ -1121,13 +1121,13 @@ export default function SubtitlesDashboard() {
 
         {/* Collapsible History Sidebar Panel (4 cols) */}
         {historyOpen && (
-          <div className="lg:col-span-4 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
+          <div className="lg:col-span-4 bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-3xl p-6 flex flex-col gap-6 animate-[fade-up_0.3s_ease-out] max-h-[560px]">
             <div className="flex justify-between items-center">
               <h3 className="font-syne font-extrabold text-base" style={{ color: "var(--text)" }}>История диалогов</h3>
               {history.length > 0 && (
                 <button
                   onClick={handleClearHistory}
-                  className="text-[9px] uppercase font-bold tracking-wider text-slate-400 hover:text-red-500 transition-colors"
+                  className="text-[9px] uppercase font-bold tracking-wider text-[#9AA5BD] hover:text-red-500 transition-colors"
                 >
                   Очистить всё
                 </button>
@@ -1137,7 +1137,7 @@ export default function SubtitlesDashboard() {
             {/* List with scroll */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {history.length === 0 ? (
-                <div className="py-24 text-center text-slate-400 text-xs font-semibold">
+                <div className="py-24 text-center text-[#9AA5BD] text-xs font-semibold">
                   Нет сохраненных диалогов.
                 </div>
               ) : (
@@ -1147,10 +1147,10 @@ export default function SubtitlesDashboard() {
                     <div
                       key={item.id}
                       onClick={() => setExpandedHistoryId(isExpanded ? null : item.id)}
-                      className="p-3.5 rounded-2xl bg-white/50 border border-white/80 shadow-sm space-y-2 text-left group transition-all hover:bg-white/70 hover:shadow-md cursor-pointer"
+                      className="p-3.5 rounded-2xl bg-[#12182A]/50 border border-white/10 shadow-sm space-y-2 text-left group transition-all hover:bg-[#12182A]/70 hover:shadow-md cursor-pointer"
                     >
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                        <span className="text-[9px] text-[#9AA5BD] font-bold uppercase tracking-wider">
                           {new Date(item.created_at).toLocaleString("ru-RU", {
                             day: "2-digit",
                             month: "short",
@@ -1163,7 +1163,7 @@ export default function SubtitlesDashboard() {
                             e.stopPropagation();
                             handleDeleteItem(item.id);
                           }}
-                          className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-0.5"
+                          className="text-[#9AA5BD] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-0.5"
                           aria-label="Удалить запись"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1171,7 +1171,7 @@ export default function SubtitlesDashboard() {
                           </svg>
                         </button>
                       </div>
-                      <p className={`font-dm text-xs text-slate-700 leading-relaxed font-semibold whitespace-pre-wrap ${isExpanded ? "" : "line-clamp-3"}`}>
+                      <p className={`font-dm text-xs text-[#F5F5F7] leading-relaxed font-semibold whitespace-pre-wrap ${isExpanded ? "" : "line-clamp-3"}`}>
                         {item.text}
                       </p>
                       {!isExpanded && item.text.length > 140 && (

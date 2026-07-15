@@ -118,19 +118,19 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-400">Загрузка настроек профиля...</div>;
+    return <div className="py-20 text-center text-[#9AA5BD]">Загрузка настроек профиля...</div>;
   }
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h2 className="font-syne font-extrabold text-3xl text-slate-800">Настройки профиля</h2>
-        <p className="text-slate-500 text-sm max-w-2xl font-medium">
+        <h2 className="font-syne font-extrabold text-3xl text-[#F5F5F7]">Настройки профиля</h2>
+        <p className="text-[#9AA5BD] text-sm max-w-2xl font-medium">
           Управляйте своей учетной записью, языковыми предпочтениями и параметрами приватности.
         </p>
       </div>
 
-      <div className="max-w-xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 md:p-8 space-y-6">
+      <div className="max-w-xl bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 md:p-8 space-y-6">
 
         {/* Avatar */}
         <div className="flex flex-col items-center gap-2">
@@ -138,12 +138,12 @@ export default function ProfilePage() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingAvatar}
-            className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-white/60 shadow-md focus:outline-none"
+            className="relative group w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 shadow-md focus:outline-none"
           >
             {avatarPreview ? (
               <img src={avatarPreview} alt="Аватар" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-500 text-3xl font-bold font-syne">
+              <div className="w-full h-full bg-white/10 flex items-center justify-center text-[#9AA5BD] text-3xl font-bold font-syne">
                 {name?.[0]?.toUpperCase() || "?"}
               </div>
             )}
@@ -168,12 +168,12 @@ export default function ProfilePage() {
             onChange={handleAvatarChange}
             className="hidden"
           />
-          <p className="text-xs text-slate-400 font-medium">Нажмите чтобы изменить фото</p>
+          <p className="text-xs text-[#9AA5BD] font-medium">Нажмите чтобы изменить фото</p>
         </div>
 
         {/* Name */}
         <div className="space-y-2 text-left">
-          <label className="block font-syne text-xs font-bold text-slate-600 uppercase tracking-wider">
+          <label className="block font-syne text-xs font-bold text-[#9AA5BD] uppercase tracking-wider">
             Ваше имя
           </label>
           <input
@@ -181,14 +181,14 @@ export default function ProfilePage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={32}
-            className="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200/60 focus:border-accent text-slate-850 text-sm font-semibold outline-none transition-colors"
+            className="w-full px-4 py-3 rounded-xl bg-[#12182A]/60 border border-white/10 focus:border-accent text-[#F5F5F7] text-sm font-semibold outline-none transition-colors"
             placeholder="Введите ваше имя"
           />
         </div>
 
         {/* Bio */}
         <div className="space-y-2 text-left">
-          <label className="block font-syne text-xs font-bold text-slate-600 uppercase tracking-wider">
+          <label className="block font-syne text-xs font-bold text-[#9AA5BD] uppercase tracking-wider">
             О себе
           </label>
           <textarea
@@ -196,27 +196,27 @@ export default function ProfilePage() {
             onChange={(e) => setBio(e.target.value)}
             maxLength={200}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200/60 focus:border-accent text-slate-850 text-sm font-semibold outline-none transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-xl bg-[#12182A]/60 border border-white/10 focus:border-accent text-[#F5F5F7] text-sm font-semibold outline-none transition-colors resize-none"
             placeholder="Расскажите о себе..."
           />
-          <p className="text-right text-xs text-slate-400">{bio.length}/200</p>
+          <p className="text-right text-xs text-[#9AA5BD]">{bio.length}/200</p>
         </div>
 
         {/* Language */}
         <div className="space-y-2 text-left">
-          <label className="block font-syne text-xs font-bold text-slate-600 uppercase tracking-wider">
+          <label className="block font-syne text-xs font-bold text-[#9AA5BD] uppercase tracking-wider">
             Язык интерфейса
           </label>
           <div className="relative">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as "kk" | "ru")}
-              className="w-full px-4 py-3 rounded-xl bg-white/60 border border-slate-200/60 focus:border-accent text-slate-850 text-sm font-semibold outline-none transition-colors appearance-none"
+              className="w-full px-4 py-3 rounded-xl bg-[#12182A]/60 border border-white/10 focus:border-accent text-[#F5F5F7] text-sm font-semibold outline-none transition-colors appearance-none"
             >
               <option value="ru">Русский</option>
               <option value="kk">Қазақша</option>
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#9AA5BD]">
               <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
               </svg>
@@ -226,14 +226,14 @@ export default function ProfilePage() {
 
         {/* Email (read-only) */}
         <div className="space-y-2 text-left">
-          <label className="block font-syne text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <label className="block font-syne text-xs font-bold text-[#9AA5BD] uppercase tracking-wider">
             Email-адрес (нельзя изменить)
           </label>
           <input
             type="email"
             value={user?.email || ""}
             disabled
-            className="w-full px-4 py-3 rounded-xl bg-slate-100/40 border border-slate-200/40 text-slate-400 text-sm outline-none cursor-not-allowed"
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-[#9AA5BD] text-sm outline-none cursor-not-allowed"
           />
         </div>
 
@@ -246,12 +246,12 @@ export default function ProfilePage() {
         <button
           onClick={handleSave}
           disabled={saving || uploadingAvatar}
-          className="w-full py-4 rounded-xl bg-accent hover:bg-accent/90 disabled:bg-slate-350 disabled:text-slate-500 text-white font-syne font-bold text-sm tracking-wide shadow-md transition-colors duration-200"
+          className="w-full py-4 rounded-xl bg-accent hover:bg-accent/90 disabled:bg-white/10 disabled:text-[#9AA5BD] text-white font-syne font-bold text-sm tracking-wide shadow-md transition-colors duration-200"
         >
           {saving ? "Сохранение..." : "Сохранить изменения"}
         </button>
 
-        <hr className="border-slate-200/60" />
+        <hr className="border-white/10" />
 
         <button
           onClick={handleSignOut}

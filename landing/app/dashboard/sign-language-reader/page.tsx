@@ -247,8 +247,8 @@ export default function SignLanguageReaderPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h2 className="font-syne font-extrabold text-3xl text-slate-800">Перевод жестов</h2>
-          <p className="text-slate-500 text-sm max-w-2xl font-medium">
+          <h2 className="font-syne font-extrabold text-3xl text-[#F5F5F7]">Перевод жестов</h2>
+          <p className="text-[#9AA5BD] text-sm max-w-2xl font-medium">
             Покажите жест перед камерой — приложение распознает его и добавит слово в предложение.
           </p>
         </div>
@@ -260,7 +260,7 @@ export default function SignLanguageReaderPage() {
               className={
                 lang.code === language
                   ? "px-4 py-2 rounded-xl bg-accent text-white text-xs font-bold"
-                  : "px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold"
+                  : "px-4 py-2 rounded-xl bg-white/5 text-[#9AA5BD] text-xs font-bold"
               }
             >
               {lang.label}
@@ -270,8 +270,8 @@ export default function SignLanguageReaderPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-7 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6">
-          <div className="relative aspect-video w-full rounded-2xl border-2 border-slate-300 bg-slate-950 overflow-hidden flex items-center justify-center shadow-2xl">
+        <div className="lg:col-span-7 bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6">
+          <div className="relative aspect-video w-full rounded-2xl border-2 border-white/15 bg-slate-950 overflow-hidden flex items-center justify-center shadow-2xl">
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
             <canvas
               ref={canvasRef}
@@ -282,7 +282,7 @@ export default function SignLanguageReaderPage() {
 
             {isModelLoading && !cameraError && (
               <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center gap-4">
-                <div className="w-11 h-11 border-4 border-white/15 border-t-accent rounded-full animate-spin" />
+                <div className="w-11 h-11 border-4 border-white/10 border-t-accent rounded-full animate-spin" />
                 <span className="text-xs text-white/80 font-syne tracking-wide">Инициализация трекера рук...</span>
               </div>
             )}
@@ -312,14 +312,14 @@ export default function SignLanguageReaderPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-5 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-5">
+        <div className="lg:col-span-5 bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 flex flex-col gap-5">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: QUALITY_COLOR[quality] }} />
-            <span className="text-xs font-bold text-slate-500">{QUALITY_LABEL[quality]}</span>
+            <span className="text-xs font-bold text-[#9AA5BD]">{QUALITY_LABEL[quality]}</span>
           </div>
 
-          <div className="min-h-[100px] max-h-[220px] overflow-y-auto rounded-xl bg-slate-50/80 border border-slate-100 p-4">
-            <p className={hasText ? "text-2xl font-bold text-slate-800 leading-snug" : "text-sm text-slate-400"}>
+          <div className="min-h-[100px] max-h-[220px] overflow-y-auto rounded-xl bg-[#12182A]/80 border border-white/10 p-4">
+            <p className={hasText ? "text-2xl font-bold text-[#F5F5F7] leading-snug" : "text-sm text-[#9AA5BD]"}>
               {hasText ? sentence : "Распознанный текст появится здесь"}
             </p>
           </div>
@@ -328,7 +328,7 @@ export default function SignLanguageReaderPage() {
             <button
               onClick={handleClear}
               disabled={!hasText}
-              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-slate-100 disabled:opacity-40 text-slate-700 font-semibold text-xs"
+              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white/5 disabled:opacity-40 text-[#F5F5F7] font-semibold text-xs"
             >
               <span className="text-lg">🗑️</span>
               Очистить
@@ -336,7 +336,7 @@ export default function SignLanguageReaderPage() {
             <button
               onClick={handleCopy}
               disabled={!hasText}
-              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-slate-100 disabled:opacity-40 text-slate-700 font-semibold text-xs"
+              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white/5 disabled:opacity-40 text-[#F5F5F7] font-semibold text-xs"
             >
               <span className="text-lg">📋</span>
               Копировать
@@ -344,7 +344,7 @@ export default function SignLanguageReaderPage() {
             <button
               onClick={handleSpeak}
               disabled={!hasText}
-              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-slate-100 disabled:opacity-40 text-slate-700 font-semibold text-xs"
+              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white/5 disabled:opacity-40 text-[#F5F5F7] font-semibold text-xs"
             >
               <span className="text-lg">🔊</span>
               Озвучить

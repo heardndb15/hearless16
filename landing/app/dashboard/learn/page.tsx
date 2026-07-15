@@ -441,27 +441,27 @@ export default function LearnSignLanguagePage() {
   }
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-400">Загрузка программы обучения...</div>;
+    return <div className="py-20 text-center text-[#9AA5BD]">Загрузка программы обучения...</div>;
   }
 
   return (
     <div className="space-y-8">
       {/* Header Info */}
       <div className="flex flex-col gap-2">
-        <h2 className="font-syne font-extrabold text-3xl text-slate-800">Изучение жестового языка</h2>
-        <p className="text-slate-500 text-sm max-w-2xl font-medium">
+        <h2 className="font-syne font-extrabold text-3xl text-[#F5F5F7]">Изучение жестового языка</h2>
+        <p className="text-[#9AA5BD] text-sm max-w-2xl font-medium">
           Интерактивный тренажер для запоминания жестов. Просматривайте инструкции, отмечайте жесты как выученные и отслеживайте свой прогресс.
         </p>
       </div>
 
       {/* Progress Section */}
-      <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-md rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-md rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex-1 w-full text-left space-y-2">
           <div className="flex justify-between items-baseline">
-            <span className="font-syne text-sm font-bold text-slate-700">Ваш прогресс обучения</span>
+            <span className="font-syne text-sm font-bold text-[#F5F5F7]">Ваш прогресс обучения</span>
             <span className="font-syne text-xs font-bold text-accent">{learnedCount} из {totalGestures} жестов ({progressPercent}%)</span>
           </div>
-          <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+          <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
             <div
               style={{ width: `${progressPercent}%` }}
               className="bg-gradient-to-r from-accent to-purpleBrand h-full rounded-full transition-all duration-500"
@@ -469,9 +469,9 @@ export default function LearnSignLanguagePage() {
           </div>
         </div>
         
-        <div className="p-3 bg-white/60 border border-slate-100 shadow-sm rounded-xl shrink-0">
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Уровень владения</p>
-          <p className="font-syne text-base font-extrabold text-slate-800">
+        <div className="p-3 bg-[#12182A]/60 border border-white/10 shadow-sm rounded-xl shrink-0">
+          <p className="text-[10px] text-[#9AA5BD] font-bold uppercase tracking-wider">Уровень владения</p>
+          <p className="font-syne text-base font-extrabold text-[#F5F5F7]">
             {progressPercent >= 80 ? "Эксперт" : progressPercent >= 40 ? "Любитель" : "Новичок"}
           </p>
         </div>
@@ -479,7 +479,7 @@ export default function LearnSignLanguagePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Side: Selected Gesture Instruction Display (5 cols) */}
-        <div className="lg:col-span-5 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6 text-center justify-between min-h-[460px]">
+        <div className="lg:col-span-5 bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 flex flex-col gap-6 text-center justify-between min-h-[460px]">
           {selectedGesture ? (
             <>
               {/* Card Title & tags */}
@@ -488,16 +488,16 @@ export default function LearnSignLanguagePage() {
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getDifficultyStyle(selectedGesture.difficulty)}`}>
                     {translateDifficulty(selectedGesture.difficulty)}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-[#9AA5BD] uppercase tracking-wider">
                     Раздел: {selectedGesture.category}
                   </span>
                 </div>
-                <h3 className="font-syne font-black text-2xl text-slate-800">{selectedGesture.name}</h3>
+                <h3 className="font-syne font-black text-2xl text-[#F5F5F7]">{selectedGesture.name}</h3>
               </div>
 
               {/* Gesture visual illustration placeholder OR Webcam preview */}
               {cameraMode ? (
-                <div className="relative aspect-square w-56 h-56 mx-auto rounded-2xl border-2 border-slate-300 bg-slate-950 overflow-hidden flex items-center justify-center shadow-2xl">
+                <div className="relative aspect-square w-56 h-56 mx-auto rounded-2xl border-2 border-white/15 bg-slate-950 overflow-hidden flex items-center justify-center shadow-2xl">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -540,16 +540,16 @@ export default function LearnSignLanguagePage() {
                 /* Tutorial view: SVG hand + steps + tip */
                 <div className="w-full space-y-4">
                   <div className="flex gap-4 items-start">
-                    <div className="shrink-0 w-28 h-28 bg-gradient-to-br from-sky-50 to-blue-50 rounded-2xl border border-sky-100 flex items-center justify-center shadow-sm">
+                    <div className="shrink-0 w-28 h-28 bg-gradient-to-br from-[#12182A] to-blue-50 rounded-2xl border border-white/10 flex items-center justify-center shadow-sm">
                       <HandSign fingers={GESTURE_TUTORIALS[selectedGesture.name].fingers} size={88} color="var(--accent)" />
                     </div>
                     <div className="flex-1 text-left space-y-2">
                       {GESTURE_TUTORIALS[selectedGesture.name].steps.map((step, i) => (
                         <div key={i} className="flex gap-2 items-start">
-                          <span className="shrink-0 w-5 h-5 rounded-full bg-sky-100 border border-sky-200 text-[10px] font-bold text-sky-600 flex items-center justify-center mt-0.5">
+                          <span className="shrink-0 w-5 h-5 rounded-full bg-[#1A2138] border border-[#4C8DDB]/30 text-[10px] font-bold text-[#4C8DDB] flex items-center justify-center mt-0.5">
                             {i + 1}
                           </span>
-                          <p className="text-xs text-slate-600 leading-snug">{step}</p>
+                          <p className="text-xs text-[#9AA5BD] leading-snug">{step}</p>
                         </div>
                       ))}
                     </div>
@@ -562,7 +562,7 @@ export default function LearnSignLanguagePage() {
                   )}
                 </div>
               ) : (
-                <div className="relative aspect-square w-48 h-48 mx-auto rounded-full bg-gradient-to-tr from-accent/5 to-purpleBrand/5 border border-white flex items-center justify-center shadow-lg shadow-accent/5">
+                <div className="relative aspect-square w-48 h-48 mx-auto rounded-full bg-gradient-to-tr from-accent/5 to-purpleBrand/5 border border-white/10 flex items-center justify-center shadow-lg shadow-accent/5">
                   <span className="text-8xl animate-[float_4s_infinite_ease-in-out]">
                     {translateNameToEmoji(selectedGesture.name)}
                   </span>
@@ -583,28 +583,28 @@ export default function LearnSignLanguagePage() {
 
                 {/* Accuracy progress meters if verifying */}
                 {cameraMode && verificationResult && (
-                  <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3.5 space-y-2 text-left text-xs font-semibold">
+                  <div className="bg-[#12182A]/80 border border-white/10 rounded-xl p-3.5 space-y-2 text-left text-xs font-semibold">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Форма руки:</span>
-                      <span className="font-bold text-slate-700">{verificationResult.components.hand_shape}%</span>
+                      <span className="text-[#9AA5BD]">Форма руки:</span>
+                      <span className="font-bold text-[#F5F5F7]">{verificationResult.components.hand_shape}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
                       <div style={{ width: `${verificationResult.components.hand_shape}%` }} className="bg-accent h-full"></div>
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Позиция:</span>
-                      <span className="font-bold text-slate-700">{verificationResult.components.position}%</span>
+                      <span className="text-[#9AA5BD]">Позиция:</span>
+                      <span className="font-bold text-[#F5F5F7]">{verificationResult.components.position}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
                       <div style={{ width: `${verificationResult.components.position}%` }} className="bg-accent h-full"></div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Движение:</span>
-                      <span className="font-bold text-slate-700">{verificationResult.components.movement}%</span>
+                      <span className="text-[#9AA5BD]">Движение:</span>
+                      <span className="font-bold text-[#F5F5F7]">{verificationResult.components.movement}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
                       <div style={{ width: `${verificationResult.components.movement}%` }} className="bg-accent h-full"></div>
                     </div>
                   </div>
@@ -631,7 +631,7 @@ export default function LearnSignLanguagePage() {
                     <div className="flex gap-4">
                       <button
                         onClick={handleRepeatGesture}
-                        className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white/50 text-slate-700 hover:text-slate-850 hover:bg-white font-syne font-bold text-sm tracking-wide shadow-sm transition-all"
+                        className="flex-1 py-3.5 rounded-xl border border-white/10 bg-[#12182A]/50 text-[#F5F5F7] hover:text-[#F5F5F7] hover:bg-[#12182A] font-syne font-bold text-sm tracking-wide shadow-sm transition-all"
                       >
                         ✊ Повторить
                       </button>
@@ -639,7 +639,7 @@ export default function LearnSignLanguagePage() {
                         onClick={handleRememberGesture}
                         className={`flex-1 py-3.5 rounded-xl text-white font-syne font-bold text-sm tracking-wide shadow-md transition-all ${
                           progressMap[selectedGesture.id]?.learned
-                            ? "bg-slate-800 hover:bg-slate-750"
+                            ? "bg-slate-800 hover:bg-slate-700"
                             : "bg-accent hover:bg-accent/90"
                         }`}
                       >
@@ -651,7 +651,7 @@ export default function LearnSignLanguagePage() {
               </div>
             </>
           ) : (
-            <div className="my-auto py-16 text-center text-slate-400 space-y-2">
+            <div className="my-auto py-16 text-center text-[#9AA5BD] space-y-2">
               <span className="text-4xl">📚</span>
               <p className="text-xs font-bold">Выберите жест из списка для начала изучения</p>
             </div>
@@ -659,9 +659,9 @@ export default function LearnSignLanguagePage() {
         </div>
 
         {/* Right Side: Gesture Dictionary Grid (7 cols) */}
-        <div className="lg:col-span-7 bg-white/40 backdrop-blur-xl border border-white/60 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
+        <div className="lg:col-span-7 bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 flex flex-col gap-6">
           <div className="flex justify-between items-center flex-wrap gap-4">
-            <h3 className="font-syne font-extrabold text-lg text-slate-800">Каталог жестов</h3>
+            <h3 className="font-syne font-extrabold text-lg text-[#F5F5F7]">Каталог жестов</h3>
             
             {/* Category tabs */}
             <div className="flex gap-1 overflow-x-auto max-w-full pb-1 pr-1 custom-scrollbar">
@@ -672,7 +672,7 @@ export default function LearnSignLanguagePage() {
                   className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all border shrink-0 ${
                     selectedCategory === cat
                       ? "bg-accent text-white border-accent shadow-sm"
-                      : "bg-white/50 text-slate-500 border-slate-200 hover:border-slate-350"
+                      : "bg-[#12182A]/50 text-[#9AA5BD] border-white/10 hover:border-white/15"
                   }`}
                 >
                   {cat}
@@ -692,8 +692,8 @@ export default function LearnSignLanguagePage() {
                   key={item.id}
                   className={`rounded-xl border text-left transition-all ${
                     isSelected
-                      ? "bg-white/70 border-accent shadow-md"
-                      : "bg-white/40 border-white/60 hover:bg-white/50 hover:border-slate-300 shadow-sm"
+                      ? "bg-[#12182A]/70 border-accent shadow-md"
+                      : "bg-[#12182A]/40 border-white/10 hover:bg-[#12182A]/50 hover:border-white/15 shadow-sm"
                   }`}
                 >
                   {/* Card header row — clicking here selects the gesture */}
@@ -701,12 +701,12 @@ export default function LearnSignLanguagePage() {
                     onClick={() => setSelectedGesture(item)}
                     className="p-4 flex items-center gap-4 cursor-pointer"
                   >
-                    <div className="text-2xl p-2 bg-white/80 border border-slate-100 shadow-sm rounded-lg">
+                    <div className="text-2xl p-2 bg-[#12182A]/80 border border-white/10 shadow-sm rounded-lg">
                       {translateNameToEmoji(item.name)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-syne font-bold text-sm text-slate-800 truncate">{item.name}</h4>
-                      <p className="text-[10px] text-slate-400 font-bold mt-0.5 truncate">
+                      <h4 className="font-syne font-bold text-sm text-[#F5F5F7] truncate">{item.name}</h4>
+                      <p className="text-[10px] text-[#9AA5BD] font-bold mt-0.5 truncate">
                         Попыток: {hasProgress?.attempts || 0}
                       </p>
                     </div>
@@ -721,7 +721,7 @@ export default function LearnSignLanguagePage() {
                           e.stopPropagation();
                           setExpandedId(expandedId === item.id ? null : item.id);
                         }}
-                        className="shrink-0 w-7 h-7 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-xs text-sky-600 hover:bg-sky-100 transition-colors"
+                        className="shrink-0 w-7 h-7 rounded-lg bg-[#12182A] border border-[#4C8DDB]/30 flex items-center justify-center text-xs text-[#4C8DDB] hover:bg-[#1A2138] transition-colors"
                         title="Как делать этот жест"
                       >
                         {expandedId === item.id ? "✕" : "📖"}
@@ -733,20 +733,20 @@ export default function LearnSignLanguagePage() {
                   {expandedId === item.id && GESTURE_TUTORIALS[item.name] && (() => {
                     const tutorial = GESTURE_TUTORIALS[item.name];
                     return (
-                      <div className="px-4 pb-4 border-t border-slate-100">
+                      <div className="px-4 pb-4 border-t border-white/10">
                         <div className="flex gap-4 pt-4">
                           {/* SVG hand */}
-                          <div className="shrink-0 w-20 h-20 bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border border-sky-100 flex items-center justify-center">
+                          <div className="shrink-0 w-20 h-20 bg-gradient-to-br from-[#12182A] to-blue-50 rounded-xl border border-white/10 flex items-center justify-center">
                             <HandSign fingers={tutorial.fingers} size={64} color="var(--accent)" />
                           </div>
                           {/* Steps */}
                           <div className="flex-1 min-w-0 space-y-1.5">
                             {tutorial.steps.map((step, i) => (
                               <div key={i} className="flex gap-2 items-start">
-                                <span className="shrink-0 w-4 h-4 rounded-full bg-sky-100 border border-sky-200 text-[9px] font-bold text-sky-600 flex items-center justify-center mt-0.5">
+                                <span className="shrink-0 w-4 h-4 rounded-full bg-[#1A2138] border border-[#4C8DDB]/30 text-[9px] font-bold text-[#4C8DDB] flex items-center justify-center mt-0.5">
                                   {i + 1}
                                 </span>
-                                <p className="text-[11px] text-slate-600 leading-tight">{step}</p>
+                                <p className="text-[11px] text-[#9AA5BD] leading-tight">{step}</p>
                               </div>
                             ))}
                           </div>

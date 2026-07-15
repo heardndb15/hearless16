@@ -11,7 +11,7 @@ export default function ProfileRedirect() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-[#9AA5BD]">
       Перенаправление в профиль...
     </div>
   );
