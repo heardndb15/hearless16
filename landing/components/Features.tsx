@@ -29,7 +29,7 @@ export default function FeaturesSection() {
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
                 border: "1px solid var(--border)",
-                boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
+                boxShadow: "var(--shadow)",
                 transition: "all 0.3s ease",
                 textDecoration: "none",
                 position: "relative",
@@ -38,13 +38,13 @@ export default function FeaturesSection() {
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--accent)";
                 e.currentTarget.style.background = "var(--bg)";
-                e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0,0.12)";
+                e.currentTarget.style.boxShadow = "var(--shadowStrong)";
                 e.currentTarget.style.transform = "translateY(-3px)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.background = "var(--bgCard)";
-                e.currentTarget.style.boxShadow = "0 2px 16px rgba(0, 0, 0,0.07)";
+                e.currentTarget.style.boxShadow = "var(--shadow)";
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >

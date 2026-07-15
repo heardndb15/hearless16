@@ -89,7 +89,7 @@ export default function CTASection() {
                 borderRadius: "var(--radiusSm)",
                 background: "var(--bgCard)",
                 border: "1.5px solid var(--border)",
-                boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
+                boxShadow: "var(--shadow)",
                 textDecoration: "none",
                 transition: "all 0.3s ease",
               }}

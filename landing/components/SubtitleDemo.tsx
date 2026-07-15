@@ -107,7 +107,7 @@ export default function SubtitleDemo() {
             borderRadius: "var(--radius)",
             padding: "28px 24px",
             border: "1px solid var(--border)",
-            boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
+            boxShadow: "var(--shadow)",
             minHeight: 100,
             marginBottom: 20,
           }}
