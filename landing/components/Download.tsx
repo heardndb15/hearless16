@@ -15,7 +15,7 @@ export default function Download() {
         <p
           style={{
             fontSize: 18,
-            color: "#5a7a8f",
+            color: "var(--textSecondary)",
             marginBottom: 40,
             maxWidth: 480,
             margin: "0 auto 40px",

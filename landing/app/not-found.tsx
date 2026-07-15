@@ -13,8 +13,8 @@ export default function NotFound() {
       <div style={{
         maxWidth: 480,
         width: "100%",
-        background: "#FFFFFF",
-        border: "1px solid rgba(0, 0, 0,0.12)",
+        background: "var(--bgCard)",
+        border: "1px solid var(--border)",
         borderRadius: 24,
         padding: "48px 40px",
         textAlign: "center",
@@ -41,7 +41,7 @@ export default function NotFound() {
           href="/"
           style={{
             padding: "13px 32px", borderRadius: 12, fontSize: 14, fontWeight: 700,
-            background: "var(--accent)", color: "white", textDecoration: "none",
+            background: "var(--accent)", color: "var(--white)", textDecoration: "none",
             display: "inline-flex", alignItems: "center", gap: 8,
           }}
         >

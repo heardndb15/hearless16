@@ -25,7 +25,7 @@ export default function TextToSpeechPage() {
                 padding: "8px 18px", borderRadius: 50, fontSize: 13, cursor: "pointer",
                 border: `1px solid ${lang === l.key ? "var(--accent)" : "var(--border)"}`,
                 background: lang === l.key ? "var(--accent)" : "var(--bg)",
-                color: lang === l.key ? "#fff" : "var(--textSecondary)",
+                color: lang === l.key ? "var(--white)" : "var(--textSecondary)",
               }}>
               {l.label}
             </button>
@@ -52,7 +52,7 @@ export default function TextToSpeechPage() {
             </button>
           </div>
           {error && (
-            <div style={{ marginTop: 16, color: "#DC2626", fontSize: 13 }}>{error}</div>
+            <div style={{ marginTop: 16, color: "var(--danger)", fontSize: 13 }}>{error}</div>
           )}
         </div>
 

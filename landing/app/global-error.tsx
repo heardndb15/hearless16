@@ -36,7 +36,7 @@ export default function GlobalError({
             onClick={reset}
             style={{
               padding: "12px 28px", borderRadius: 12, fontSize: 14, fontWeight: 600,
-              background: "var(--accent)", color: "white", border: "none", cursor: "pointer",
+              background: "var(--accent)", color: "var(--white)", border: "none", cursor: "pointer",
             }}
           >
             Обновить

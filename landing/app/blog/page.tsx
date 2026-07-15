@@ -87,7 +87,7 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 40,
   },
   card: {
-    background: "var(--white)",
+    background: "var(--bgCard)",
     borderRadius: 16,
     padding: "24px",
     textDecoration: "none",
