@@ -1126,7 +1126,7 @@ export default function SubtitlesPage() {
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: "pointer",
               background: mode === "speech" ? "var(--accent)" : "transparent",
-              color: mode === "speech" ? "white" : "var(--text)",
+              color: mode === "speech" ? "var(--white)" : "var(--text)",
               transition: "all 0.2s ease"
             }}
           >
@@ -1143,7 +1143,7 @@ export default function SubtitlesPage() {
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               cursor: "pointer",
               background: mode === "video" ? "var(--accent)" : "transparent",
-              color: mode === "video" ? "white" : "var(--text)",
+              color: mode === "video" ? "var(--white)" : "var(--text)",
               transition: "all 0.2s ease"
             }}
           >
@@ -1166,7 +1166,7 @@ export default function SubtitlesPage() {
                 borderRadius: 50,
                 border: lang === code ? "none" : "1.5px solid var(--border)",
                 background: lang === code ? "var(--accent)" : "var(--bgCard)",
-                color: lang === code ? "white" : "var(--textSecondary)",
+                color: lang === code ? "var(--white)" : "var(--textSecondary)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
@@ -1222,7 +1222,7 @@ export default function SubtitlesPage() {
                         const isEven = seg.speaker % 2 === 0;
                         return (
                           <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10, flexDirection: isEven ? "row" : "row-reverse" }}>
-                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: SPEAKER_COLORS[si], display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: SPEAKER_COLORS[si], display: "flex", alignItems: "center", justifyContent: "center", color: "var(--white)", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
                               S{seg.speaker + 1}
                             </div>
                             <div style={{ maxWidth: "72%" }}>
@@ -1320,7 +1320,7 @@ export default function SubtitlesPage() {
                           fontSize: 13,
                           borderRadius: 50,
                           background: isMicActive ? "var(--sos)" : "var(--accent)",
-                          color: "white",
+                          color: "var(--white)",
                           boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "var(--shadow)",
                           animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
                           border: "none",
@@ -1615,7 +1615,7 @@ export default function SubtitlesPage() {
                           fontSize: 11,
                           borderRadius: 8,
                           background: isMicActive ? "var(--sos)" : "var(--accent)",
-                          color: "white",
+                          color: "var(--white)",
                           boxShadow: isMicActive ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "none",
                           animation: isMicActive ? "mic-pulse 1.5s infinite" : "none",
                           cursor: isScreenCapturing ? "default" : "pointer",
@@ -1659,7 +1659,7 @@ export default function SubtitlesPage() {
                   fontSize: 13,
                   borderRadius: 50,
                   background: isScreenCapturing ? "var(--sos)" : "var(--accent)",
-                  color: "white",
+                  color: "var(--white)",
                   border: "none",
                   cursor: isMicActive ? "default" : "pointer",
                   opacity: isMicActive ? 0.5 : 1,
@@ -1745,7 +1745,7 @@ export default function SubtitlesPage() {
               <div style={{ display: "flex", gap: 6 }}>
                 {["ҚАЗ", "РУС", "ENG"].map(l => (
                   <button key={l} onClick={() => handleLangChange(l)}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--accent)" : "rgba(255,255,255,0.4)", color: lang === l ? "white" : "var(--textSecondary)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: lang === l ? "none" : "1px solid var(--border)", background: lang === l ? "var(--accent)" : "rgba(255,255,255,0.4)", color: lang === l ? "var(--white)" : "var(--textSecondary)", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {l}
                   </button>
                 ))}
@@ -1764,8 +1764,8 @@ export default function SubtitlesPage() {
                       padding: "10px", 
                       borderRadius: 12, 
                       border: !isApiConnecting ? "none" : "1px solid var(--border)", 
-                      background: !isApiConnecting ? "var(--accent)" : "rgba(255,255,255,0.4)", 
-                      color: !isApiConnecting ? "white" : "var(--textSecondary)", 
+                      background: !isApiConnecting ? "var(--accent)" : "rgba(255,255,255,0.4)",
+                      color: !isApiConnecting ? "var(--white)" : "var(--textSecondary)",
                       fontWeight: 600, 
                       fontSize: 12, 
                       cursor: "pointer", 
@@ -1785,8 +1785,8 @@ export default function SubtitlesPage() {
                       padding: "10px", 
                       borderRadius: 12, 
                       border: isApiConnecting ? "none" : "1px solid var(--border)", 
-                      background: isApiConnecting ? "var(--accent)" : "rgba(255,255,255,0.4)", 
-                      color: isApiConnecting ? "white" : "var(--textSecondary)", 
+                      background: isApiConnecting ? "var(--accent)" : "rgba(255,255,255,0.4)",
+                      color: isApiConnecting ? "var(--white)" : "var(--textSecondary)",
                       fontWeight: 600, 
                       fontSize: 12, 
                       cursor: "pointer", 
@@ -1806,7 +1806,7 @@ export default function SubtitlesPage() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
                 {[18, 22, 24, 28].map((sz) => (
                   <button key={sz} onClick={() => setFontSize(sz)}
-                    style={{ padding: "8px 0", borderRadius: 12, border: fontSize === sz ? "none" : "1px solid var(--border)", background: fontSize === sz ? "var(--accent)" : "rgba(255,255,255,0.4)", color: fontSize === sz ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ padding: "8px 0", borderRadius: 12, border: fontSize === sz ? "none" : "1px solid var(--border)", background: fontSize === sz ? "var(--accent)" : "rgba(255,255,255,0.4)", color: fontSize === sz ? "var(--white)" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {sz}
                   </button>
                 ))}
@@ -1841,7 +1841,7 @@ export default function SubtitlesPage() {
                   { opacity: 0, label: "Без фона" }
                 ].map((bg) => (
                   <button key={bg.opacity} onClick={() => setBgOpacity(bg.opacity)}
-                    style={{ width: "100%", padding: "10px", borderRadius: 12, border: bgOpacity === bg.opacity ? "none" : "1px solid var(--border)", background: bgOpacity === bg.opacity ? "var(--accent)" : "rgba(255,255,255,0.4)", color: bgOpacity === bg.opacity ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s", textAlign: "left", paddingLeft: 16 }}>
+                    style={{ width: "100%", padding: "10px", borderRadius: 12, border: bgOpacity === bg.opacity ? "none" : "1px solid var(--border)", background: bgOpacity === bg.opacity ? "var(--accent)" : "rgba(255,255,255,0.4)", color: bgOpacity === bg.opacity ? "var(--white)" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s", textAlign: "left", paddingLeft: 16 }}>
                     {bg.label}
                   </button>
                 ))}
@@ -1857,7 +1857,7 @@ export default function SubtitlesPage() {
                   { key: "left", label: "По левому краю" }
                 ].map((align) => (
                   <button key={align.key} onClick={() => setAlignment(align.key as any)}
-                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: alignment === align.key ? "none" : "1px solid var(--border)", background: alignment === align.key ? "var(--accent)" : "rgba(255,255,255,0.4)", color: alignment === align.key ? "white" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
+                    style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: alignment === align.key ? "none" : "1px solid var(--border)", background: alignment === align.key ? "var(--accent)" : "rgba(255,255,255,0.4)", color: alignment === align.key ? "var(--white)" : "var(--textSecondary)", fontWeight: 600, fontSize: 12, cursor: "pointer", transition: "all 0.2s" }}>
                     {align.label}
                   </button>
                 ))}
@@ -1869,7 +1869,7 @@ export default function SubtitlesPage() {
         {/* РСЃС‚РѕСЂРёСЏ сессии диктовки */}
         {mode === "speech" && history.length > 0 && (
           <div style={{ marginTop: 40 }}>
-            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "white", marginBottom: 16 }}>РСЃС‚РѕСЂРёСЏ сессии</h3>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 16 }}>РСЃС‚РѕСЂРёСЏ сессии</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {history.map((h, i) => (
                 <div key={i} style={{ padding: "16px 20px", borderRadius: "14px", background: "var(--bgCard)", border: "1px solid var(--border)", fontSize: 14, color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

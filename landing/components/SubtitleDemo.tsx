@@ -86,7 +86,7 @@ export default function SubtitleDemo() {
                 padding: "10px 24px",
                 borderRadius: 50,
                 border: lang === l ? "none" : "1.5px solid var(--border)",
-                background: lang === l ? "var(--accent)" : "white",
+                background: lang === l ? "var(--accent)" : "var(--bgCard)",
                 color: lang === l ? "white" : "var(--textSecondary)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontWeight: 600,
@@ -103,11 +103,11 @@ export default function SubtitleDemo() {
         {/* Subtitle display */}
         <div
           style={{
-            background: "#FFFFFF",
+            background: "var(--bgCard)",
             borderRadius: "var(--radius)",
             padding: "28px 24px",
-            border: "1px solid rgba(0, 0, 0,0.12)",
-            boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow)",
             minHeight: 100,
             marginBottom: 20,
           }}
@@ -156,7 +156,7 @@ export default function SubtitleDemo() {
             width: "100%",
             padding: "14px 18px",
             borderRadius: "var(--radiusSm)",
-            border: "1px solid rgba(0, 0, 0,0.12)",
+            border: "1px solid var(--border)",
             background: "var(--bg)",
             color: "var(--text)",
             fontSize: 15,
@@ -186,7 +186,7 @@ export default function SubtitleDemo() {
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                background: "rgba(0, 0, 0,0.1)",
+                background: "var(--chipBg)",
                 color: "var(--accent)",
                 fontSize: 11,
                 fontWeight: 600,
@@ -198,7 +198,7 @@ export default function SubtitleDemo() {
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                background: "rgba(123, 94, 234, 0.1)",
+                background: "var(--chipBg)",
                 color: "var(--accent)",
                 fontSize: 11,
                 fontWeight: 600,
@@ -230,8 +230,8 @@ export default function SubtitleDemo() {
                   style={{
                     padding: "12px 16px",
                     borderRadius: "var(--radiusSm)",
-                    background: "#FFFFFF",
-                    border: "1px solid rgba(0, 0, 0,0.12)",
+                    background: "var(--bgCard)",
+                    border: "1px solid var(--border)",
                     fontSize: 14,
                     color: "var(--textSecondary)",
                   }}

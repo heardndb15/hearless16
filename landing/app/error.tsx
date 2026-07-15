@@ -26,8 +26,8 @@ export default function Error({
       <div style={{
         maxWidth: 480,
         width: "100%",
-        background: "#FFFFFF",
-        border: "1px solid rgba(0, 0, 0,0.12)",
+        background: "var(--bgCard)",
+        border: "1px solid var(--border)",
         borderRadius: 24,
         padding: "48px 40px",
         textAlign: "center",
@@ -49,7 +49,7 @@ export default function Error({
             onClick={reset}
             style={{
               padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 600,
-              background: "var(--accent)", color: "white", border: "none", cursor: "pointer",
+              background: "var(--accent)", color: "var(--white)", border: "none", cursor: "pointer",
             }}
           >
             Попробовать снова
@@ -58,7 +58,7 @@ export default function Error({
             href="/"
             style={{
               padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 600,
-              background: "white", color: "var(--accent)",
+              background: "var(--bgCard)", color: "var(--accent)",
               border: "1.5px solid var(--border)", textDecoration: "none",
               display: "inline-flex", alignItems: "center",
             }}

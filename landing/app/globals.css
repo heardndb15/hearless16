@@ -5,32 +5,35 @@
 @tailwind utilities;
 
 :root {
-  --bg: #F4F7FB;
-  --bgCard: #FFFFFF;
-  --bgCardHover: #F4F7FB;
-  --bgLight: #F4F7FB;
-  --accent: #1565C0;
-  --chipBg: #EBF3FF;
-  --text: #1A1A2E;
-  --textSecondary: #9CA3AF;
-  --textMuted: #9CA3AF;
-  --border: #E8EDF5;
-  --borderLight: #E8EDF5;
+  --bg: #0A0E1A;
+  --bgCard: #12182A;
+  --bgCardHover: #1A2138;
+  --bgLight: #0A0E1A;
+  --accent: #4C8DDB;
+  --chipBg: rgba(76, 141, 219, 0.15);
+  --text: #F5F5F7;
+  --textSecondary: #9AA5BD;
+  --textMuted: #9AA5BD;
+  --border: rgba(255, 255, 255, 0.08);
+  --borderLight: rgba(255, 255, 255, 0.08);
   --sos: #ef4444;
+  --danger: #F87171;
   --background: var(--bg);
   --white: #FFFFFF;
-  --card: #FFFFFF;
-  --heading: #1A1A2E;
-  --button: #1565C0;
+  --card: #12182A;
+  --heading: #F5F5F7;
+  --button: #4C8DDB;
   --dark: #1A1A2E;
   --success: #22C55E;
   --radius: 16px;
   --radiusSm: 12px;
   --radiusXl: 16px;
-  --headerBg: rgba(255, 255, 255, 0.92);
-  --shadow: 0 2px 12px rgba(0,0,0,0.07);
-  --gradient-accent: linear-gradient(135deg, #1565C0, #22C1C3);
-  --gradient-soft: linear-gradient(135deg, #CFE4FF, #FFFFFF);
+  --headerBg: rgba(10, 14, 26, 0.85);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+  --shadowStrong: 0 16px 48px rgba(0,0,0,0.5);
+  --gradient-accent: linear-gradient(135deg, #4C8DDB, #22C1C3);
+  --gradient-soft: linear-gradient(135deg, #0F1720, #0A0E1A);
 }
 
 * {
@@ -204,7 +207,7 @@ section {
 }
 
 .btn-outline {
-  background: white;
+  background: var(--bgCard);
   color: var(--accent);
   border: 1.5px solid var(--border);
 }
@@ -216,7 +219,7 @@ section {
 }
 
 .glass-card {
-  background: #FFFFFF;
+  background: var(--bgCard);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }

@@ -81,8 +81,8 @@ export default function TextToSpeechSection() {
                 padding: "10px 24px",
                 borderRadius: 50,
                 border: lang === l.key ? "none" : "1.5px solid var(--border)",
-                background: lang === l.key ? "var(--accent)" : "white",
-                color: lang === l.key ? "white" : "var(--textSecondary)",
+                background: lang === l.key ? "var(--accent)" : "var(--bgCard)",
+                color: lang === l.key ? "var(--white)" : "var(--textSecondary)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontWeight: 600,
                 fontSize: 13,
@@ -97,11 +97,11 @@ export default function TextToSpeechSection() {
 
         <div
           style={{
-            background: "#FFFFFF",
+            background: "var(--bgCard)",
             borderRadius: "var(--radius)",
             padding: "28px 24px",
-            border: "1px solid rgba(0, 0, 0,0.12)",
-            boxShadow: "0 8px 20px rgba(0, 0, 0,0.07)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow)",
           }}
         >
           <textarea
@@ -113,7 +113,7 @@ export default function TextToSpeechSection() {
               width: "100%",
               padding: "14px 18px",
               borderRadius: "var(--radiusSm)",
-              border: "1px solid rgba(0, 0, 0,0.12)",
+              border: "1px solid var(--border)",
               background: "var(--bg)",
               color: "var(--text)",
               fontSize: 15,
@@ -133,7 +133,7 @@ export default function TextToSpeechSection() {
                   style={{
                     padding: "6px 14px",
                     borderRadius: 50,
-                    border: "1px solid rgba(0, 0, 0,0.12)",
+                    border: "1px solid var(--border)",
                     background: "var(--bg)",
                     color: "var(--textSecondary)",
                     fontSize: 12,
@@ -154,7 +154,7 @@ export default function TextToSpeechSection() {
             </button>
           </div>
 
-          {error && <div style={{ marginTop: 16, color: "#DC2626", fontSize: 13 }}>{error}</div>}
+          {error && <div style={{ marginTop: 16, color: "var(--danger)", fontSize: 13 }}>{error}</div>}
 
           {audioUrl && (
             <audio controls autoPlay src={audioUrl} style={{ width: "100%", marginTop: 20 }} />

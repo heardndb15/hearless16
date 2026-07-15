@@ -6,13 +6,13 @@ import { useLanguage } from "../lib/LanguageContext";
 function Check({ ok }: { ok: boolean }) {
   return ok ? (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <circle cx="8" cy="8" r="8" fill="rgba(0, 0, 0,0.12)" />
+      <circle cx="8" cy="8" r="8" fill="var(--border)" />
       <path d="M5 8l2 2 4-4" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ) : (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <circle cx="8" cy="8" r="8" fill="rgba(148,163,184,0.1)" />
-      <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="8" cy="8" r="8" fill="var(--border)" />
+      <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="var(--textMuted)" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -42,17 +42,17 @@ export default function PricingSection() {
               style={{
                 background: plan.highlight
                   ? "var(--gradient-accent)"
-                  : "#FFFFFF",
+                  : "var(--bgCard)",
                 border: plan.highlight
                   ? "none"
-                  : "1px solid rgba(0, 0, 0,0.15)",
+                  : "1px solid var(--border)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
                 display: "flex",
                 flexDirection: "column",
                 boxShadow: plan.highlight
-                  ? "0 16px 48px rgba(0, 0, 0,0.28)"
-                  : "0 2px 16px rgba(0, 0, 0,0.07)",
+                  ? "var(--shadowStrong)"
+                  : "var(--shadow)",
                 transform: plan.highlight ? "scale(1.03)" : "none",
                 position: "relative",
               }}
@@ -64,7 +64,7 @@ export default function PricingSection() {
                   left: "50%",
                   transform: "translateX(-50%)",
                   background: "var(--text)",
-                  color: "white",
+                  color: "var(--white)",
                   fontSize: 11,
                   fontWeight: 800,
                   padding: "4px 14px",
@@ -81,7 +81,7 @@ export default function PricingSection() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 20,
                   fontWeight: 800,
-                  color: plan.highlight ? "#FFFFFF" : "var(--text)",
+                  color: plan.highlight ? "var(--white)" : "var(--text)",
                   marginBottom: 12,
                 }}>
                   {plan.name}
@@ -91,7 +91,7 @@ export default function PricingSection() {
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     fontSize: 42,
                     fontWeight: 800,
-                    color: plan.highlight ? "#FFFFFF" : "var(--text)",
+                    color: plan.highlight ? "var(--white)" : "var(--text)",
                     lineHeight: 1,
                   }}>
                     {plan.price === 0 ? "0" : plan.price.toLocaleString("ru-RU")}
@@ -117,7 +117,7 @@ export default function PricingSection() {
                 {plan.missing.map((f) => (
                   <div key={f} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <Check ok={false} />
-                    <span style={{ fontSize: 13, color: plan.highlight ? "rgba(255,255,255,0.45)" : "#94a3b8" }}>{f}</span>
+                    <span style={{ fontSize: 13, color: plan.highlight ? "rgba(255,255,255,0.45)" : "var(--textMuted)" }}>{f}</span>
                   </div>
                 ))}
               </div>
@@ -134,7 +134,7 @@ export default function PricingSection() {
                   fontSize: 14,
                   textDecoration: "none",
                   background: plan.highlight ? "rgba(255,255,255,0.18)" : "var(--accent)",
-                  color: "#FFFFFF",
+                  color: "var(--white)",
                   border: plan.highlight ? "1.5px solid rgba(255,255,255,0.35)" : "none",
                   transition: "all 0.2s",
                 }}
