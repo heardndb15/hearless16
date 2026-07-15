@@ -4,14 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
-import { useTheme } from "../lib/ThemeContext";
 import type { Lang } from "../lib/translations";
 
 const LANG_LABELS: Record<Lang, string> = { ru: "РУС", en: "ENG", kz: "ҚАЗ" };
 
 export default function Header() {
   const { lang, setLang, t } = useLanguage();
-  const { theme, setTheme } = useTheme();
   const [dropdown, setDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -115,27 +113,6 @@ export default function Header() {
               ))}
             </div>
 
-            <button
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              aria-label={theme === "light" ? "Тёмная тема" : "Светлая тема"}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                border: "1px solid var(--border)",
-                background: "var(--bgCard)",
-                color: "var(--textSecondary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                fontSize: 15,
-                flexShrink: 0,
-              }}
-            >
-              {theme === "light" ? "🌙" : "☀️"}
-            </button>
-
             {!authChecked ? (
               <div style={{ width: 110, height: 38 }} />
             ) : userName ? (
@@ -218,25 +195,6 @@ export default function Header() {
                 </button>
               ))}
             </div>
-
-            <button
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              aria-label={theme === "light" ? "Тёмная тема" : "Светлая тема"}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: 12,
-                border: "1px solid var(--border)",
-                background: "var(--chipBg)",
-                color: "var(--textSecondary)",
-                fontSize: 14,
-                fontWeight: 500,
-                cursor: "pointer",
-                marginBottom: 10,
-              }}
-            >
-              {theme === "light" ? "🌙 Тёмная тема" : "☀️ Светлая тема"}
-            </button>
 
             {/* Auth buttons */}
             <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
