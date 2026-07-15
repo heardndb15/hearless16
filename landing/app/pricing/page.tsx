@@ -145,8 +145,8 @@ export default function PricingPage() {
                   display: "flex",
                   flexDirection: "column",
                   boxShadow: plan.highlight
-                    ? "0 20px 60px rgba(0, 0, 0,0.3)"
-                    : "0 2px 20px rgba(0, 0, 0,0.07)",
+                    ? "var(--shadowStrong)"
+                    : "var(--shadow)",
                   position: "relative",
                   transform: plan.highlight ? "scale(1.03)" : "none",
                 }}
@@ -251,7 +251,7 @@ export default function PricingPage() {
           <p style={{ textAlign: "center", color: "var(--accent)", fontSize: 14, marginBottom: 36 }}>Подробное сравнение всех возможностей</p>
 
           <div className="pricing-compare-scroll">
-          <div style={{ background: "var(--bgCard)", borderRadius: 20, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "0 4px 24px rgba(0, 0, 0,0.07)" }}>
+          <div style={{ background: "var(--bgCard)", borderRadius: 20, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "var(--shadow)" }}>
             {/* Header row */}
             <div className="pricing-compare-grid" style={{ background: "var(--bg)", borderBottom: "1px solid var(--border)", padding: "16px 24px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1 }}>Функция</div>
@@ -301,7 +301,7 @@ export default function PricingPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FAQ.map((item, i) => (
-              <div key={i} style={{ background: "var(--bgCard)", borderRadius: 16, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0, 0, 0,0.05)" }}>
+              <div key={i} style={{ background: "var(--bgCard)", borderRadius: 16, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "var(--shadow)" }}>
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 16 }}

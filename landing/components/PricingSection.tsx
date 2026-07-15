@@ -51,8 +51,8 @@ export default function PricingSection() {
                 display: "flex",
                 flexDirection: "column",
                 boxShadow: plan.highlight
-                  ? "0 16px 48px rgba(0, 0, 0,0.28)"
-                  : "0 2px 16px rgba(0, 0, 0,0.07)",
+                  ? "var(--shadowStrong)"
+                  : "var(--shadow)",
                 transform: plan.highlight ? "scale(1.03)" : "none",
                 position: "relative",
               }}
