@@ -46,11 +46,11 @@ export default function LanguageSection() {
             <div
               key={l.code}
               style={{
-                background: "#FFFFFF",
+                background: "var(--bgCard)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid rgba(0, 0, 0,0.12)",
-                boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
+                border: "1px solid var(--border)",
+                boxShadow: "var(--shadow)",
                 position: "relative",
                 overflow: "hidden",
               }}
