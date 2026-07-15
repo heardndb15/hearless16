@@ -24,11 +24,11 @@ export default function GamificationSection() {
           {/* User card */}
           <div
             style={{
-              background: "#FFFFFF",
+              background: "var(--bgCard)",
               borderRadius: "var(--radius)",
               padding: "32px 28px",
-              border: "1px solid rgba(0, 0, 0,0.12)",
-              boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
+              border: "1px solid var(--border)",
+              boxShadow: "var(--shadow)",
             }}
           >
             <div
@@ -51,7 +51,7 @@ export default function GamificationSection() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 24,
                   fontWeight: 700,
-                  color: "white",
+                  color: "var(--white)",
                 }}
               >
                 A
@@ -133,7 +133,7 @@ export default function GamificationSection() {
                     padding: "14px 8px",
                     borderRadius: "var(--radiusSm)",
                     background: "var(--bg)",
-                    border: "1px solid rgba(0, 0, 0,0.12)",
+                    border: "1px solid var(--border)",
                   }}
                 >
                   <div
@@ -159,7 +159,7 @@ export default function GamificationSection() {
                 padding: "16px",
                 borderRadius: "var(--radiusSm)",
                 background: "var(--bg)",
-                border: "1px solid rgba(0, 0, 0,0.12)",
+                border: "1px solid var(--border)",
               }}
             >
               <div
@@ -220,11 +220,11 @@ export default function GamificationSection() {
               <div
                 key={a.label}
                 style={{
-                  background: "#FFFFFF",
+                  background: "var(--bgCard)",
                   borderRadius: "var(--radius)",
                   padding: "24px 20px",
-                  border: "1px solid rgba(0, 0, 0,0.12)",
-                  boxShadow: "0 2px 16px rgba(0, 0, 0,0.07)",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow)",
                   textAlign: "center",
                   transition: "all 0.3s ease",
                 }}
@@ -233,7 +233,7 @@ export default function GamificationSection() {
                   e.currentTarget.style.transform = "translateY(-3px)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(0, 0, 0,0.12)";
+                  e.currentTarget.style.borderColor = "var(--border)";
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
@@ -268,7 +268,7 @@ export default function GamificationSection() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: 16,
                   fontWeight: 600,
-                  color: "white",
+                  color: "var(--white)",
                   marginBottom: 4,
                 }}
               >
