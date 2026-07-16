@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const PLANS = [
   {
@@ -98,8 +99,33 @@ const FAQ = [
   },
 ];
 
+const CHECKOUT_ERROR_MESSAGES: Record<string, string> = {
+  invalid_plan: "Неизвестный тариф. Обновите страницу и попробуйте снова.",
+  not_configured: "Оплата этого тарифа временно недоступна. Мы уже разбираемся, попробуйте позже.",
+  checkout_failed: "Не удалось открыть окно оплаты. Попробуйте ещё раз через пару минут.",
+};
+
 export default function PricingPage() {
+  return (
+    <Suspense fallback={null}>
+      <PricingPageContent />
+    </Suspense>
+  );
+}
+
+function PricingPageContent() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [checkoutError, setCheckoutError] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const code = searchParams.get("error");
+    if (code) {
+      setCheckoutError(CHECKOUT_ERROR_MESSAGES[code] || "Не удалось оформить оплату. Попробуйте ещё раз.");
+      router.replace("/pricing");
+    }
+  }, [searchParams, router]);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--gradient-soft)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -129,6 +155,11 @@ export default function PricingPage() {
           <p style={{ fontSize: 17, color: "var(--textSecondary)", lineHeight: 1.7, maxWidth: 520, margin: "0 auto" }}>
             Начни бесплатно и переходи на платный тариф когда будешь готов. Никаких скрытых платежей.
           </p>
+          {checkoutError && (
+            <div style={{ marginTop: 24, padding: "14px 20px", borderRadius: 12, background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.35)", color: "var(--danger)", fontSize: 14, fontWeight: 600 }}>
+              {checkoutError}
+            </div>
+          )}
         </div>
 
         {/* Plans */}
