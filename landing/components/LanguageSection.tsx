@@ -45,12 +45,10 @@ export default function LanguageSection() {
           {langs.map((l) => (
             <div
               key={l.code}
+              className="glass-card"
               style={{
-                background: "var(--bgCard)",
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
-                border: "1px solid var(--border)",
-                boxShadow: "var(--shadow)",
                 position: "relative",
                 overflow: "hidden",
               }}

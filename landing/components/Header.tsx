@@ -73,7 +73,7 @@ export default function Header() {
                 <span style={{ fontSize: 10, transform: dropdown ? "rotate(180deg)" : "none", transition: "transform 0.2s", color: "var(--textSecondary)" }}>▼</span>
               </button>
               {dropdown && (
-                <div style={{ position: "absolute", top: "calc(100% + 12px)", left: -120, width: 280, background: "var(--bgCard)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "8px", boxShadow: "var(--shadowStrong)" }}>
+                <div style={{ position: "absolute", top: "calc(100% + 12px)", left: -120, width: 280, background: "var(--glassBg)", backdropFilter: "var(--glassBlur)", WebkitBackdropFilter: "var(--glassBlur)", border: "1px solid var(--glassBorder)", borderRadius: "var(--radius)", padding: "8px", boxShadow: "var(--shadowStrong)" }}>
                   {t.featureLinks.map(f => (
                     <Link key={f.href} href={f.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: "var(--radiusSm)", textDecoration: "none", color: "var(--textSecondary)", fontSize: 13, transition: "all 0.2s" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "var(--bg)"; e.currentTarget.style.color = "var(--accent)"; }}
@@ -149,7 +149,7 @@ export default function Header() {
           <div style={{ position: "absolute", inset: 0, background: "var(--overlay)", backdropFilter: "blur(2px)" }} onClick={() => setMobileOpen(false)} />
 
           {/* Panel */}
-          <div style={{ position: "absolute", top: 64, left: 0, right: 0, background: "var(--bgCard)", borderRadius: "0 0 24px 24px", padding: "8px 16px 24px", boxShadow: "var(--shadowStrong)", maxHeight: "calc(100vh - 64px)", overflowY: "auto" }}>
+          <div style={{ position: "absolute", top: 64, left: 0, right: 0, background: "var(--glassBg)", backdropFilter: "var(--glassBlur)", WebkitBackdropFilter: "var(--glassBlur)", borderRadius: "0 0 24px 24px", padding: "8px 16px 24px", boxShadow: "var(--shadowStrong)", maxHeight: "calc(100vh - 64px)", overflowY: "auto" }}>
             {/* Feature links */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: "8px 0" }}>
               {t.featureLinks.map(f => (

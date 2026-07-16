@@ -39,20 +39,15 @@ export default function PricingSection() {
           {plans.map((plan) => (
             <div
               key={plan.name}
+              className={plan.highlight ? undefined : "glass-card"}
               style={{
-                background: plan.highlight
-                  ? "var(--gradient-accent)"
-                  : "var(--bgCard)",
-                border: plan.highlight
-                  ? "none"
-                  : "1px solid var(--border)",
+                background: plan.highlight ? "var(--gradient-accent)" : undefined,
+                border: plan.highlight ? "none" : undefined,
                 borderRadius: "var(--radius)",
                 padding: "32px 28px",
                 display: "flex",
                 flexDirection: "column",
-                boxShadow: plan.highlight
-                  ? "var(--shadowStrong)"
-                  : "var(--shadow)",
+                boxShadow: plan.highlight ? "var(--shadowStrong)" : undefined,
                 transform: plan.highlight ? "scale(1.03)" : "none",
                 position: "relative",
               }}

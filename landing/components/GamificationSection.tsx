@@ -23,12 +23,10 @@ export default function GamificationSection() {
         <div className="gamification-grid">
           {/* User card */}
           <div
+            className="glass-card"
             style={{
-              background: "var(--bgCard)",
               borderRadius: "var(--radius)",
               padding: "32px 28px",
-              border: "1px solid var(--border)",
-              boxShadow: "var(--shadow)",
             }}
           >
             <div
@@ -219,22 +217,17 @@ export default function GamificationSection() {
             {achievements.map((a) => (
               <div
                 key={a.label}
+                className="glass-card glass-card--lift"
                 style={{
-                  background: "var(--bgCard)",
                   borderRadius: "var(--radius)",
                   padding: "24px 20px",
-                  border: "1px solid var(--border)",
-                  boxShadow: "var(--shadow)",
                   textAlign: "center",
-                  transition: "all 0.3s ease",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = a.color;
-                  e.currentTarget.style.transform = "translateY(-3px)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.borderColor = "var(--glassBorder)";
                 }}
               >
                 <div style={{ fontSize: 36, marginBottom: 10 }}>{a.icon}</div>
