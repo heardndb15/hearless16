@@ -15,16 +15,43 @@ async function transcribeWithFreedomSpeech(file: File): Promise<string> {
   fd.append("language", "kk");
   fd.append("file", file, file.name || "audio.webm");
 
-  const res = await fetch("https://freedomspeech.kz/v1/audio/transcriptions", {
-    method: "POST",
-    // FreedomSpeech authenticates via X-API-Key, not Authorization: Bearer.
-    headers: { "X-API-Key": FREEDOMSPEECH_API_KEY },
-    body: fd,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  let res: Response;
+  try {
+    res = await fetch("https://freedomspeech.kz/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        // FreedomSpeech authenticates via X-API-Key, not Authorization: Bearer.
+        "X-API-Key": FREEDOMSPEECH_API_KEY,
+        // NOTE: verified this endpoint does NOT WAF-block plain fetch()'s
+        // default user-agent (curl/node/no-UA all pass; only the OpenAI SDK's
+        // own "OpenAI/Python ..." signature gets 403'd) — this header is kept
+        // only for parity with backend/app/services/freedomspeech_service.py,
+        // which does need it since it goes through that SDK.
+        "User-Agent": "python-httpx/0.27.0",
+      },
+      body: fd,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("FreedomSpeech request timed out");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+  const rawBody = await res.text();
+  // TEMP DEBUG: tracing "Kazakh subtitles come back empty" on /subtitles
+  // dictation mode — mirrors the debug print already in
+  // backend/app/services/freedomspeech_service.py. Remove once root cause
+  // is confirmed (see Octarin memory / conversation for context).
+  console.log(`[fs-debug] status=${res.status} body=${rawBody.slice(0, 500)}`);
   if (!res.ok) {
     throw new Error(`FreedomSpeech request failed: ${res.status}`);
   }
-  const data = await res.json();
+  const data = JSON.parse(rawBody);
   return (data.text || "").trim();
 }
 
