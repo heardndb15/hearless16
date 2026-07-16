@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const schema = z.object({
   email: z.string().email("Некорректный email"),
@@ -13,9 +14,33 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+const CALLBACK_ERROR_MESSAGES: Record<string, string> = {
+  no_code: "Не удалось войти: ссылка подтверждения повреждена или устарела.",
+  not_configured: "Вход временно недоступен. Попробуйте позже.",
+  auth_failed: "Не удалось войти через Google. Попробуйте ещё раз.",
+};
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [serverError, setServerError] = useState("");
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get("error");
+    if (code) {
+      setServerError(CALLBACK_ERROR_MESSAGES[code] || "Не удалось войти. Попробуйте ещё раз.");
+      router.replace("/login");
+    }
+  }, [searchParams, router]);
 
   const {
     register,
