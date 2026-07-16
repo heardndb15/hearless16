@@ -564,19 +564,21 @@ export default function SubtitlesPage() {
     }, 400);
   };
 
-  const toggleMicrophone = () => {
+  // Safari (macOS + iOS) implements webkitSpeechRecognition but can't restart
+  // the SAME instance synchronously from onend the way Chrome/Edge can —
+  // calling .start() again immediately throws InvalidStateError because
+  // Safari's teardown of the previous session is asynchronous. The catch in
+  // the old onend swallowed that error silently, so on Safari recognition
+  // just died after the first utterance with no visible error. Fix: on
+  // Safari, build a brand-new instance with a short delay instead of
+  // restarting the old one. Chrome/Edge keep the original synchronous path.
+  const isSafariBrowser = () =>
+    typeof navigator !== "undefined" &&
+    /Safari/.test(navigator.userAgent) &&
+    !/Chrome|CriOS|Chromium|Edg|Android/.test(navigator.userAgent);
+
+  const startBrowserSpeechRecognition = () => {
     if (typeof window === "undefined") return;
-
-    if (isMicActiveRef.current) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsMicActive(false);
-      setInterimText("");
-      saveSession(history);
-      return;
-    }
-
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("К сожалению, Web Speech API (распознавание речи) не поддерживается вашим браузером. Пожалуйста, используйте Google Chrome или Microsoft Edge.");
@@ -618,7 +620,7 @@ export default function SubtitlesPage() {
             setHistory((prev) => {
               const updated = [...prev, textToProcess];
               const targetIdx = updated.length - 1; // Запоминаем точный индекс фразы
-              
+
               getPunctuationWithAI(textToProcess).then((punctuatedText) => {
                 if (punctuatedText && punctuatedText !== textToProcess) {
                   setHistory((currentHistory) => {
@@ -642,7 +644,7 @@ export default function SubtitlesPage() {
 
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
-        
+
         // Отключаем микрофон только при фатальных ошибках доступа или оборудования
         if (event.error === "not-allowed" || event.error === "audio-capture") {
           if (event.error === "not-allowed") {
@@ -658,15 +660,23 @@ export default function SubtitlesPage() {
 
       recognition.onend = () => {
         // Если пользователь не нажимал кнопку выключения, перезапускаем запись
-        if (isMicActiveRef.current) {
-          try {
-            recognition.start();
-          } catch (e) {
-            console.warn("Попытка авто-перезапуска SpeechRecognition после onend:", e);
-          }
-        } else {
+        if (!isMicActiveRef.current) {
           setIsMicActive(false);
           setInterimText("");
+          return;
+        }
+        if (isSafariBrowser()) {
+          // Same-instance restart throws on Safari — recreate instead, after
+          // a short delay for its teardown to actually finish.
+          setTimeout(() => {
+            if (isMicActiveRef.current) startBrowserSpeechRecognition();
+          }, 300);
+          return;
+        }
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn("Попытка авто-перезапуска SpeechRecognition после onend:", e);
         }
       };
 
@@ -677,6 +687,22 @@ export default function SubtitlesPage() {
       setIsMicActive(false);
       setInterimText("");
     }
+  };
+
+  const toggleMicrophone = () => {
+    if (typeof window === "undefined") return;
+
+    if (isMicActiveRef.current) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsMicActive(false);
+      setInterimText("");
+      saveSession(history);
+      return;
+    }
+
+    startBrowserSpeechRecognition();
   };
 
   useEffect(() => {

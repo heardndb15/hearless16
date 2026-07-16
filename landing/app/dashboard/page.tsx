@@ -409,13 +409,27 @@ export default function SubtitlesDashboard() {
     }
   }
 
+  // Safari (macOS + iOS) implements webkitSpeechRecognition but can't restart
+  // the SAME instance synchronously from onend the way Chrome/Edge can —
+  // calling .start() again immediately throws InvalidStateError because
+  // Safari's teardown of the previous session is asynchronous, so recognition
+  // silently died after the first utterance. On Safari, build a brand-new
+  // instance with a short delay instead of restarting the old one.
+  const isSafariBrowser = () =>
+    typeof navigator !== "undefined" &&
+    /Safari/.test(navigator.userAgent) &&
+    !/Chrome|CriOS|Chromium|Edg|Android/.test(navigator.userAgent);
+
   // Start Browser-based Native Speech Recognition
   async function startBrowserRecognition() {
     isRecordingRef.current = true;
     setIsRecording(true);
     setTranscriptionText("");
     setAiStatus("listening");
+    createBrowserRecognitionInstance();
+  }
 
+  function createBrowserRecognitionInstance() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setTranscriptionText("Распознавание речи не поддерживается вашим браузером. Пожалуйста, используйте Google Chrome или Safari.");
@@ -454,15 +468,23 @@ export default function SubtitlesDashboard() {
     };
 
     recognition.onend = () => {
-      if (isRecordingRef.current) {
-        try {
-          recognition.start();
-        } catch (e) {
-          console.error("Failed to restart speech recognition:", e);
-          setIsRecording(false);
-          setAiStatus("ready");
-        }
-      } else {
+      if (!isRecordingRef.current) {
+        setIsRecording(false);
+        setAiStatus("ready");
+        return;
+      }
+      if (isSafariBrowser()) {
+        // Same-instance restart throws on Safari — recreate instead, after
+        // a short delay for its teardown to actually finish.
+        setTimeout(() => {
+          if (isRecordingRef.current) createBrowserRecognitionInstance();
+        }, 300);
+        return;
+      }
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error("Failed to restart speech recognition:", e);
         setIsRecording(false);
         setAiStatus("ready");
       }
