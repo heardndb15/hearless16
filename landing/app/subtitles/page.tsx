@@ -1264,7 +1264,7 @@ export default function SubtitlesPage() {
                       })}
                       {isMicActive && (
                         <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 44 }}>
-                          <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 14 }}>{interimText || "Слушаю..."}</span>
+                          <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 14 }}>{interimText || (speakerSegments.length === 0 ? "Слушаю..." : "")}</span>
                           <span style={{ display: "inline-block", width: 3, height: 18, background: "var(--accent)", animation: "cursor-blink 0.8s step-end infinite" }} />
                         </div>
                       )}
@@ -1286,7 +1286,7 @@ export default function SubtitlesPage() {
                           </span>
                         ))}
                         <span style={{ color: "var(--accent)", fontWeight: 800 }}>
-                          {interimText || "Слушаю вас..."}
+                          {interimText || (history.length === 0 ? "Слушаю вас..." : "")}
                         </span>
                       </>
                     ) : isDemo ? (
