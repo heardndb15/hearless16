@@ -33,6 +33,14 @@ _MIGRATIONS = [
     ALTER TABLE users
       ADD COLUMN IF NOT EXISTS bio TEXT
     """,
+    """
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS username TEXT UNIQUE
+    """,
+    """DO $$ BEGIN
+      ALTER TABLE users ADD CONSTRAINT username_format
+        CHECK (username IS NULL OR username ~ '^[a-z0-9_]{3,20}$');
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$""",
     # Storage bucket for avatars
     """
     INSERT INTO storage.buckets (id, name, public)
