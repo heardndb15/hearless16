@@ -2,8 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "../../../lib/supabase";
 import type { User } from "@supabase/supabase-js";
+
+const PLAN_NAMES: Record<"free" | "basic" | "pro", string> = {
+  free: "Free",
+  basic: "Basic",
+  pro: "Pro",
+};
+
+function formatPlanExpiry(iso: string): string {
+  return new Date(iso).toLocaleDateString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -13,6 +28,8 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [language, setLanguage] = useState<"kk" | "ru">("ru");
+  const [plan, setPlan] = useState<"free" | "basic" | "pro">("free");
+  const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarPreview, setAvatarPreview] = useState("");
   const [loading, setLoading] = useState(true);
@@ -33,7 +50,7 @@ export default function ProfilePage() {
         setUser(session.user);
         supabase
           .from("users")
-          .select("name, bio, avatar_url, language")
+          .select("name, bio, avatar_url, language, plan, plan_expires_at")
           .eq("id", session.user.id)
           .single()
           .then(({ data: profile }) => {
@@ -43,6 +60,8 @@ export default function ProfilePage() {
               setAvatarUrl(profile.avatar_url || "");
               setAvatarPreview(profile.avatar_url || "");
               setLanguage((profile.language as "kk" | "ru") || "ru");
+              setPlan((profile.plan as "free" | "basic" | "pro") || "free");
+              setPlanExpiresAt(profile.plan_expires_at || null);
             }
             setLoading(false);
           });
@@ -128,6 +147,24 @@ export default function ProfilePage() {
         <p className="text-[#9AA5BD] text-sm max-w-2xl font-medium">
           Управляйте своей учетной записью, языковыми предпочтениями и параметрами приватности.
         </p>
+      </div>
+
+      <div className="max-w-xl bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-xs font-bold text-[#9AA5BD] uppercase tracking-wider mb-1">Текущий тариф</p>
+          <p className="font-syne font-extrabold text-2xl text-[#F5F5F7]">{PLAN_NAMES[plan]}</p>
+          {plan !== "free" && planExpiresAt && (
+            <p className="text-xs text-[#9AA5BD] font-medium mt-1">
+              Продлится: {formatPlanExpiry(planExpiresAt)}
+            </p>
+          )}
+        </div>
+        <Link
+          href="/pricing"
+          className="px-5 py-3 rounded-xl bg-accent hover:bg-accent/90 text-white font-syne font-bold text-sm tracking-wide shadow-md transition-colors duration-200 whitespace-nowrap"
+        >
+          {plan === "free" ? "Улучшить план" : "Сменить тариф"}
+        </Link>
       </div>
 
       <div className="max-w-xl bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 md:p-8 space-y-6">
