@@ -20,6 +20,19 @@ function formatPlanExpiry(iso: string): string {
   });
 }
 
+function formatJoinDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("ru-RU", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+const PLAN_BADGE_STYLES: Record<"free" | "basic" | "pro", string> = {
+  free: "bg-white/10 text-[#9AA5BD]",
+  basic: "bg-accent/20 text-accent",
+  pro: "bg-[#7B1FA2]/20 text-[#C084FC]",
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,6 +43,11 @@ export default function ProfilePage() {
   const [language, setLanguage] = useState<"kk" | "ru">("ru");
   const [plan, setPlan] = useState<"free" | "basic" | "pro">("free");
   const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [gesturesLearned, setGesturesLearned] = useState(0);
+  const [subtitlesSaved, setSubtitlesSaved] = useState(0);
+  const usernameInputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarPreview, setAvatarPreview] = useState("");
   const [loading, setLoading] = useState(true);
@@ -48,10 +66,11 @@ export default function ProfilePage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user);
+        const userId = session.user.id;
         supabase
           .from("users")
-          .select("name, bio, avatar_url, language, plan, plan_expires_at")
-          .eq("id", session.user.id)
+          .select("name, bio, avatar_url, language, plan, plan_expires_at, username, created_at")
+          .eq("id", userId)
           .single()
           .then(({ data: profile }) => {
             if (profile) {
@@ -62,9 +81,22 @@ export default function ProfilePage() {
               setLanguage((profile.language as "kk" | "ru") || "ru");
               setPlan((profile.plan as "free" | "basic" | "pro") || "free");
               setPlanExpiresAt(profile.plan_expires_at || null);
+              setUsername(profile.username || null);
+              setCreatedAt(profile.created_at || null);
             }
             setLoading(false);
           });
+        supabase
+          .from("user_progress")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("learned", true)
+          .then(({ count }) => setGesturesLearned(count || 0));
+        supabase
+          .from("subtitles_history")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .then(({ count }) => setSubtitlesSaved(count || 0));
         return;
       }
       if (event === "SIGNED_OUT") {
@@ -147,6 +179,51 @@ export default function ProfilePage() {
         <p className="text-[#9AA5BD] text-sm max-w-2xl font-medium">
           Управляйте своей учетной записью, языковыми предпочтениями и параметрами приватности.
         </p>
+      </div>
+
+      <div className="max-w-xl glass-card rounded-2xl p-6 md:p-8">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/10 shrink-0 bg-white/10 flex items-center justify-center">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Аватар" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[#9AA5BD] text-2xl font-bold font-syne">{name?.[0]?.toUpperCase() || "?"}</span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-syne font-extrabold text-xl text-[#F5F5F7] truncate">{name || "Пользователь"}</p>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold font-syne ${PLAN_BADGE_STYLES[plan]}`}>
+                {PLAN_NAMES[plan]}
+              </span>
+            </div>
+            {username ? (
+              <p className="text-sm text-[#9AA5BD] font-medium mt-0.5">@{username}</p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => usernameInputRef.current?.focus()}
+                className="text-sm text-accent font-medium mt-0.5 hover:underline"
+              >
+                Добавить username
+              </button>
+            )}
+            {createdAt && (
+              <p className="text-xs text-[#9AA5BD] mt-0.5">С нами с {formatJoinDate(createdAt)}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <div className="flex-1 bg-white/5 rounded-xl p-3 text-center">
+            <p className="font-syne font-extrabold text-xl text-[#F5F5F7]">{gesturesLearned}</p>
+            <p className="text-xs text-[#9AA5BD] font-medium mt-0.5">Жестов выучено</p>
+          </div>
+          <div className="flex-1 bg-white/5 rounded-xl p-3 text-center">
+            <p className="font-syne font-extrabold text-xl text-[#F5F5F7]">{subtitlesSaved}</p>
+            <p className="text-xs text-[#9AA5BD] font-medium mt-0.5">Субтитров сохранено</p>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-xl glass-card rounded-2xl p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
