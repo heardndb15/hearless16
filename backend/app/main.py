@@ -148,7 +148,56 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     SLIDING_WINDOW_TRIGGER_BYTES = 96000  # 3s at 16kHz/16-bit mono
     SLIDING_WINDOW_TAIL_BYTES = 32000  # 1s of overlap kept for context
 
-    from app.services.whisper_service import transcribe_with_diarization, pcm_to_wav_bytes, merge_transcripts
+    # Same pile-up problem as diarize_busy above, but for the mobile M4A path:
+    # merge_audio_chunks (pydub/ffmpeg round-trip through temp files) plus
+    # transcribe_audio were being awaited directly in the receive loop for
+    # every single chunk. Mobile sends a chunk every 1.5s on a fixed timer
+    # regardless of whether the previous one finished processing, so once a
+    # single merge+transcribe call ran past 1.5s the backlog only grew for
+    # the rest of the session — each chunk waiting on every one before it.
+    m4a_busy = False
+    m4a_tasks: set[asyncio.Task] = set()
+
+    from app.services.whisper_service import transcribe_with_diarization, pcm_to_wav_bytes, merge_transcripts, merge_audio_chunks
+
+    async def run_m4a_transcribe(window_chunks: list[bytes], ext: str):
+        nonlocal m4a_busy, current_full_text
+        try:
+            try:
+                if len(window_chunks) == 1:
+                    merged_window = window_chunks[0]
+                else:
+                    merged_window = await asyncio.wait_for(
+                        asyncio.to_thread(merge_audio_chunks, window_chunks, ext),
+                        timeout=10.0
+                    )
+                    if not merged_window:
+                        merged_window = window_chunks[-1]
+
+                chunk_text = await asyncio.wait_for(
+                    asyncio.to_thread(transcribe_audio, merged_window, language=lang),
+                    timeout=15.0
+                )
+                if chunk_text and chunk_text.strip():
+                    current_full_text = merge_transcripts(current_full_text, chunk_text.strip())
+            except Exception as e:
+                import sys
+                print(f"M4A chunk transcription failed: {e}", file=sys.stderr)
+                try:
+                    chunk_text = await asyncio.to_thread(transcribe_audio, window_chunks[-1], language=lang)
+                    if chunk_text and chunk_text.strip():
+                        current_full_text = merge_transcripts(current_full_text, chunk_text.strip())
+                except Exception as ex:
+                    print(f"Single-chunk transcribe also failed: {ex}", file=sys.stderr)
+
+            if not session_stopped:
+                await websocket.send_json({
+                    "type": "text",
+                    "text": current_full_text,
+                    "full_text": current_full_text,
+                })
+        finally:
+            m4a_busy = False
 
     async def run_diarize(wav_bytes: bytes, sliding_window: bool):
         nonlocal diarize_busy, finalized_text, interim_text, interim_segments, current_full_text
@@ -258,46 +307,22 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                             last_transcribed_len = len(session_bytes)
                     else:
                         # Independent M4A files from mobile — sliding window of last 3 chunks
-                        # to keep transcription cost bounded regardless of session length
-                        from app.services.whisper_service import merge_audio_chunks, merge_transcripts, detect_audio_format
+                        # to keep transcription cost bounded regardless of session length.
+                        # Appending to the window is cheap and always happens; the heavy
+                        # merge+transcribe only runs as a background task, and only if the
+                        # previous one has finished — see m4a_busy comment above.
+                        from app.services.whisper_service import detect_audio_format
                         ext = detect_audio_format(audio_bytes)
-                        try:
-                            audio_window_chunks.append(audio_bytes)
-                            if len(audio_window_chunks) > 3:
-                                audio_window_chunks[:] = audio_window_chunks[-3:]
+                        audio_window_chunks.append(audio_bytes)
+                        if len(audio_window_chunks) > 3:
+                            audio_window_chunks[:] = audio_window_chunks[-3:]
 
-                            if len(audio_window_chunks) == 1:
-                                merged_window = audio_bytes
-                            else:
-                                merged_window = await asyncio.wait_for(
-                                    asyncio.to_thread(merge_audio_chunks, list(audio_window_chunks), ext),
-                                    timeout=10.0
-                                )
-                                if not merged_window:
-                                    merged_window = audio_bytes
-
-                            chunk_text = await asyncio.wait_for(
-                                asyncio.to_thread(transcribe_audio, merged_window, language=lang),
-                                timeout=15.0
-                            )
-                            if chunk_text and chunk_text.strip():
-                                current_full_text = merge_transcripts(current_full_text, chunk_text.strip())
-                        except Exception as e:
-                            import sys
-                            print(f"M4A chunk transcription failed: {e}", file=sys.stderr)
-                            try:
-                                chunk_text = await asyncio.to_thread(transcribe_audio, audio_bytes, language=lang)
-                                if chunk_text and chunk_text.strip():
-                                    from app.services.whisper_service import merge_transcripts as mt
-                                    current_full_text = mt(current_full_text, chunk_text.strip())
-                            except Exception as ex:
-                                print(f"Single-chunk transcribe also failed: {ex}", file=sys.stderr)
-
-                        await websocket.send_json({
-                            "type": "text",
-                            "text": current_full_text,
-                            "full_text": current_full_text,
-                        })
+                        if not m4a_busy:
+                            m4a_busy = True
+                            window_snapshot = list(audio_window_chunks)
+                            task = asyncio.create_task(run_m4a_transcribe(window_snapshot, ext))
+                            m4a_tasks.add(task)
+                            task.add_done_callback(m4a_tasks.discard)
 
             elif action == "stop":
                 if format == "pcm":
@@ -351,7 +376,15 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                                 "full_text": "",
                             })
                     else:
-                        # Для мобильного финальный текст - это накопленный текст
+                        # Для мобильного финальный текст - это накопленный текст.
+                        # Let any in-flight background transcribe finish first — otherwise
+                        # its "text" message could land after (and stomp) "final", and the
+                        # last chunk's words would be dropped from the saved transcript.
+                        session_stopped = True
+                        for _ in range(30):  # up to ~3s
+                            if not m4a_busy:
+                                break
+                            await asyncio.sleep(0.1)
                         await websocket.send_json({
                             "type": "final",
                             "text": "",
@@ -361,6 +394,8 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
 
     except WebSocketDisconnect:
         for task in diarize_tasks:
+            task.cancel()
+        for task in m4a_tasks:
             task.cancel()
 
 
