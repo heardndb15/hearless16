@@ -149,7 +149,7 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <div className="max-w-xl bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
+      <div className="max-w-xl glass-card rounded-2xl p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="text-xs font-bold text-[#9AA5BD] uppercase tracking-wider mb-1">Текущий тариф</p>
           <p className="font-syne font-extrabold text-2xl text-[#F5F5F7]">{PLAN_NAMES[plan]}</p>
@@ -167,7 +167,7 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      <div className="max-w-xl bg-[#12182A]/40 backdrop-blur-xl border border-white/10 shadow-xl rounded-2xl p-6 md:p-8 space-y-6">
+      <div className="max-w-xl glass-card rounded-2xl p-6 md:p-8 space-y-6">
 
         {/* Avatar */}
         <div className="flex flex-col items-center gap-2">
