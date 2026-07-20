@@ -86,7 +86,7 @@ EOF
 
 ### Task 2: Profile summary card — badge, join date, stats, username display
 
-**Depends on:** Task 1 (reads the `username` and `created_at` columns; `created_at` already existed, `username` is new from Task 1 — this task's Supabase calls will simply get `null` back for `username` until Task 1's migration has actually run in production, which is fine, that's the "unset" state already handled).
+**Depends on:** Task 1 (reads the `username` and `created_at` columns; `created_at` already existed, `username` is new from Task 1). Note: PostgREST errors the *entire* select when a requested column doesn't exist yet — it doesn't return `null` for just that field — so if landing's deploy lands before Task 1's migration has actually run in production, a combined select would blank the whole profile. That's why the fetch is split into two independent queries (see the final review fix on `page.tsx`), keeping the core profile fields safe regardless of migration timing.
 
 **Files:**
 - Modify: `landing/app/dashboard/profile/page.tsx`

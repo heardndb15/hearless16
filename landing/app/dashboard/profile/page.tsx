@@ -69,7 +69,7 @@ export default function ProfilePage() {
         const userId = session.user.id;
         supabase
           .from("users")
-          .select("name, bio, avatar_url, language, plan, plan_expires_at, username, created_at")
+          .select("name, bio, avatar_url, language, plan, plan_expires_at")
           .eq("id", userId)
           .single()
           .then(({ data: profile }) => {
@@ -81,10 +81,27 @@ export default function ProfilePage() {
               setLanguage((profile.language as "kk" | "ru") || "ru");
               setPlan((profile.plan as "free" | "basic" | "pro") || "free");
               setPlanExpiresAt(profile.plan_expires_at || null);
-              setUsername(profile.username || null);
-              setCreatedAt(profile.created_at || null);
             }
             setLoading(false);
+          });
+        // Fetched separately from the core profile fields above: username/created_at
+        // were added by a backend migration that only takes effect on the next
+        // backend restart. Landing (Vercel) and backend (Render) deploy
+        // independently from the same repo, so if this select ran before that
+        // migration, PostgREST would error the WHOLE query on the unknown
+        // column rather than nulling just this field — keeping it isolated
+        // means a not-yet-migrated column only leaves username/createdAt at
+        // their safe defaults instead of blanking the entire profile.
+        supabase
+          .from("users")
+          .select("username, created_at")
+          .eq("id", userId)
+          .single()
+          .then(({ data, error }) => {
+            if (!error && data) {
+              setUsername(data.username || null);
+              setCreatedAt(data.created_at || null);
+            }
           });
         supabase
           .from("user_progress")
@@ -377,7 +394,7 @@ export default function ProfilePage() {
         </div>
 
         {message && (
-          <p className={`text-xs font-bold font-syne text-left ${message.includes("Ошибка") ? "text-red-500" : "text-green-600"}`}>
+          <p className={`text-xs font-bold font-syne text-left ${message === "Настройки успешно сохранены!" ? "text-green-600" : "text-red-500"}`}>
             {message}
           </p>
         )}
