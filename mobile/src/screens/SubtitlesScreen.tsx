@@ -312,28 +312,6 @@ export default function SubtitlesScreen() {
             <Animated.View style={[styles.settingsPanel, { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) }] }]}>
               <Text style={styles.settingsPanelTitle}>Настройки отображения</Text>
 
-              {/* Subtitle recognition language */}
-              <View style={styles.settingRow}>
-                <Text style={styles.settingLabel}>Язык распознавания</Text>
-                <View style={styles.settingOptions}>
-                  {[
-                    { code: "ru" as const, label: "Русский" },
-                    { code: "en" as const, label: "English" },
-                    { code: "kk" as const, label: "Қазақша" },
-                  ].map((l) => (
-                    <TouchableOpacity
-                      key={l.code}
-                      style={[styles.optionBtn, subtitleLang === l.code && styles.optionBtnActive]}
-                      onPress={() => setSubtitleLang(l.code)}
-                    >
-                      <Text style={[styles.optionText, subtitleLang === l.code && styles.optionTextActive]}>
-                        {l.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
               {/* Font Size */}
               <View style={styles.settingRow}>
                 <Text style={styles.settingLabel}>Размер текста</Text>
@@ -432,6 +410,28 @@ export default function SubtitlesScreen() {
               </View>
             </Animated.View>
           )}
+
+          {/* Subtitle recognition language — lives next to the subtitles
+              themselves, not buried in the display-settings panel, since
+              it's a functional choice (what to transcribe), not a display
+              preference (font/color/alignment). */}
+          <View style={styles.languageRow}>
+            {[
+              { code: "ru" as const, label: "Русский" },
+              { code: "en" as const, label: "English" },
+              { code: "kk" as const, label: "Қазақша" },
+            ].map((l) => (
+              <TouchableOpacity
+                key={l.code}
+                style={[styles.optionBtn, subtitleLang === l.code && styles.optionBtnActive]}
+                onPress={() => setSubtitleLang(l.code)}
+              >
+                <Text style={[styles.optionText, subtitleLang === l.code && styles.optionTextActive]}>
+                  {l.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <View style={styles.subtitleArea}>
             {hasContent ? (
@@ -665,6 +665,12 @@ const styles = StyleSheet.create({
   },
   tabBtnTextActive: {
     color: "#ffffff",
+  },
+  languageRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: Spacing.sm,
   },
   settingsPanel: {
     ...GlassCard,
