@@ -645,13 +645,25 @@ export default function SubtitlesPage() {
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
 
-        // Отключаем микрофон только при фатальных ошибках доступа или оборудования
+        // Отключаем микрофон при фатальных ошибках доступа/оборудования, а
+        // также когда недоступен сам сервис распознавания (сеть/сервис/язык).
+        // Раньше "network"/"service-not-allowed" тихо проглатывались, и onend
+        // ниже уходил в бесконечный молчаливый перезапуск: кнопка горела
+        // "идёт запись", но текст никогда не появлялся — без единой подсказки,
+        // почему (Web Speech API в Chrome работает через облачный сервис
+        // Google, и без связи с ним просто не возвращает результатов).
         if (event.error === "not-allowed" || event.error === "audio-capture") {
           if (event.error === "not-allowed") {
             alert("Доступ к микрофону заблокирован. Пожалуйста, разрешите доступ в настройках браузера.");
           } else {
             alert("Не удалось обнаружить микрофон. Проверьте подключение устройства.");
           }
+          isMicActiveRef.current = false;
+          setIsMicActive(false);
+          setInterimText("");
+        } else if (event.error === "network" || event.error === "service-not-allowed" || event.error === "language-not-supported") {
+          alert("Не удалось подключиться к сервису распознавания речи. Проверьте интернет-соединение и попробуйте снова.");
+          isMicActiveRef.current = false;
           setIsMicActive(false);
           setInterimText("");
         }
