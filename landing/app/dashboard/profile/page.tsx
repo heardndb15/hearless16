@@ -140,16 +140,24 @@ export default function ProfilePage() {
 
   async function handleSave() {
     if (!user) return;
+    if (username && !/^[a-z0-9_]{3,20}$/.test(username)) {
+      setMessage("Username должен содержать 3-20 символов: латиница, цифры, нижнее подчёркивание");
+      return;
+    }
     setSaving(true);
     setMessage("");
     const supabase = createClient();
     const { error } = await supabase
       .from("users")
-      .update({ name, bio, language, avatar_url: avatarUrl })
+      .update({ name, bio, language, avatar_url: avatarUrl, username: username || null })
       .eq("id", user.id);
 
     if (error) {
-      setMessage("Ошибка сохранения: " + error.message);
+      if (error.code === "23505") {
+        setMessage("Username уже занят, выберите другой");
+      } else {
+        setMessage("Ошибка сохранения: " + error.message);
+      }
     } else {
       setMessage("Настройки успешно сохранены!");
       setTimeout(() => setMessage(""), 3000);
@@ -298,6 +306,23 @@ export default function ProfilePage() {
             className="w-full px-4 py-3 rounded-xl bg-[#12182A]/60 border border-white/10 focus:border-accent text-[#F5F5F7] text-sm font-semibold outline-none transition-colors"
             placeholder="Введите ваше имя"
           />
+        </div>
+
+        {/* Username */}
+        <div className="space-y-2 text-left">
+          <label className="block font-syne text-xs font-bold text-[#9AA5BD] uppercase tracking-wider">
+            Username
+          </label>
+          <input
+            ref={usernameInputRef}
+            type="text"
+            value={username || ""}
+            onChange={(e) => setUsername(e.target.value.toLowerCase() || null)}
+            maxLength={20}
+            className="w-full px-4 py-3 rounded-xl bg-[#12182A]/60 border border-white/10 focus:border-accent text-[#F5F5F7] text-sm font-semibold outline-none transition-colors"
+            placeholder="ваш_username"
+          />
+          <p className="text-xs text-[#9AA5BD]">3-20 символов: латиница, цифры, нижнее подчёркивание</p>
         </div>
 
         {/* Bio */}
