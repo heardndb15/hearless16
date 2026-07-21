@@ -132,13 +132,16 @@ def transcribe_openai(audio_bytes: bytes, language: str = "ru") -> str:
 
 
 def transcribe_audio(audio_bytes: bytes, language: str = "ru") -> str:
-    try:
-        if language == "kk":
-            # Kazakh always goes through FreedomSpeech — no local/Replicate
-            # fallback, since neither transcribes Kazakh reliably.
-            from app.services.freedomspeech_service import transcribe_with_freedomspeech
-            return transcribe_with_freedomspeech(audio_bytes) or ""
+    if language == "kk":
+        # Kazakh always goes through FreedomSpeech — no local/Replicate
+        # fallback, since neither transcribes Kazakh reliably. Let a
+        # FreedomSpeechError propagate (rather than swallowing to "" like the
+        # generic path below) so callers can tell "service is down" apart
+        # from "no speech in this chunk" and surface a real error.
+        from app.services.freedomspeech_service import transcribe_with_freedomspeech
+        return transcribe_with_freedomspeech(audio_bytes) or ""
 
+    try:
         result = transcribe_local(audio_bytes)
         if result is not None:
             return result

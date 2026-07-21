@@ -127,6 +127,7 @@ export default function SubtitlesPage() {
   const micStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const whisperIntervalRef = useRef<any>(null);
+  const transcribeErrorShownRef = useRef(false);
   const [token, setToken] = useState("");
 
   // New: auto-save state
@@ -287,6 +288,7 @@ export default function SubtitlesPage() {
       setIsMicActive(true);
       isMicActiveRef.current = true;
       audioChunksRef.current = [];
+      transcribeErrorShownRef.current = false;
 
       // Browser SpeechRecognition runs in parallel for real-time interim display —
       // skipped for Kazakh, which has no real kk-KZ support and must go through
@@ -330,8 +332,24 @@ export default function SubtitlesPage() {
           if (res.ok) {
             const data = await res.json();
             if (data.text?.trim()) setHistory(prev => [...prev, data.text.trim()]);
+          } else if (!transcribeErrorShownRef.current) {
+            // Previously silent: a non-ok response here (e.g. FreedomSpeech's
+            // upstream quota/billing failing for kk) just dropped the chunk
+            // with no feedback, so the mic looked like it was still
+            // listening forever with no transcript ever appearing.
+            transcribeErrorShownRef.current = true;
+            console.error("Transcribe request failed:", res.status);
+            stopWhisperRecording();
+            alert("Не удалось распознать речь: сервис транскрипции сейчас недоступен. Попробуйте позже.");
           }
-        } catch {}
+        } catch (err) {
+          if (!transcribeErrorShownRef.current) {
+            transcribeErrorShownRef.current = true;
+            console.error("Transcribe request error:", err);
+            stopWhisperRecording();
+            alert("Не удалось связаться с сервисом распознавания речи. Проверьте интернет-соединение.");
+          }
+        }
         if (isMicActiveRef.current) setWhisperStatus("recording");
       };
 

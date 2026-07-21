@@ -43,13 +43,8 @@ async function transcribeWithFreedomSpeech(file: File): Promise<string> {
     clearTimeout(timeout);
   }
   const rawBody = await res.text();
-  // TEMP DEBUG: tracing "Kazakh subtitles come back empty" on /subtitles
-  // dictation mode — mirrors the debug print already in
-  // backend/app/services/freedomspeech_service.py. Remove once root cause
-  // is confirmed (see Octarin memory / conversation for context).
-  console.log(`[fs-debug] status=${res.status} body=${rawBody.slice(0, 500)}`);
   if (!res.ok) {
-    throw new Error(`FreedomSpeech request failed: ${res.status}`);
+    throw new Error(`FreedomSpeech request failed: ${res.status} ${rawBody.slice(0, 300)}`);
   }
   const data = JSON.parse(rawBody);
   return (data.text || "").trim();

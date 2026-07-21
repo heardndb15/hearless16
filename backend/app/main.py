@@ -90,6 +90,7 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     # and it used to run unconditionally even for lang=kk, which doesn't need
     # it at all and would time out the WS handshake while it downloaded.
     from app.config import OPENAI_API_KEY, REPLICATE_API_TOKEN, FREEDOMSPEECH_API_KEY
+    from app.services.freedomspeech_service import FreedomSpeechError
 
     if lang == "kk":
         if not FREEDOMSPEECH_API_KEY:
@@ -113,7 +114,25 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
     session_bytes = b""
     audio_window_chunks: list[bytes] = []  # sliding window of recent M4A chunks
     last_transcribed_len = 0
-    
+
+    # A FreedomSpeechError (Kazakh upstream down/quota exceeded/etc.) used to
+    # just get printed server-side and treated as an empty chunk — the client
+    # saw no subtitles and no error, indistinguishable from silence. Send one
+    # error per session instead of spamming it on every ~1.5-2s retry.
+    kk_error_notified = False
+
+    async def notify_kk_error(err: Exception):
+        nonlocal kk_error_notified
+        if kk_error_notified:
+            return
+        kk_error_notified = True
+        import sys
+        print(f"FreedomSpeech (kk) failed: {err}", file=sys.stderr)
+        await websocket.send_json({
+            "type": "error",
+            "message": "Сервис распознавания казахской речи временно недоступен. Попробуйте позже.",
+        })
+
     # Режим стриминга (True для потокового WebM с веба, False для независимых M4A с мобильного)
     is_stream = None
     current_full_text = ""
@@ -180,6 +199,11 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                 )
                 if chunk_text and chunk_text.strip():
                     current_full_text = merge_transcripts(current_full_text, chunk_text.strip())
+            except FreedomSpeechError as e:
+                # Upstream itself is down (quota/auth/network) — retrying with
+                # just the last chunk below would fail the same way, so skip
+                # straight to notifying instead of doubling load on it.
+                await notify_kk_error(e)
             except Exception as e:
                 import sys
                 print(f"M4A chunk transcription failed: {e}", file=sys.stderr)
@@ -187,6 +211,8 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                     chunk_text = await asyncio.to_thread(transcribe_audio, window_chunks[-1], language=lang)
                     if chunk_text and chunk_text.strip():
                         current_full_text = merge_transcripts(current_full_text, chunk_text.strip())
+                except FreedomSpeechError as e2:
+                    await notify_kk_error(e2)
                 except Exception as ex:
                     print(f"Single-chunk transcribe also failed: {ex}", file=sys.stderr)
 
@@ -225,6 +251,8 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                     "full_text": current_full_text,
                     "segments": interim_segments if interim_text else [],
                 })
+        except FreedomSpeechError as e:
+            await notify_kk_error(e)
         except Exception as e:
             import sys
             print(f"PCM diarization failed/timed out: {e}", file=sys.stderr)
@@ -293,6 +321,9 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                                 text = ""
                                 import sys
                                 print("Transcription timed out (webm stream)", file=sys.stderr)
+                            except FreedomSpeechError as e:
+                                text = ""
+                                await notify_kk_error(e)
                             except Exception as e:
                                 import sys
                                 print(f"Error in ws stream transcribe: {e}", file=sys.stderr)
@@ -342,6 +373,8 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                                 timeout=15.0
                             )
                             current_full_text = merge_transcripts(finalized_text, last_text)
+                        except FreedomSpeechError as e:
+                            await notify_kk_error(e)
                         except (asyncio.TimeoutError, Exception) as e:
                             import sys
                             print(f"Error in ws stop transcribe (pcm): {e}", file=sys.stderr)
@@ -358,6 +391,9 @@ async def websocket_transcribe(websocket: WebSocket, token: str | None = None, l
                                     asyncio.to_thread(transcribe_audio, session_bytes, language=lang),
                                     timeout=15.0
                                 )
+                            except FreedomSpeechError as e:
+                                text = ""
+                                await notify_kk_error(e)
                             except (asyncio.TimeoutError, Exception) as e:
                                 import sys
                                 print(f"Error in ws stop transcribe: {e}", file=sys.stderr)
