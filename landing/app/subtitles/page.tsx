@@ -613,13 +613,25 @@ export default function SubtitlesPage() {
       else if (langRef.current === "ENG") recognitionLang = "en-US";
       recognition.lang = recognitionLang;
 
+      // TEMP DEBUG: timing the reported 3+s delay before the first caption
+      // appears — pins down whether it's browser/permission overhead
+      // (start()->onstart) or Google's cloud STT itself (onstart->first
+      // onresult). Remove once root cause is confirmed.
+      const __t0 = performance.now();
+      let __firstResultLogged = false;
+
       recognition.onstart = () => {
+        console.log(`[timing] onstart at ${(performance.now() - __t0).toFixed(0)}ms`);
         setIsMicActive(true);
         setInterimText("Слушаю вас...");
         runSpeechAudioSimulation();
       };
 
       recognition.onresult = (event: any) => {
+        if (!__firstResultLogged) {
+          __firstResultLogged = true;
+          console.log(`[timing] first onresult at ${(performance.now() - __t0).toFixed(0)}ms`, { resultIndex: event.resultIndex, isFinal: event.results[event.resultIndex]?.isFinal });
+        }
         let interim = "";
         let final = "";
 
@@ -711,6 +723,7 @@ export default function SubtitlesPage() {
       };
 
       recognitionRef.current = recognition;
+      console.log(`[timing] calling start() at ${(performance.now() - __t0).toFixed(0)}ms`);
       recognition.start();
     } catch (e) {
       console.error(e);
