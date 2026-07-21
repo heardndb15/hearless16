@@ -872,7 +872,20 @@ export default function SubtitlesPage() {
   // Отправка состояния при любом изменении
   useEffect(() => {
     sendStateToChannel();
-  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, displayText, aiSummary, aiResponse]);
+  }, [mode, lang, phraseIdx, chars, inputText, history, fontSize, textColor, bgOpacity, alignment, videoSubtitle, isVideoPlaying, aiSummary, aiResponse]);
+
+  // displayText (live interim speech) changes many times per second while
+  // dictating — re-broadcasting the FULL state (including the whole,
+  // ever-growing history array) on every one of those ticks made
+  // postMessage's structured-clone cost grow with session length, so
+  // captions visibly lagged more the longer someone talked. Send just the
+  // live text on its own lightweight message instead; the full sync above
+  // still fires whenever history itself changes (a phrase finalizes).
+  useEffect(() => {
+    if (channelRef.current) {
+      channelRef.current.postMessage({ type: "live-text", payload: { displayText } });
+    }
+  }, [displayText]);
 
   // --- РРќРР¦РРђР›РР—РђР¦РРЇ Р ОБРАБОТКА ВЕБ-РђРЈР”РРћ ДЛЯ Р’РР—РЈРђР›РР—РђР¦РР ---
   const initAudioAnalyser = (videoEl: HTMLVideoElement) => {

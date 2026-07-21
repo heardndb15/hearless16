@@ -100,6 +100,8 @@ export default function TranscriptPage() {
       } else if (type === "time-update") {
         if (payload.currentTime !== undefined) setCurrentTime(payload.currentTime);
         if (payload.videoSubtitle !== undefined) setVideoSubtitle(payload.videoSubtitle);
+      } else if (type === "live-text") {
+        if (payload.displayText !== undefined) setDisplayText(payload.displayText);
       }
     };
 
