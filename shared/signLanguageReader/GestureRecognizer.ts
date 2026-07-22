@@ -1,7 +1,7 @@
 export interface RawSample {
   gesture: string | null;
   confidence: number;
-  error?: "no_hand_detected" | "invalid_image" | "processing_error";
+  error?: "no_hand_detected" | "invalid_image" | "processing_error" | "rate_limited";
 }
 
 export interface RecognitionState {

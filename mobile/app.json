@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#f3f8fc"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.hearless.app"
@@ -31,7 +33,8 @@
         {
           "cameraPermission": "Разрешите Hearless доступ к камере для распознавания жестов"
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

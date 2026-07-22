@@ -1,4 +1,5 @@
 import json
+import re
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -9,6 +10,14 @@ from slowapi import _rate_limit_exceeded_handler
 from app.limiter import limiter
 from app.routes import users, subtitles, gestures, alerts, transcribe, community, polar
 from app.services.whisper_service import transcribe_audio
+
+# Shared with the WebSocket Origin check below, so both surfaces stay in sync.
+ALLOWED_ORIGINS = [
+    "https://hearless16-pcug.vercel.app",
+    "https://hearless16-1.onrender.com",
+    "http://localhost:3000",
+]
+ALLOWED_ORIGIN_REGEX = re.compile(r"^https://hearless16[a-zA-Z0-9\-]*\.vercel\.app$")
 
 
 @asynccontextmanager
@@ -30,12 +39,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://hearless16-pcug.vercel.app",
-        "https://hearless16-1.onrender.com",
-        "http://localhost:3000",
-    ],
-    allow_origin_regex=r"https://hearless16[a-zA-Z0-9\-]*\.vercel\.app",
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX.pattern,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,8 +57,19 @@ app.include_router(polar.router)
 
 @app.websocket("/ws/transcribe")
 async def websocket_transcribe(websocket: WebSocket, token: str | None = None, lang: str = "ru", format: str = "webm"):
+    # CORSMiddleware doesn't apply to the WS handshake at all (Starlette
+    # only runs it for regular HTTP requests), so without this check any
+    # third-party page could open a socket here in a victim's browser
+    # (Cross-Site WebSocket Hijacking). Browsers always send an Origin
+    # header; the React Native client doesn't, so a missing Origin is
+    # treated as "not a browser" rather than rejected outright.
+    origin = websocket.headers.get("origin")
+    if origin is not None and origin not in ALLOWED_ORIGINS and not ALLOWED_ORIGIN_REGEX.match(origin):
+        await websocket.close(code=1008)
+        return
+
     await websocket.accept()
-    
+
     is_authenticated = False
     if token:
         import asyncio

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Literal
 from datetime import datetime
 
@@ -9,13 +9,16 @@ class UserCreate(BaseModel):
 
 
 class SubtitleRequest(BaseModel):
-    text: str
+    # Caps a saved transcript at ~100k chars (many hours of speech) so a
+    # malformed/abusive client can't force a multi-MB insert into
+    # subtitles_history through an unbounded string field.
+    text: str = Field(max_length=100_000)
     language: str = "ru"
 
 
 class SoundAlertCreate(BaseModel):
     user_id: str
-    sound_type: str
+    sound_type: str = Field(max_length=100)
 
 
 class UserProgressCreate(BaseModel):
@@ -28,8 +31,12 @@ class UserProgressCreate(BaseModel):
 
 
 class GestureRecognizeRequest(BaseModel):
-    image: str
-    target_gesture: Optional[str] = None
+    # A quality=0.4 downscaled selfie-cam frame is a few hundred KB of base64
+    # at most; 4M chars (~3MB decoded) comfortably covers that while still
+    # rejecting the unbounded payloads a malicious/broken client could send
+    # straight into memory before base64.b64decode ever runs.
+    image: str = Field(max_length=4_000_000)
+    target_gesture: Optional[str] = Field(default=None, max_length=100)
     language: Literal["kz", "ru"] = "kz"
 
 

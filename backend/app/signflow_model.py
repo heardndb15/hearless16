@@ -1,5 +1,6 @@
 import io
 import sys
+import time
 import numpy as np
 import random
 from PIL import Image
@@ -20,6 +21,17 @@ _HAND_LANDMARKER_MODEL_URL = (
 _hand_landmarker = None
 _model_bytes = None
 
+# A single transient failure here (model download blip on cold start, etc.)
+# used to set _hand_landmarker = False forever, silently downgrading every
+# /gestures/recognize call for the rest of the process's life to
+# recognize_emulate()'s random numbers — with a response shape identical to
+# a real detection, so neither the client nor a human could tell the
+# difference. Retrying after a cooldown instead of never again means a
+# transient failure recovers on its own within a few minutes, and callers
+# can check the "emulated" flag in the response to know when it hasn't.
+_HAND_LANDMARKER_RETRY_COOLDOWN_SECONDS = 300
+_hand_landmarker_failed_at: float | None = None
+
 
 def _get_model_bytes():
     global _model_bytes
@@ -32,7 +44,15 @@ def _get_model_bytes():
 
 
 def _get_hand_landmarker():
-    global _hand_landmarker
+    global _hand_landmarker, _hand_landmarker_failed_at
+
+    if _hand_landmarker is False:
+        assert _hand_landmarker_failed_at is not None
+        if (time.monotonic() - _hand_landmarker_failed_at) < _HAND_LANDMARKER_RETRY_COOLDOWN_SECONDS:
+            return None
+        # Cooldown elapsed — fall through and retry initialization below.
+        _hand_landmarker = None
+
     if _hand_landmarker is None:
         try:
             import mediapipe as mp
@@ -47,9 +67,11 @@ def _get_hand_landmarker():
                 min_tracking_confidence=0.5,
             )
             _hand_landmarker = mp.tasks.vision.HandLandmarker.create_from_options(options)
+            _hand_landmarker_failed_at = None
         except Exception as e:
             print(f"Failed to initialize HandLandmarker: {e}", file=sys.stderr)
             _hand_landmarker = False
+            _hand_landmarker_failed_at = time.monotonic()
     return _hand_landmarker if _hand_landmarker is not False else None
 
 
@@ -207,6 +229,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None, lang
             "components": {"hand_shape": 0, "position": 0, "movement": 0},
             "landmarks": None,
             "error": "invalid_image",
+            "emulated": False,
         }
 
     import mediapipe as mp
@@ -220,6 +243,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None, lang
             "components": {"hand_shape": 0, "position": 0, "movement": 0},
             "landmarks": None,
             "error": "no_hand_detected",
+            "emulated": False,
         }
 
     lm = result.hand_landmarks[0]
@@ -256,6 +280,7 @@ def recognize_gesture(frame_data: bytes, target_gesture: str | None = None, lang
             "movement":   round(confidence * 0.9, 1),
         },
         "landmarks": landmarks,
+        "emulated": False,
     }
 
 
@@ -321,4 +346,8 @@ def recognize_emulate(target_gesture: str | None = None, language: str = "kz") -
             "movement":   round(max(0, min(100, base["movement"]   + random.uniform(-8, 8))), 1),
         },
         "landmarks": None,
+        # Lets callers tell a real detection apart from this random
+        # fallback instead of the two being indistinguishable — see the
+        # _get_hand_landmarker cooldown comment for when this fires.
+        "emulated": True,
     }

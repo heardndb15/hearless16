@@ -5,7 +5,12 @@ import type { RawSample } from "../../../../shared/signLanguageReader/GestureRec
 import type { SignLanguage } from "../../../../shared/signLanguageReader/languages";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrender.com";
-const POLL_INTERVAL_MS = 175;
+// Backend caps /gestures/recognize at 120/minute (2/sec, see
+// backend/app/routes/gestures.py) — polling faster than that just means
+// most frames silently get a 429 that used to be indistinguishable from a
+// real "gesture not recognized" result. 600ms keeps a margin under the
+// 500ms theoretical minimum.
+const POLL_INTERVAL_MS = 600;
 
 /**
  * Owns the continuous capture-and-recognize loop: every POLL_INTERVAL_MS,
@@ -42,8 +47,11 @@ export function useHandTracker(
           confidence: response.data.confidence ?? 0,
           error: response.data.error,
         });
-      } catch {
-        onSample({ gesture: null, confidence: 0, error: "processing_error" });
+      } catch (err: any) {
+        // Distinguish server throttling from an actual recognition failure
+        // instead of reporting both identically as "processing_error".
+        const rateLimited = err?.response?.status === 429;
+        onSample({ gesture: null, confidence: 0, error: rateLimited ? "rate_limited" : "processing_error" });
       } finally {
         inFlightRef.current = false;
       }

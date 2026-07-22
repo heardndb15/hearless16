@@ -2,7 +2,7 @@ import asyncio
 import uuid
 from typing import Optional, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.database import get_supabase, fetch_single, run_query
 from app.dependencies import get_current_user
 from app.limiter import limiter
@@ -13,12 +13,19 @@ router = APIRouter(tags=["community"])
 # ── Models ────────────────────────────────────────────────────────────────────
 
 class PostCreate(BaseModel):
-    text: str
+    # Matches the `char_length(text) <= 2000` CHECK constraint on posts
+    # (migrate.py) — enforcing it here too means an over-length post gets a
+    # clean 422 instead of falling through to an uncaught DB error (the
+    # insert's except-and-retry fallback below can't distinguish a
+    # CHECK-violation from any other failure, so it would retry the same
+    # doomed insert and surface a bare 500).
+    text: str = Field(max_length=2000)
     image_url: Optional[str] = None
 
 
 class CommentCreate(BaseModel):
-    text: str
+    # Matches the `char_length(text) <= 1000` CHECK constraint on post_comments.
+    text: str = Field(max_length=1000)
 
 
 # ── Optional auth helper ──────────────────────────────────────────────────────

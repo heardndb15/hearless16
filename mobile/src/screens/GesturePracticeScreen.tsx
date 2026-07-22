@@ -21,13 +21,20 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || "https://hearless16-1.onrende
 type RecognitionResult = {
   gesture: string;
   confidence: number;
-  error?: "no_hand_detected" | "invalid_image";
+  error?: "no_hand_detected" | "invalid_image" | "rate_limited";
   components: {
     hand_shape: number;
     position: number;
     movement: number;
   };
 };
+
+// Backend caps /gestures/recognize at 120/minute (2/sec) — polling faster
+// than that just means most frames silently get a 429 that this screen used
+// to swallow as an indistinguishable "no hand detected", so the feature
+// looked broken far more often than it actually was. 600ms keeps a margin
+// under the 500ms theoretical minimum.
+const RECOGNIZE_POLL_INTERVAL_MS = 600;
 
 const COUNTDOWN_STEPS = ["3", "2", "1", "Начинаем!"];
 
@@ -119,10 +126,21 @@ export default function GesturePracticeScreen() {
         if (response.data.confidence >= 80) {
           handleSuccess(response.data.confidence, frameCountRef.current);
         }
-      } catch {} finally {
+      } catch (err: any) {
+        // Tag throttling distinctly instead of leaving the UI on its last
+        // (or no) result with no indication anything went wrong.
+        if (err?.response?.status === 429) {
+          setResult((prev) => ({
+            gesture: prev?.gesture ?? "",
+            confidence: 0,
+            components: prev?.components ?? { hand_shape: 0, position: 0, movement: 0 },
+            error: "rate_limited",
+          }));
+        }
+      } finally {
         recognizeInFlightRef.current = false;
       }
-    }, 150);
+    }, RECOGNIZE_POLL_INTERVAL_MS);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -249,6 +267,11 @@ export default function GesturePracticeScreen() {
               {result?.error === "no_hand_detected" && (
                 <View style={styles.noHandHint}>
                   <Text style={styles.noHandHintText}>Рука не обнаружена</Text>
+                </View>
+              )}
+              {result?.error === "rate_limited" && (
+                <View style={styles.noHandHint}>
+                  <Text style={styles.noHandHintText}>Сервер перегружен, подождите секунду</Text>
                 </View>
               )}
             </>

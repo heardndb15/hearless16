@@ -1,12 +1,18 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Audio } from "expo-av";
-import * as FileSystem from "expo-file-system";
+import LiveAudioStream from "react-native-live-audio-stream";
 import { supabase } from "../services/supabase";
 import axios from "axios";
 
 const DEFAULT_API_URL = "https://hearless16-1.onrender.com";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
 const BACKEND_WS = process.env.EXPO_PUBLIC_WS_URL || API_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws/transcribe";
+
+// Matches the PCM format the backend's /ws/transcribe already accepts from
+// the web client's ScriptProcessor path (landing/app/dashboard/page.tsx) —
+// 16kHz mono 16-bit — so no resampling is needed on either end.
+const PCM_SAMPLE_RATE = 16000;
+const PCM_AUDIO_SOURCE_VOICE_RECOGNITION = 6; // Android MediaRecorder.AudioSource.VOICE_RECOGNITION
 
 export interface SpeakerSegment {
   text: string;
@@ -30,21 +36,15 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
   const [chunks, setChunks] = useState<StreamChunk[]>([]);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const recordingRef = useRef<Audio.Recording | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const chunkIndexRef = useRef(0);
   const userLangRef = useRef<string>("ru");
   // True only while a recording session is actually meant to be active.
-  // sendChunk's Audio.Recording.createAsync() can still be in flight when
-  // stopStreaming runs (both read/write recordingRef.current); this ref lets
-  // that pending continuation notice the session already ended instead of
-  // overwriting the ref stopStreaming just cleared with a live, untracked
-  // recording that nothing then stops.
+  // Guards against the WS 'close' handler and the live-audio 'data'
+  // listener acting on a session that stopStreaming already tore down.
   const isActiveRef = useRef(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const connectWs = useCallback((token: string) => {
-    const wsUrl = BACKEND_WS + (BACKEND_WS.includes("?") ? "&" : "?") + `lang=${userLangRef.current}&token=${token}`;
+    const wsUrl = BACKEND_WS + (BACKEND_WS.includes("?") ? "&" : "?") + `lang=${userLangRef.current}&token=${token}&format=pcm`;
     const ws = new WebSocket(wsUrl);
     ws.onmessage = (event) => {
       try {
@@ -52,14 +52,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
         if (data.type === "error") {
           setError(data.message || "Unknown error");
           setIsRecording(false);
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
-          if (recordingRef.current) {
-            recordingRef.current.stopAndUnloadAsync().catch(() => {});
-            recordingRef.current = null;
-          }
+          stopLiveAudio();
           ws.close();
         } else if (data.type === "text" || data.type === "final") {
           setError(null);
@@ -105,20 +98,12 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
       }
       if (isActiveRef.current) {
         // Socket dropped (network loss, server recycle) while a recording
-        // session was still meant to be active. Without this, the send
-        // interval keeps firing but silently no-ops (wsRef.current is now
-        // null), so the mic keeps recording forever with isRecording stuck
-        // true and no feedback that anything went wrong.
+        // session was still meant to be active. Without this, the mic
+        // stream keeps running forever with isRecording stuck true and no
+        // feedback that anything went wrong.
         isActiveRef.current = false;
         setIsRecording(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        if (recordingRef.current) {
-          recordingRef.current.stopAndUnloadAsync().catch(() => {});
-          recordingRef.current = null;
-        }
+        stopLiveAudio();
         setError("Соединение потеряно. Проверьте интернет и начните запись заново.");
       }
     };
@@ -126,47 +111,15 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
     return ws;
   }, [options]);
 
-  const sendChunk = useCallback(async (ws: WebSocket) => {
-    const oldRec = recordingRef.current;
-    if (!oldRec) return;
-
+  // Stops native audio capture. Safe to call even if nothing was started.
+  // No explicit listener detach needed: startStreaming's LiveAudioStream.on()
+  // call always replaces the previous listener first (see the library's
+  // own implementation), and the isActiveRef check inside that listener
+  // already discards anything that fires after this runs.
+  const stopLiveAudio = useCallback(() => {
     try {
-      // 1. Stop the current recording as quickly as possible
-      await oldRec.stopAndUnloadAsync();
-      const uri = oldRec.getURI();
-
-      // 2. IMMEDIATELY start the next recording to minimize hardware gap
-      try {
-        const { recording } = await Audio.Recording.createAsync(
-          Audio.RecordingOptionsPresets.HIGH_QUALITY
-        );
-        if (isActiveRef.current) {
-          recordingRef.current = recording;
-        } else {
-          // stopStreaming ran while this recording was being prepared —
-          // don't leave a live, untracked recording holding the microphone.
-          recording.stopAndUnloadAsync().catch(() => {});
-        }
-      } catch (err) {
-        console.log("Failed to restart recording:", err);
-      }
-
-      // 3. Process and send the previous audio chunk in the background
-      if (uri) {
-        FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        }).then(async (base64) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ action: "chunk", audio: base64 }));
-          }
-          await FileSystem.deleteAsync(uri, { idempotent: true });
-        }).catch(err => {
-          console.log("Error processing audio file:", err);
-        });
-      }
-    } catch (err) {
-      console.log("Error in sendChunk:", err);
-    }
+      LiveAudioStream.stop();
+    } catch {}
   }, []);
 
   const waitForWsOpen = useCallback((ws: WebSocket, timeoutMs: number): Promise<boolean> => {
@@ -207,12 +160,6 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
         return;
       }
 
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: true,
-      });
-
       let ws: WebSocket;
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         // Reuse pre-warmed connection — no wait needed. Cancel any pending
@@ -240,45 +187,42 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
         }
       }
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      isActiveRef.current = true;
-      recordingRef.current = recording;
-      setIsRecording(true);
-
-      intervalRef.current = setInterval(() => {
-        if (wsRef.current) {
-          sendChunk(wsRef.current);
+      // Continuous native PCM capture — no stop/restart cycle, so unlike
+      // the old expo-av Recording approach there's no ~100-350ms hardware
+      // gap (and dropped syllables) every time a chunk boundary was hit.
+      LiveAudioStream.init({
+        sampleRate: PCM_SAMPLE_RATE,
+        channels: 1,
+        bitsPerSample: 16,
+        audioSource: PCM_AUDIO_SOURCE_VOICE_RECOGNITION,
+        bufferSize: 4096,
+        // This fork only emits 'data' events and never writes to disk when
+        // left empty — the field is a leftover from the upstream
+        // react-native-audio-record package it was forked from, where it
+        // was mandatory for file-based recording.
+        wavFile: "",
+      });
+      LiveAudioStream.on("data", (base64Chunk: string) => {
+        if (!isActiveRef.current) return;
+        const socket = wsRef.current;
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ action: "chunk", audio: base64Chunk }));
         }
-      }, 1500);
+      });
+
+      isActiveRef.current = true;
+      LiveAudioStream.start();
+      setIsRecording(true);
     } catch (err: any) {
       setError(err?.message || "Не удалось запустить запись. Проверьте настройки микрофона.");
       setIsRecording(false);
     }
-  }, [connectWs, sendChunk, waitForWsOpen]);
+  }, [connectWs, waitForWsOpen]);
 
   const stopStreaming = useCallback(async () => {
     isActiveRef.current = false;
     setIsRecording(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    try {
-      if (recordingRef.current) {
-        await recordingRef.current.stopAndUnloadAsync();
-        const uri = recordingRef.current.getURI();
-        if (uri && wsRef.current?.readyState === WebSocket.OPEN) {
-          const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-          wsRef.current.send(JSON.stringify({ action: "chunk", audio: base64 }));
-          await FileSystem.deleteAsync(uri, { idempotent: true });
-        }
-      }
-    } catch {}
+    stopLiveAudio();
 
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -294,8 +238,7 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
     } else {
       wsRef.current = null;
     }
-    recordingRef.current = null;
-  }, []);
+  }, [stopLiveAudio]);
 
   // An explicit `lang` option (e.g. a per-screen language switcher) always wins
   // over the account's profile language, and skips the Supabase lookup entirely.
@@ -304,8 +247,8 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
       userLangRef.current = options.lang;
       // A pre-warmed connection may already be open with the old lang baked
       // into its URL; close it (only if idle) so the next connect picks up
-      // the new one. recordingRef is a ref, so this reads the live value.
-      if (!recordingRef.current && wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
+      // the new one.
+      if (!isActiveRef.current && wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
         wsRef.current.close();
         wsRef.current = null;
       }
@@ -338,10 +281,10 @@ export function useStreamingRecording(options?: { skipAutoSave?: boolean; lang?:
 
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      stopLiveAudio();
       wsRef.current?.close();
     };
-  }, []);
+  }, [stopLiveAudio]);
 
   return {
     isRecording,
