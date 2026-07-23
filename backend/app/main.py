@@ -15,6 +15,8 @@ from app.services.whisper_service import transcribe_audio
 ALLOWED_ORIGINS = [
     "https://hearless16-pcug.vercel.app",
     "https://hearless16-1.onrender.com",
+    "https://hearless.live",
+    "https://www.hearless.live",
     "http://localhost:3000",
 ]
 ALLOWED_ORIGIN_REGEX = re.compile(r"^https://hearless16[a-zA-Z0-9\-]*\.vercel\.app$")
